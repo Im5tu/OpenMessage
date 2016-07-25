@@ -28,6 +28,9 @@ namespace OpenMessage.Serializer.Jil
 
         public T Deserialize<T>(Stream entity)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             using (var streamReader = new StreamReader(entity))
             using (_telemetry.RecordDuration($"{nameof(JilSerializer)}.{nameof(Deserialize)}"))
                 return JSON.Deserialize<T>(streamReader.ReadToEnd(), _settings);
@@ -35,6 +38,9 @@ namespace OpenMessage.Serializer.Jil
 
         public Stream Serializer<T>(T entity)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             using (_telemetry.RecordDuration($"{nameof(JilSerializer)}.{nameof(Deserialize)}"))
                 return new MemoryStream(Encoding.UTF8.GetBytes(JSON.Serialize(entity, _settings)));
         }
