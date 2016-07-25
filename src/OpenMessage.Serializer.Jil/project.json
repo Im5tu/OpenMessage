@@ -1,0 +1,28 @@
+﻿{
+  "version": "1.0.0",
+  "title": "OpenMessage.Serializer.JsonNet",
+  "authors": [ "Im5tu", "Stuart Blackler" ],
+  "description": "A JIL serializer for OpenMessage",
+  "packOptions": {
+    "owners": [ "Im5tu" ],
+    "tags": [ "OpenMessage", "Messaging", "ServiceBus", "aspnetcore", "netstandard" ],
+    "projectUrl": "https://github.com/Im5tu/OpenMessage",
+    "requireLicenseAcceptance": false,
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Im5tu/OpenMessage.git"
+    }
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Options": "1.0.0",
+    "Jil": "2.14.3",
+    "OpenMessage": {
+      "target": "project"
+    },
+    "OpenTelemetry": "1.0.0"
+  },
+
+  "frameworks": {
+    "net451": {}
+  }
+}
