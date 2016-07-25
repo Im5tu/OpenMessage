@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B4E58D4F
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Tests", "tests\OpenMessage.Tests\OpenMessage.Tests.xproj", "{D5C758B5-055C-41F0-A339-C8E4141076EB}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Serializer.JsonNet", "src\OpenMessage.Serializer.JsonNet\OpenMessage.Serializer.JsonNet.xproj", "{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{D5C758B5-055C-41F0-A339-C8E4141076EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5C758B5-055C-41F0-A339-C8E4141076EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5C758B5-055C-41F0-A339-C8E4141076EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -37,5 +43,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7D68A283-6D90-4A50-B015-D8C2BB5C7184} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
 		{D5C758B5-055C-41F0-A339-C8E4141076EB} = {B4E58D4F-40CD-45CA-AC6F-1DF4D9CB9A49}
+		{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
 	EndGlobalSection
 EndGlobal
