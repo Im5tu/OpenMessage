@@ -28,6 +28,9 @@ namespace OpenMessage.Serializer.JsonNet
 
         public T Deserialize<T>(Stream entity)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             using (var streamReader = new StreamReader(entity))
             using (_telemetry.RecordDuration($"{nameof(JsonNetSerializer)}.{nameof(Deserialize)}"))
                 return JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd(), _settings);
@@ -35,6 +38,9 @@ namespace OpenMessage.Serializer.JsonNet
 
         public Stream Serializer<T>(T entity)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             using (_telemetry.RecordDuration($"{nameof(JsonNetSerializer)}.{nameof(Deserialize)}"))
                 return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entity, _settings)));
         }

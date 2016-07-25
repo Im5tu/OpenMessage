@@ -5,7 +5,7 @@
   "description": "A Json.Net serializer for OpenMessage",
   "packOptions": {
     "owners": [ "Im5tu" ],
-    "tags": [ "OpenMessage", "Messaging", "ServiceBus", "aspnetcore", "netstandard" ],
+    "tags": [ "OpenMessage", "Messaging", "ServiceBus", "aspnetcore", "netstandard", "Json.Net" ],
     "projectUrl": "https://github.com/Im5tu/OpenMessage",
     "requireLicenseAcceptance": false,
     "repository": {
