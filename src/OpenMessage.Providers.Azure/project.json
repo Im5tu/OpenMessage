@@ -1,0 +1,17 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Options": "1.0.0",
+    "OpenMessage": {
+      "target": "project"
+    },
+    "WindowsAzure.ServiceBus": "3.2.4"
+  },
+
+  "frameworks": {
+    "net451": {}
+  }
+}

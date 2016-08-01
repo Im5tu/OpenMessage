@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("OpenMessage")]
+[assembly: AssemblyProduct("OpenMessage.Providers.Azure")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,7 +16,6 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7d68a283-6d90-4a50-b015-d8c2bb5c7184")]
-[assembly: InternalsVisibleTo("OpenMessage.Tests")]
-[assembly: InternalsVisibleTo("OpenMessage.Providers.Azure")]
+[assembly: Guid("66f710f3-460a-450b-8b07-9cd1476e5cf3")]
+[assembly: InternalsVisibleTo("OpenMessage.Providers.Azure.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
