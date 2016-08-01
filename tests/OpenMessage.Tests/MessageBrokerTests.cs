@@ -15,7 +15,7 @@ namespace OpenMessage.Tests
             [Fact]
             public void GivenANullObserverCollectionThrowArgumentNullException()
             {
-                Action act = () => new MessageBroker<string>(null, Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<MessageBroker<string>>>().Object);
+                Action act = () => new MessageBroker<string>(null, Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<ManagedObservable<string>>>().Object);
 
                 act.ShouldThrow<ArgumentNullException>();
             }
@@ -23,7 +23,7 @@ namespace OpenMessage.Tests
             [Fact]
             public void GivenANullObservableCollectionThrowArgumentNullException()
             {
-                Action act = () => new MessageBroker<string>(Enumerable.Empty<IObserver<string>>(), null, new Mock<ILogger<MessageBroker<string>>>().Object);
+                Action act = () => new MessageBroker<string>(Enumerable.Empty<IObserver<string>>(), null, new Mock<ILogger<ManagedObservable<string>>>().Object);
 
                 act.ShouldThrow<ArgumentNullException>();
             }
@@ -39,7 +39,7 @@ namespace OpenMessage.Tests
 
         public class Subscribe
         {
-            private readonly MessageBroker<string> _target = new MessageBroker<string>(Enumerable.Empty<IObserver<string>>(), Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<MessageBroker<string>>>().Object);
+            private readonly MessageBroker<string> _target = new MessageBroker<string>(Enumerable.Empty<IObserver<string>>(), Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<ManagedObservable<string>>>().Object);
 
             [Fact]
             public void GivenANullObserverThrowArgumentNullException()
@@ -62,7 +62,7 @@ namespace OpenMessage.Tests
                 var subscriber2 = new Mock<IObserver<string>>();
                 var producer = new FakeProducer();
 
-                using (var target = new MessageBroker<string>(new[] { subscriber1.Object, subscriber2.Object }, new[] { producer }, new Mock<ILogger<MessageBroker<string>>>().Object))
+                using (var target = new MessageBroker<string>(new[] { subscriber1.Object, subscriber2.Object }, new[] { producer }, new Mock<ILogger<ManagedObservable<string>>>().Object))
                     producer.Trigger();
 
                 subscriber1.Verify(x => x.OnNext("test"), Times.Once);
@@ -77,7 +77,7 @@ namespace OpenMessage.Tests
                 var producer1 = new FakeProducer();
                 var producer2 = new FakeProducer();
 
-                using (var target = new MessageBroker<string>(new[] { subscriber1.Object, subscriber2.Object }, new[] { producer1, producer2 }, new Mock<ILogger<MessageBroker<string>>>().Object))
+                using (var target = new MessageBroker<string>(new[] { subscriber1.Object, subscriber2.Object }, new[] { producer1, producer2 }, new Mock<ILogger<ManagedObservable<string>>>().Object))
                 {
                     producer1.Trigger("1");
                     producer2.Trigger("2");
@@ -113,7 +113,7 @@ namespace OpenMessage.Tests
             public void GivenMultiplePiecesOfTelemetryRecordedThenRecordsOnDispose()
             {
                 var observer = new Mock<IObserver<string>>();
-                var _target = new MessageBroker<string>(new[] { observer.Object }, Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<MessageBroker<string>>>().Object);
+                var _target = new MessageBroker<string>(new[] { observer.Object }, Enumerable.Empty<IObservable<string>>(), new Mock<ILogger<ManagedObservable<string>>>().Object);
 
                 using (_target.Subscribe(observer.Object))
                     _target.Dispose();
