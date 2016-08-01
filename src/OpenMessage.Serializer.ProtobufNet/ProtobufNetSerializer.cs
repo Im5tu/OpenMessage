@@ -34,7 +34,7 @@ namespace OpenMessage.Serializer.ProtobufNet
                 return (T)_model.Deserialize(entity, null, typeof(T));
         }
 
-        public Stream Serializer<T>(T entity)
+        public Stream Serialize<T>(T entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));

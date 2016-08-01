@@ -36,7 +36,7 @@ namespace OpenMessage.Serializer.Jil
                 return JSON.Deserialize<T>(streamReader.ReadToEnd(), _settings);
         }
 
-        public Stream Serializer<T>(T entity)
+        public Stream Serialize<T>(T entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));

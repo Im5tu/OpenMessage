@@ -6,7 +6,7 @@ namespace OpenMessage
     {
         string TypeName { get; }
 
-        Stream Serializer<T>(T entity);
+        Stream Serialize<T>(T entity);
         T Deserialize<T>(Stream entity);
     }
 }
