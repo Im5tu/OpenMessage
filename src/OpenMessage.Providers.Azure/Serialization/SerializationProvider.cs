@@ -36,7 +36,8 @@ namespace OpenMessage.Providers.Azure.Serialization
             if (deserializer == null)
                 throw new Exception($"No deserializer found that is capable of deserializing the type '{entity.ContentType}'. Message id: '{entity.MessageId}'");
 
-            return deserializer.Deserialize<T>(entity.GetBody<Stream>());
+            using(var messageBody = entity.GetBody<Stream>())
+                return deserializer.Deserialize<T>(messageBody);
         }
 
         public BrokeredMessage Serialize<T>(T entity)
