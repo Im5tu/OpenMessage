@@ -45,6 +45,10 @@ namespace OpenMessage.Providers.Azure.Management
             _subscriptionNamingConvention = subscriptionNamingConvention;
         }
 
+        public QueueClient CreateQueueClient() => QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
+        public TopicClient CreateTopicClient() => TopicClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>());
+        public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
+
         public async Task ProvisionQueueAsync()
         {
             var queueName = _queueNamingConvention.GenerateName<T>();
@@ -79,7 +83,6 @@ namespace OpenMessage.Providers.Azure.Management
             else
                 _logger.LogDebug($"Queue '{queueName}' already exists, no need to provision.");
         }
-
         public async Task ProvisionSubscriptionAsync()
         {
             var topicName = _topicNamingConvention.GenerateName<T>();
@@ -115,9 +118,8 @@ namespace OpenMessage.Providers.Azure.Management
             else
                 _logger.LogDebug($"Subscription '{topicName}/{subscriptionName}' already exists, no need to provision.");
         }
-
         public Task ProvisionTopicAsync() => ProvisionTopicAsync(CreateServiceBusManager(), _topicNamingConvention.GenerateName<T>());
-
+        
         private async Task ProvisionTopicAsync(ServiceBus manager, string topicName)
         {
             if (!(await manager.TopicExistsAsync(topicName)))
@@ -146,10 +148,9 @@ namespace OpenMessage.Providers.Azure.Management
             else
                 _logger.LogDebug($"Topic '{topicName}' already exists, no need to provision.");
         }
-
         private ServiceBus CreateServiceBusManager()
         {
-            var manager = new ServiceBus(_options.ConnectionString);
+            var manager = ServiceBus.CreateFromConnectionString(_options.ConnectionString);
 
             manager.Settings.OperationTimeout = _options.RemoteOperationTimeout;
 
