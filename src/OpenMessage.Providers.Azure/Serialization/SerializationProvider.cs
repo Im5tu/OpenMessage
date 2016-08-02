@@ -39,12 +39,17 @@ namespace OpenMessage.Providers.Azure.Serialization
             return deserializer.Deserialize<T>(entity.GetBody<Stream>());
         }
 
-        public Stream Serialize<T>(T entity)
+        public BrokeredMessage Serialize<T>(T entity)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            return _defaultSerializer.Serialize(entity);
+            var messageStream = _defaultSerializer.Serialize(entity);
+
+            return new BrokeredMessage(messageStream)
+            {
+                ContentType = _defaultSerializer.TypeName
+            };
         }
     }
 }
