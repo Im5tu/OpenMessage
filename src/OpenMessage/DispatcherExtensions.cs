@@ -10,7 +10,7 @@ namespace OpenMessage
             if (dispatcher == null)
                 throw new ArgumentNullException(nameof(dispatcher));
 
-            return dispatcher.DispatchAsync(entity, TimeSpan.MinValue);
+            return dispatcher.DispatchAsync(entity, TimeSpan.Zero);
         }
     }
 }

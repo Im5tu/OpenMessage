@@ -41,8 +41,8 @@ namespace OpenMessage.Providers.Azure.Management
 
             var message = Serialize(entity);
 
-            if (scheduleIn > TimeSpan.MinValue)
-                message.ScheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
+            if (scheduleIn > TimeSpan.Zero)
+                message.ScheduledEnqueueTimeUtc = DateTime.UtcNow.Add(scheduleIn);
 
             await _client.SendAsync(message);
         }
