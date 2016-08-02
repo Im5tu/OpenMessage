@@ -22,12 +22,15 @@ namespace OpenMessage.Providers.Azure.Management
 
         protected void AddCallback(Action<T> callback)
         {
+            // TODO :: argument checking
             _callbacks.Add(callback);
         }
 
+        // TODO :: argument checking
         private T Deserialize(BrokeredMessage message) => _provider.Deserialize<T>(message);
         protected void OnMessage(BrokeredMessage message)
         {
+            // TODO :: argument checking
             var entity = Deserialize(message);
             foreach (var callback in _callbacks)
                 callback(entity);

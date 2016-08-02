@@ -9,7 +9,7 @@ using ServiceBus = Microsoft.ServiceBus.NamespaceManager;
 
 namespace OpenMessage.Providers.Azure.Management
 {
-    public class NamespaceManager<T> : INamespaceManager<T>
+    internal sealed class NamespaceManager<T> : INamespaceManager<T>
     {
         private readonly ILogger<NamespaceManager<T>> _logger;
         private readonly OpenMessageAzureProviderOptions<T> _options;
@@ -38,6 +38,7 @@ namespace OpenMessage.Providers.Azure.Management
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
 
+            // TODO :: check connection string
             _options = options.Value;
             _logger = logger;
             _queueNamingConvention = queueNamingConvention;
@@ -45,8 +46,10 @@ namespace OpenMessage.Providers.Azure.Management
             _subscriptionNamingConvention = subscriptionNamingConvention;
         }
 
+        // TODO :: Make receive mode configurable
         public QueueClient CreateQueueClient() => QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
         public TopicClient CreateTopicClient() => TopicClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>());
+        // TODO :: Make receive mode configurable
         public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
 
         public async Task ProvisionQueueAsync()
@@ -55,6 +58,7 @@ namespace OpenMessage.Providers.Azure.Management
 
             var manager = CreateServiceBusManager();
 
+            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.QueueExistsAsync(queueName)))
             {
                 _logger.LogDebug($"Provisioning queue: '{queueName}'");
@@ -92,6 +96,7 @@ namespace OpenMessage.Providers.Azure.Management
 
             await ProvisionTopicAsync(manager, topicName);
 
+            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.SubscriptionExistsAsync(topicName, subscriptionName)))
             {
                 _logger.LogDebug($"Provisioning subscription: '{topicName}/{subscriptionName}'");
@@ -122,6 +127,7 @@ namespace OpenMessage.Providers.Azure.Management
         
         private async Task ProvisionTopicAsync(ServiceBus manager, string topicName)
         {
+            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.TopicExistsAsync(topicName)))
             {
                 _logger.LogDebug($"Provisioning topic: '{topicName}'");

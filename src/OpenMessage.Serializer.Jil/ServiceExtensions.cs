@@ -1,8 +1,9 @@
 ﻿using Jil;
 using Microsoft.Extensions.DependencyInjection;
+using OpenMessage.Serializer.Jil;
 using System;
 
-namespace OpenMessage.Serializer.Jil
+namespace OpenMessage
 {
     public static class ServiceExtensions
     {

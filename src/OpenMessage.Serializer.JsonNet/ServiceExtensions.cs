@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OpenMessage.Serializer.JsonNet;
 using System;
 
-namespace OpenMessage.Serializer.JsonNet
+namespace OpenMessage
 {
     public static class ServiceExtensions
     {

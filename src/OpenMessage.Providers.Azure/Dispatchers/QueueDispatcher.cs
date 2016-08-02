@@ -8,12 +8,12 @@ namespace OpenMessage.Providers.Azure.Dispatchers
     {
         private readonly IQueueClient<T> _client;
 
-        public QueueDispatcher(IQueueFactory<T> topicFactory)
+        public QueueDispatcher(IQueueFactory<T> queueFactory)
         {
-            if (topicFactory == null)
-                throw new ArgumentNullException(nameof(topicFactory));
+            if (queueFactory == null)
+                throw new ArgumentNullException(nameof(queueFactory));
 
-            _client = topicFactory.Create();
+            _client = queueFactory.Create();
         }
 
         public Task DispatchAsync(T entity, TimeSpan scheduleIn) => _client.SendAsync(entity, scheduleIn);

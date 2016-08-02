@@ -8,7 +8,8 @@ namespace OpenMessage.Providers.Azure.Management
         private readonly INamespaceManager<T> _namespaceManager;
         private readonly ISerializationProvider _serializationProvider;
 
-        public SubscriptionFactory(INamespaceManager<T> namespaceManager, ISerializationProvider serializationProvider)
+        public SubscriptionFactory(INamespaceManager<T> namespaceManager,
+            ISerializationProvider serializationProvider)
         {
             if (namespaceManager == null)
                 throw new ArgumentNullException(nameof(namespaceManager));

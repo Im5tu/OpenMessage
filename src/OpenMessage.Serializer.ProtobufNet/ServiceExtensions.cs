@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using OpenMessage.Serializer.ProtobufNet;
 using System;
 
-namespace OpenMessage.Serializer.ProtobufNet
+namespace OpenMessage
 {
     public static class ServiceExtensions
     {

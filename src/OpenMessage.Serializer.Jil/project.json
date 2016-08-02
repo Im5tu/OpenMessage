@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0",
+  "version": "0.0.1",
   "title": "OpenMessage.Serializer.Jil",
   "authors": [ "Im5tu", "Stuart Blackler" ],
   "description": "A JIL serializer for OpenMessage",

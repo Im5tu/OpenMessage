@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0",
+  "version": "0.0.1",
   "title": "OpenMessage.Serializer.JsonNet",
   "authors": [ "Im5tu", "Stuart Blackler" ],
   "description": "A Json.Net serializer for OpenMessage",

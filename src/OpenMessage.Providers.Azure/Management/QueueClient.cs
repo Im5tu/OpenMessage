@@ -26,6 +26,7 @@ namespace OpenMessage.Providers.Azure.Management
         {
             if (_client == null)
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                // TODO :: what to do if client creation fails? 
                 CreateClient().ContinueWith(tsk => _client.OnMessage(OnMessage), TaskContinuationOptions.OnlyOnRanToCompletion);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -34,6 +35,7 @@ namespace OpenMessage.Providers.Azure.Management
 
         public async Task SendAsync(T entity, TimeSpan scheduleIn)
         {
+            // TODO :: argument check
             if (_client == null)
                 await CreateClient();
 
@@ -47,6 +49,7 @@ namespace OpenMessage.Providers.Azure.Management
 
         private async Task CreateClient()
         {
+            // TODO :: early exit
             using (await _mutex.LockAsync())
             {
                 if (_client == null)

@@ -9,7 +9,7 @@ using OpenMessage.Providers.Azure.Observables;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
 
-namespace OpenMessage.Providers.Azure
+namespace OpenMessage
 {
     public static class ServiceExtensions
     {
