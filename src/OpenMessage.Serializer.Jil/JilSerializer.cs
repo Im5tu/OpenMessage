@@ -1,5 +1,4 @@
 ﻿using Jil;
-using OpenTelemetry;
 using System;
 using System.IO;
 using System.Text;
@@ -10,19 +9,14 @@ namespace OpenMessage.Serializer.Jil
     public class JilSerializer : ISerializer
     {
         private readonly JilOptions _settings;
-        private readonly ITelemetryContext _telemetry;
 
         public string TypeName => "application/json";
 
-        public JilSerializer(ITelemetryContext telemetry, JilOptions options)
+        public JilSerializer(JilOptions options)
         {
-            if (telemetry == null)
-                throw new ArgumentNullException(nameof(telemetry));
-
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
 
-            _telemetry = telemetry;
             _settings = options;
         }
 
@@ -32,7 +26,6 @@ namespace OpenMessage.Serializer.Jil
                 throw new ArgumentNullException(nameof(entity));
 
             using (var streamReader = new StreamReader(entity))
-            using (_telemetry.RecordDuration($"{nameof(JilSerializer)}.{nameof(Deserialize)}"))
                 return JSON.Deserialize<T>(streamReader.ReadToEnd(), _settings);
         }
 
@@ -41,8 +34,7 @@ namespace OpenMessage.Serializer.Jil
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            using (_telemetry.RecordDuration($"{nameof(JilSerializer)}.{nameof(Deserialize)}"))
-                return new MemoryStream(Encoding.UTF8.GetBytes(JSON.Serialize(entity, _settings)));
+            return new MemoryStream(Encoding.UTF8.GetBytes(JSON.Serialize(entity, _settings)));
         }
     }
 }
