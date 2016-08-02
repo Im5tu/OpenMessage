@@ -18,16 +18,12 @@ namespace OpenMessage.Providers.Azure.Management
             _provider = provider;
         }
 
-        protected BrokeredMessage Serialize(T entity) => _provider.Serialize(entity);
-
         protected void AddCallback(Action<T> callback)
         {
             // TODO :: argument checking
             _callbacks.Add(callback);
         }
 
-        // TODO :: argument checking
-        private T Deserialize(BrokeredMessage message) => _provider.Deserialize<T>(message);
         protected void OnMessage(BrokeredMessage message)
         {
             // TODO :: argument checking
@@ -36,6 +32,11 @@ namespace OpenMessage.Providers.Azure.Management
                 callback(entity);
         }
 
+        protected BrokeredMessage Serialize(T entity) => _provider.Serialize(entity);
+
+        // TODO :: argument checking
+        private T Deserialize(BrokeredMessage message) => _provider.Deserialize<T>(message);
+        
         public void Dispose()
         {
             Dispose(true);
