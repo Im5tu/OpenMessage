@@ -27,16 +27,20 @@ namespace OpenMessage.Providers.Azure.Management
 
         protected void AddCallback(Action<T> callback)
         {
-            // TODO :: argument checking
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+            
             _callbacks.Add(callback);
         }
 
         protected void OnMessage(BrokeredMessage message)
         {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+
             try
             {
-                // TODO :: argument checking
-                var entity = Deserialize(message);
+                var entity = _provider.Deserialize<T>(message);
                 foreach (var callback in _callbacks)
                     callback(entity);
             }
@@ -51,10 +55,13 @@ namespace OpenMessage.Providers.Azure.Management
             }
         }
 
-        protected BrokeredMessage Serialize(T entity) => _provider.Serialize(entity);
+        protected BrokeredMessage Serialize(T entity)
+        {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
-        // TODO :: argument checking
-        private T Deserialize(BrokeredMessage message) => _provider.Deserialize<T>(message);
+            return _provider.Serialize(entity);
+        }
         
         public void Dispose()
         {
