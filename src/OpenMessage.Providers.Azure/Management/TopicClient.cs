@@ -9,7 +9,7 @@ namespace OpenMessage.Providers.Azure.Management
     internal sealed class TopicClient<T> : ClientBase<T>, ITopicClient<T>
     {
         private readonly INamespaceManager<T> _namespaceManager;
-        private readonly Task _clientCreationTask;
+        private Task _clientCreationTask;
         private AzureClient _client;
 
         public TopicClient(INamespaceManager<T> namespaceManager,
@@ -26,16 +26,30 @@ namespace OpenMessage.Providers.Azure.Management
 
         public async Task SendAsync(T entity, TimeSpan scheduleIn)
         {
-            // TODO :: argument check
-            if (!_clientCreationTask.IsCompleted)
-                await _clientCreationTask;
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (scheduleIn < TimeSpan.Zero)
+                throw new ArgumentException("You cannot schedule a message to arrive in the past; time travel isn't a thing yet.");
+
+            await EnsureClientIsReady();
 
             var message = Serialize(entity);
-
             if (scheduleIn > TimeSpan.MinValue)
                 message.ScheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
 
             await _client.SendAsync(message);
+        }
+
+        private async Task EnsureClientIsReady()
+        {
+            if (_clientCreationTask.IsCompleted)
+                return;
+
+            if (_clientCreationTask.IsFaulted || _clientCreationTask.IsCanceled)
+                _clientCreationTask = CreateClient();
+
+            await _clientCreationTask;
         }
 
         private async Task CreateClient()
