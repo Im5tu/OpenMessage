@@ -27,11 +27,13 @@ namespace OpenMessage.Providers.Azure.Management
 
         public void RegisterCallback(Action<T> callback)
         {
-            lock(_client)
-                if (CallbackCount == 0)
-                    _client.Value.OnMessage(OnMessage);
+            Task.Run(() => { 
+                lock(_client)
+                    if (CallbackCount == 0)
+                        _client.Value.OnMessage(OnMessage);
 
-            AddCallback(callback);
+                AddCallback(callback);
+            });
         }
 
         public async Task SendAsync(T entity, TimeSpan scheduleIn)

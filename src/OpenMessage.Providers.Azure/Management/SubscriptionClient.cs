@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
+using System.Threading.Tasks;
 using AzureClient = Microsoft.ServiceBus.Messaging.SubscriptionClient;
 
 namespace OpenMessage.Providers.Azure.Management
@@ -26,11 +27,13 @@ namespace OpenMessage.Providers.Azure.Management
 
         public void RegisterCallback(Action<T> callback)
         {
-            lock (_client)
-                if (CallbackCount == 0)
-                    _client.Value.OnMessage(OnMessage);
+            Task.Run(() => {
+                lock (_client)
+                    if (CallbackCount == 0)
+                        _client.Value.OnMessage(OnMessage);
 
-            AddCallback(callback);
+                AddCallback(callback);
+            });
         }
 
         public override void Dispose(bool disposing)
