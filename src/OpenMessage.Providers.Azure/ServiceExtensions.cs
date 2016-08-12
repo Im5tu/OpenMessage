@@ -8,6 +8,7 @@ using OpenMessage.Providers.Azure.Management;
 using OpenMessage.Providers.Azure.Observables;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
+using System.Linq;
 
 namespace OpenMessage
 {
@@ -32,7 +33,7 @@ namespace OpenMessage
 
             services.AddBroker<T>();
 
-            return services.AddBaseServices<T>().AddQueue<T>().AddScoped<IObservable<T>, QueueObservable<T>>();
+            return services.AddQueue<T>().AddScoped<IObservable<T>, QueueObservable<T>>();
         }                                                                  
         public static IServiceCollection AddQueueObservable<T>(this IServiceCollection services, Action<T> callback)
         {
@@ -52,7 +53,7 @@ namespace OpenMessage
 
             services.AddBroker<T>();
 
-            return services.AddBaseServices<T>().AddSubscription<T>().AddScoped<IObservable<T>, SubscriptionObservable<T>>();
+            return services.AddSubscription<T>().AddScoped<IObservable<T>, SubscriptionObservable<T>>();
         }
         public static IServiceCollection AddSubscriptionObservable<T>(this IServiceCollection services, Action<T> callback)
         {
@@ -83,27 +84,29 @@ namespace OpenMessage
 
         private static IServiceCollection AddQueue<T>(this IServiceCollection services)
         {
-            return services.AddScoped<IQueueFactory<T>, QueueFactory<T>>();
+            return services.AddBaseServices<T>().AddScoped<IQueueFactory<T>, QueueFactory<T>>();
         }
         private static IServiceCollection AddTopic<T>(this IServiceCollection services)
         {
-            return services.AddScoped<ITopicFactory<T>, TopicFactory<T>>();
+            return services.AddBaseServices<T>().AddScoped<ITopicFactory<T>, TopicFactory<T>>();
         }
         private static IServiceCollection AddSubscription<T>(this IServiceCollection services)
         {
-            return services.AddTopic<T>().AddScoped<ISubscriptionFactory<T>, SubscriptionFactory<T>>();
+            return services.AddBaseServices<T>().AddTopic<T>().AddScoped<ISubscriptionFactory<T>, SubscriptionFactory<T>>();
         }
         private static IServiceCollection AddBroker<T>(this IServiceCollection services)
         {
-            services.AddScoped<IBroker, MessageBroker<T>>();
-            
-            return services;
+            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ServiceType == typeof(MessageBroker<T>)))
+                return services;
+
+            return services.AddScoped<IBroker, MessageBroker<T>>();
         }
         private static IServiceCollection AddBaseServices<T>(this IServiceCollection services)
         {
             services.TryAddScoped<IConfigureOptions<OpenMessageAzureProviderOptions<T>>, OpenMessageAzureProviderOptionsConfigurator<T>>();
+            services.TryAddScoped<INamespaceManager<T>, NamespaceManager<T>>();
 
-            return services.AddScoped<INamespaceManager<T>, NamespaceManager<T>>();
+            return services;
         }
     }
 }
