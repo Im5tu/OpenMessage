@@ -45,5 +45,25 @@ namespace OpenMessage.Providers.Azure.Configuration
         ///     Gets or sets the receive mode for the message. Change with caution!!!
         /// </summary>
         public ReceiveMode ReceiveMode { get; set; } = ReceiveMode.PeekLock;
+        /// <summary>
+        ///     Gets or sets the transport to use for the connection to Azure. Default: NetMessaging
+        /// </summary>
+        public Transport Transport { get; set; } = Transport.NetMessaging;
+        /// <summary>
+        ///     Gets or Sets the Azure batch flushing mechanism. Default: 20ms
+        /// </summary>
+        public TimeSpan BatchFlushInterval { get; set; } = TimeSpan.FromMilliseconds(20);
+        /// <summary>
+        ///     (AMQP ONLY) Gets or sets the maximum frame size
+        /// </summary>
+        public bool EnableLinkRedirect { get; set; } = true;
+        /// <summary>
+        ///     (AMQP ONLY) Gets or sets the maximum frame size
+        /// </summary>
+        public int MaximumFrameSize { get; set; } = 1024;
+        /// <summary>
+        ///     (AMQP ONLY) Gets a value that indicates whether the SSL stream uses a custom binding element
+        /// </summary>
+        public bool UseSslStreamSecurity { get; set; } = true;
     }
 }

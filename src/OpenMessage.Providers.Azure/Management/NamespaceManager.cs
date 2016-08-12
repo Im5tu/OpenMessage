@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using OpenMessage.Providers.Azure.Configuration;
 using OpenMessage.Providers.Azure.Conventions;
@@ -161,10 +162,36 @@ namespace OpenMessage.Providers.Azure.Management
         private ServiceBus CreateServiceBusManager()
         {
             var manager = ServiceBus.CreateFromConnectionString(_options.ConnectionString);
-
             manager.Settings.OperationTimeout = _options.RemoteOperationTimeout;
-
             return manager;
+        }
+        private MessagingFactory CreateMessagingFactory()
+        {
+            var nm = CreateServiceBusManager();
+            return MessagingFactory.Create(nm.Address, new MessagingFactorySettings
+            {
+                AmqpTransportSettings = new Microsoft.ServiceBus.Messaging.Amqp.AmqpTransportSettings
+                {
+                    BatchFlushInterval = _options.BatchFlushInterval,
+                    EnableLinkRedirect = _options.EnableLinkRedirect,
+                    MaxFrameSize = _options.MaximumFrameSize,
+                    UseSslStreamSecurity = _options.UseSslStreamSecurity
+                },
+                OperationTimeout = _options.RemoteOperationTimeout,
+                TokenProvider = nm.Settings.TokenProvider,
+                TransportType = _options.Transport == Transport.Amqp ? TransportType.Amqp : TransportType.NetMessaging,
+                NetMessagingTransportSettings = new NetMessagingTransportSettings
+                {
+                    BatchFlushInterval = _options.BatchFlushInterval
+                }
+            });
+        }
+
+        private class NamespaceDetails
+        {
+            internal string Namespace { get; set; }
+            internal string Name { get; set; }
+            internal string Key { get; set; }
         }
     }
 }
