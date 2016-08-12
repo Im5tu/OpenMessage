@@ -4,6 +4,7 @@ using Microsoft.ServiceBus.Messaging;
 using OpenMessage.Providers.Azure.Configuration;
 using OpenMessage.Providers.Azure.Conventions;
 using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using ServiceBus = Microsoft.ServiceBus.NamespaceManager;
 
@@ -11,6 +12,7 @@ namespace OpenMessage.Providers.Azure.Management
 {
     internal sealed class NamespaceManager<T> : INamespaceManager<T>
     {
+        private readonly ConcurrentDictionary<string, Task> _pendingOperations = new ConcurrentDictionary<string, Task>();
         private readonly ILogger<NamespaceManager<T>> _logger;
         private readonly OpenMessageAzureProviderOptions<T> _options;
         private readonly IQueueNamingConvention _queueNamingConvention;
@@ -52,12 +54,12 @@ namespace OpenMessage.Providers.Azure.Management
         public TopicClient CreateTopicClient() => TopicClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>());
         public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), _options.ReceiveMode);
 
-        public async Task ProvisionQueueAsync()
+        public Task ProvisionQueueAsync() => _pendingOperations.GetOrAdd(_queueNamingConvention.GenerateName<T>(), key => ProvisionQueueAsync(CreateServiceBusManager(), key));
+        public Task ProvisionSubscriptionAsync() => _pendingOperations.GetOrAdd(_topicNamingConvention.GenerateName<T>(), key => ProvisionSubscriptionAsync(CreateServiceBusManager(), key, _subscriptionNamingConvention.GenerateName<T>()));
+        public Task ProvisionTopicAsync() => _pendingOperations.GetOrAdd(_topicNamingConvention.GenerateName<T>(), key => ProvisionTopicAsync(CreateServiceBusManager(), key));
+
+        private async Task ProvisionQueueAsync(ServiceBus manager, string queueName)
         {
-            var queueName = _queueNamingConvention.GenerateName<T>();
-
-            var manager = CreateServiceBusManager();
-
             // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.QueueExistsAsync(queueName)))
             {
@@ -86,15 +88,12 @@ namespace OpenMessage.Providers.Azure.Management
             }
             else
                 _logger.LogDebug($"Queue '{queueName}' already exists, no need to provision.");
+
+            RemoveOperation(queueName);
         }
-        public async Task ProvisionSubscriptionAsync()
+        private async Task ProvisionSubscriptionAsync(ServiceBus manager, string topicName, string subscriptionName)
         {
-            var topicName = _topicNamingConvention.GenerateName<T>();
-            var subscriptionName = _subscriptionNamingConvention.GenerateName<T>();
-
-            var manager = CreateServiceBusManager();
-
-            await ProvisionTopicAsync(manager, topicName);
+            await ProvisionTopicAsync(manager, topicName, true);
 
             // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.SubscriptionExistsAsync(topicName, subscriptionName)))
@@ -122,10 +121,10 @@ namespace OpenMessage.Providers.Azure.Management
             }
             else
                 _logger.LogDebug($"Subscription '{topicName}/{subscriptionName}' already exists, no need to provision.");
+
+            RemoveOperation(topicName);
         }
-        public Task ProvisionTopicAsync() => ProvisionTopicAsync(CreateServiceBusManager(), _topicNamingConvention.GenerateName<T>());
-        
-        private async Task ProvisionTopicAsync(ServiceBus manager, string topicName)
+        private async Task ProvisionTopicAsync(ServiceBus manager, string topicName, bool keepOperationPending = false)
         {
             // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.TopicExistsAsync(topicName)))
@@ -153,6 +152,14 @@ namespace OpenMessage.Providers.Azure.Management
             }
             else
                 _logger.LogDebug($"Topic '{topicName}' already exists, no need to provision.");
+
+            if(!keepOperationPending)
+                RemoveOperation(topicName);
+        }
+        private void RemoveOperation(string key)
+        {
+            Task ughhh;
+            _pendingOperations.TryRemove(key, out ughhh);
         }
         private ServiceBus CreateServiceBusManager()
         {
