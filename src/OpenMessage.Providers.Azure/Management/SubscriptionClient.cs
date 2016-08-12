@@ -1,4 +1,5 @@
-﻿using OpenMessage.Providers.Azure.Serialization;
+﻿using Microsoft.Extensions.Logging;
+using OpenMessage.Providers.Azure.Serialization;
 using System;
 using System.Threading.Tasks;
 using AzureClient = Microsoft.ServiceBus.Messaging.SubscriptionClient;
@@ -12,8 +13,9 @@ namespace OpenMessage.Providers.Azure.Management
         private AzureClient _client;
 
         public SubscriptionClient(INamespaceManager<T> namespaceManager,
-            ISerializationProvider serializationProvider)
-            : base(serializationProvider)
+            ISerializationProvider serializationProvider,
+            ILogger<ClientBase<T>> logger)
+            : base(serializationProvider, logger)
         {
             if (namespaceManager == null)
                 throw new ArgumentNullException(nameof(namespaceManager));
