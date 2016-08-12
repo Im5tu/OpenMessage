@@ -46,11 +46,9 @@ namespace OpenMessage.Providers.Azure.Management
             _subscriptionNamingConvention = subscriptionNamingConvention;
         }
 
-        // TODO :: Make receive mode configurable
-        public QueueClient CreateQueueClient() => QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
+        public QueueClient CreateQueueClient() => QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), _options.ReceiveMode);
         public TopicClient CreateTopicClient() => TopicClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>());
-        // TODO :: Make receive mode configurable
-        public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), ReceiveMode.PeekLock);
+        public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), _options.ReceiveMode);
 
         public async Task ProvisionQueueAsync()
         {

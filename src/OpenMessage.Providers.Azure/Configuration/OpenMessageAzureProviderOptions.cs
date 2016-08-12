@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.ServiceBus.Messaging;
+using System;
 
 namespace OpenMessage.Providers.Azure.Configuration
 {
@@ -40,5 +41,9 @@ namespace OpenMessage.Providers.Azure.Configuration
         ///     Gets or sets the default message time to live value. This is the duration after which the message expires, starting from when the message is sent to Service Bus.
         /// </summary>
         public TimeSpan MessageTimeToLive { get; set; } = TimeSpan.MaxValue;
+        /// <summary>
+        ///     Gets or sets the receive mode for the message. Change with caution!!!
+        /// </summary>
+        public ReceiveMode ReceiveMode { get; set; } = ReceiveMode.PeekLock;
     }
 }
