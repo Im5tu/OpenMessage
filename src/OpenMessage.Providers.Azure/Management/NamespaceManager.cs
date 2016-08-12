@@ -38,7 +38,9 @@ namespace OpenMessage.Providers.Azure.Management
             if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
 
-            // TODO :: check connection string
+            if (string.IsNullOrWhiteSpace(options.Value?.ConnectionString))
+                throw new ArgumentException($"The connection string has not been set for the type: {typeof(T).GetFriendlyName()}");
+
             _options = options.Value;
             _logger = logger;
             _queueNamingConvention = queueNamingConvention;
