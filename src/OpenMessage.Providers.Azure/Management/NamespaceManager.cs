@@ -60,7 +60,6 @@ namespace OpenMessage.Providers.Azure.Management
 
         private async Task ProvisionQueueAsync(ServiceBus manager, string queueName)
         {
-            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.QueueExistsAsync(queueName)))
             {
                 _logger.LogDebug($"Provisioning queue: '{queueName}'");
@@ -95,7 +94,6 @@ namespace OpenMessage.Providers.Azure.Management
         {
             await ProvisionTopicAsync(manager, topicName, true);
 
-            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.SubscriptionExistsAsync(topicName, subscriptionName)))
             {
                 _logger.LogDebug($"Provisioning subscription: '{topicName}/{subscriptionName}'");
@@ -126,7 +124,6 @@ namespace OpenMessage.Providers.Azure.Management
         }
         private async Task ProvisionTopicAsync(ServiceBus manager, string topicName, bool keepOperationPending = false)
         {
-            // TODO :: Prevent multiple attempts at provisioning with the same name
             if (!(await manager.TopicExistsAsync(topicName)))
             {
                 _logger.LogDebug($"Provisioning topic: '{topicName}'");
