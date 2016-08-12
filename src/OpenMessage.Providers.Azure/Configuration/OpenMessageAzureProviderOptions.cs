@@ -12,7 +12,7 @@ namespace OpenMessage.Providers.Azure.Configuration
         /// <summary>
         ///     The timeout period for operations that occur in Azure.
         /// </summary>
-        public TimeSpan RemoteOperationTimeout { get; set; } = TimeSpan.FromSeconds(5);
+        public TimeSpan RemoteOperationTimeout { get; set; } = TimeSpan.FromSeconds(15);
         /// <summary>
         ///     Sets the idle interval after which the queue/topic/subscription is automatically deleted. The minimum duration is 5 minutes.
         /// </summary>
