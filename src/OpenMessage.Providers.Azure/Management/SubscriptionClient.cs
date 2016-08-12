@@ -1,16 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
-using System.Threading.Tasks;
 using AzureClient = Microsoft.ServiceBus.Messaging.SubscriptionClient;
 
 namespace OpenMessage.Providers.Azure.Management
 {
     internal sealed class SubscriptionClient<T> : ClientBase<T>, ISubscriptionClient<T>
     {
-        private readonly INamespaceManager<T> _namespaceManager;
-        private readonly Task _clientCreationTask;
-        private AzureClient _client;
+        private AwaitableLazy<AzureClient> _client;
 
         public SubscriptionClient(INamespaceManager<T> namespaceManager,
             ISerializationProvider serializationProvider,
@@ -20,22 +17,26 @@ namespace OpenMessage.Providers.Azure.Management
             if (namespaceManager == null)
                 throw new ArgumentNullException(nameof(namespaceManager));
 
-            _namespaceManager = namespaceManager;
-            _clientCreationTask = CreateClient();
-        }
-
-        public void RegisterCallback(Action<T> callback) => AddCallback(callback);
-
-        private async Task CreateClient()
-        {
-            if (_client == null)
+            _client = new AwaitableLazy<AzureClient>(async () =>
             {
-                await _namespaceManager.ProvisionSubscriptionAsync();
-                _client = _namespaceManager.CreateSubscriptionClient();
-                _client.OnMessage(OnMessage);
-            }
+                await namespaceManager.ProvisionQueueAsync();
+                return namespaceManager.CreateSubscriptionClient();
+            });
         }
 
-        public override void Dispose(bool disposing) => _client?.Close();
+        public void RegisterCallback(Action<T> callback)
+        {
+            lock (_client)
+                if (CallbackCount == 0)
+                    _client.Value.OnMessage(OnMessage);
+
+            AddCallback(callback);
+        }
+
+        public override void Dispose(bool disposing)
+        {
+            if (_client.IsValueCreated)
+                _client.Value?.Close();
+        }
     }
 }

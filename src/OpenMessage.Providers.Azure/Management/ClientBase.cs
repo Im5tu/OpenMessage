@@ -12,6 +12,8 @@ namespace OpenMessage.Providers.Azure.Management
         private readonly ISerializationProvider _provider;
         private readonly ILogger<ClientBase<T>> _logger;
 
+        protected int CallbackCount => _callbacks.Count;
+
         protected ClientBase(ISerializationProvider provider,
             ILogger<ClientBase<T>> logger)
         {
@@ -29,7 +31,7 @@ namespace OpenMessage.Providers.Azure.Management
         {
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
-            
+           
             _callbacks.Add(callback);
         }
 

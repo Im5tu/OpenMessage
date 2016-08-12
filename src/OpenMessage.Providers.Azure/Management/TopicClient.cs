@@ -8,9 +8,7 @@ namespace OpenMessage.Providers.Azure.Management
 {
     internal sealed class TopicClient<T> : ClientBase<T>, ITopicClient<T>
     {
-        private readonly INamespaceManager<T> _namespaceManager;
-        private Task _clientCreationTask;
-        private AzureClient _client;
+        private AwaitableLazy<AzureClient> _client;
 
         public TopicClient(INamespaceManager<T> namespaceManager,
             ISerializationProvider serializationProvider,
@@ -20,8 +18,11 @@ namespace OpenMessage.Providers.Azure.Management
             if (namespaceManager == null)
                 throw new ArgumentNullException(nameof(namespaceManager));
 
-            _namespaceManager = namespaceManager;
-            _clientCreationTask = CreateClient();
+            _client = new AwaitableLazy<AzureClient>(async () =>
+            {
+                await namespaceManager.ProvisionQueueAsync();
+                return namespaceManager.CreateTopicClient();
+            });
         }
 
         public async Task SendAsync(T entity, TimeSpan scheduleIn)
@@ -32,35 +33,17 @@ namespace OpenMessage.Providers.Azure.Management
             if (scheduleIn < TimeSpan.Zero)
                 throw new ArgumentException("You cannot schedule a message to arrive in the past; time travel isn't a thing yet.");
 
-            await EnsureClientIsReady();
-
             var message = Serialize(entity);
             if (scheduleIn > TimeSpan.MinValue)
                 message.ScheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
 
-            await _client.SendAsync(message);
+            await (await _client).SendAsync(message);
         }
 
-        private async Task EnsureClientIsReady()
+        public override void Dispose(bool disposing)
         {
-            if (_clientCreationTask.IsCompleted)
-                return;
-
-            if (_clientCreationTask.IsFaulted || _clientCreationTask.IsCanceled)
-                _clientCreationTask = CreateClient();
-
-            await _clientCreationTask;
+            if (_client.IsValueCreated)
+                _client.Value?.Close();
         }
-
-        private async Task CreateClient()
-        {
-            if (_client == null)
-            {
-                await _namespaceManager.ProvisionTopicAsync();
-                _client = _namespaceManager.CreateTopicClient();
-            }
-        }
-
-        public override void Dispose(bool disposing) => _client?.Close();
     }
 }
