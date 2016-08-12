@@ -51,9 +51,19 @@ namespace OpenMessage.Providers.Azure.Management
             _subscriptionNamingConvention = subscriptionNamingConvention;
         }
 
-        public QueueClient CreateQueueClient() => QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), _options.ReceiveMode);
+        public QueueClient CreateQueueClient()
+        {
+            var client = QueueClient.CreateFromConnectionString(_options.ConnectionString, _queueNamingConvention.GenerateName<T>(), _options.ReceiveMode);
+            client.PrefetchCount = _options.PrefetchCount;
+            return client;
+        }
         public TopicClient CreateTopicClient() => TopicClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>());
-        public SubscriptionClient CreateSubscriptionClient() => SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), _options.ReceiveMode);
+        public SubscriptionClient CreateSubscriptionClient()
+        {
+            var client = SubscriptionClient.CreateFromConnectionString(_options.ConnectionString, _topicNamingConvention.GenerateName<T>(), _subscriptionNamingConvention.GenerateName<T>(), _options.ReceiveMode);
+            client.PrefetchCount = _options.PrefetchCount;
+            return client;
+        }
 
         public Task ProvisionQueueAsync() => _pendingOperations.GetOrAdd(_queueNamingConvention.GenerateName<T>(), key => ProvisionQueueAsync(CreateServiceBusManager(), key));
         public Task ProvisionSubscriptionAsync() => _pendingOperations.GetOrAdd(_topicNamingConvention.GenerateName<T>(), key => ProvisionSubscriptionAsync(CreateServiceBusManager(), key, _subscriptionNamingConvention.GenerateName<T>()));

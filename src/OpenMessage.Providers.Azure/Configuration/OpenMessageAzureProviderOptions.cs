@@ -65,5 +65,9 @@ namespace OpenMessage.Providers.Azure.Configuration
         ///     (AMQP ONLY) Gets a value that indicates whether the SSL stream uses a custom binding element
         /// </summary>
         public bool UseSslStreamSecurity { get; set; } = true;
+        /// <summary>
+        ///     Gets or sets the number of messages that the queue receiver can simultaneously request.
+        /// </summary>
+        public int PrefetchCount { get; set; } = Environment.ProcessorCount * 4;
     }
 }
