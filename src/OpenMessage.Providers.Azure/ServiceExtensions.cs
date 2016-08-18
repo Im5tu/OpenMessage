@@ -79,7 +79,7 @@ namespace OpenMessage
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            return services.AddTopic<T>().AddScoped<IDispatcher<T>, QueueDispatcher<T>>();
+            return services.AddTopic<T>().AddScoped<IDispatcher<T>, TopicDispatcher<T>>();
         }
 
         private static IServiceCollection AddQueue<T>(this IServiceCollection services)
