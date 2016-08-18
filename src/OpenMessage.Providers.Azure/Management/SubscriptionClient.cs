@@ -20,7 +20,7 @@ namespace OpenMessage.Providers.Azure.Management
 
             _client = new AwaitableLazy<AzureClient>(async () =>
             {
-                await namespaceManager.ProvisionTopicAsync();
+                await namespaceManager.ProvisionSubscriptionAsync();
                 return namespaceManager.CreateSubscriptionClient();
             });
         }
