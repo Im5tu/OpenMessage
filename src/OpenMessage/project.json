@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "title": "OpenMessage",
   "authors": [ "Im5tu", "Stuart Blackler" ],
   "description": "OpenMessage is an easy to use abstraction for sending and receiving messages between applications.",
@@ -26,7 +26,7 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": ""
+        "System.Runtime": { "type": "build" }
       }
     }
   }
