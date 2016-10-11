@@ -48,7 +48,16 @@ namespace OpenMessage.Providers.Azure.Management
             if (scheduleIn > TimeSpan.Zero)
                 message.ScheduledEnqueueTimeUtc = DateTime.UtcNow.Add(scheduleIn);
 
-            await (await _client).SendAsync(message);
+            Logger.LogInformation($"Sending message of type: {TypeName}");
+            try
+            {
+                await (await _client).SendAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error sending message of type: {TypeName}; Error: {ex.Message}", ex);
+                throw;
+            }
         }
 
         public override void Dispose(bool disposing)

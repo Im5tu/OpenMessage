@@ -10,9 +10,10 @@ namespace OpenMessage.Providers.Azure.Management
     {
         private readonly List<Action<T>> _callbacks = new List<Action<T>>();
         private readonly ISerializationProvider _provider;
-        private readonly ILogger<ClientBase<T>> _logger;
 
         protected int CallbackCount => _callbacks.Count;
+        protected ILogger<ClientBase<T>> Logger { get; }
+        protected string TypeName { get; } = typeof(T).GetFriendlyName();
 
         protected ClientBase(ISerializationProvider provider,
             ILogger<ClientBase<T>> logger)
@@ -24,7 +25,11 @@ namespace OpenMessage.Providers.Azure.Management
                 throw new ArgumentNullException(nameof(logger));
 
             _provider = provider;
-            _logger = logger;
+            Logger = logger;
+        }
+        ~ClientBase()
+        {
+            Dispose(false);
         }
 
         protected void AddCallback(Action<T> callback)
@@ -48,7 +53,7 @@ namespace OpenMessage.Providers.Azure.Management
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex.Message, ex);
+                Logger.LogError(ex.Message, ex);
                 message.Abandon(new Dictionary<string, object>
                 {
                     { "Exception", ex.Message }
@@ -68,6 +73,7 @@ namespace OpenMessage.Providers.Azure.Management
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         public virtual void Dispose(bool disposing)
         {
