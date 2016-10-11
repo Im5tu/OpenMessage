@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AzureClient = Microsoft.ServiceBus.Messaging.QueueClient;
 
@@ -8,16 +10,22 @@ namespace OpenMessage.Providers.Azure.Management
 {
     internal sealed class QueueClient<T> : ClientBase<T>, IQueueClient<T>
     {
-        private AwaitableLazy<AzureClient> _client;
+        private readonly AwaitableLazy<AzureClient> _client;
+        private readonly IMessageExtension<T>[] _extensions;
 
         public QueueClient(INamespaceManager<T> namespaceManager,
             ISerializationProvider serializationProvider,
-            ILogger<ClientBase<T>> logger)
+            ILogger<ClientBase<T>> logger,
+            IEnumerable<IMessageExtension<T>> extensions)
             : base(serializationProvider, logger)
         {
             if (namespaceManager == null)
                 throw new ArgumentNullException(nameof(namespaceManager));
 
+            if (extensions == null)
+                throw new ArgumentNullException(nameof(extensions));
+
+            _extensions = extensions.ToArray();
             _client = new AwaitableLazy<AzureClient>(async() =>
             {
                 await namespaceManager.ProvisionQueueAsync();
@@ -51,6 +59,9 @@ namespace OpenMessage.Providers.Azure.Management
             Logger.LogInformation($"Sending message of type: {TypeName}");
             try
             {
+                foreach (var extension in _extensions)
+                    extension.Extend(message);
+
                 await (await _client).SendAsync(message);
             }
             catch (Exception ex)
