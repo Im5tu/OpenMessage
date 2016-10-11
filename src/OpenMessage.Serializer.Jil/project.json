@@ -1,5 +1,5 @@
-﻿{
-  "version": "0.0.1",
+{
+  "version": "0.0.2",
   "title": "OpenMessage.Serializer.Jil",
   "authors": [ "Im5tu", "Stuart Blackler" ],
   "description": "A JIL serializer for OpenMessage",
@@ -14,8 +14,8 @@
     }
   },
   "dependencies": {
+    "Jil": "2.14.5",
     "Microsoft.Extensions.Options": "1.0.0",
-    "Jil": "2.14.3",
     "OpenMessage": {
       "target": "project"
     }
