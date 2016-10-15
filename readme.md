@@ -70,6 +70,8 @@ Assuming you want to connect to Azure Service Bus, here is how you configure Ope
 
 ##Serializers
 
+You can add more than one serializer to OpenMessage. In this scenario, all registered serializers are checked to see whether they can deserialize the message. When serializing the last registered serializer is used, service collection provider depending.
+
 - [x] [Json.Net](http://www.nuget.org/packages/OpenMessage.Serializer.JsonNet/)
 - [x] [Jil](http://www.nuget.org/packages/OpenMessage.Serializer.Jil/)
 - [x] [Protobuf](http://www.nuget.org/packages/OpenMessage.Serializer.ProtobufNet/)
