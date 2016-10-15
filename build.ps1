@@ -1,6 +1,9 @@
 #Disable Telemetry
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = 1
 
+#Skip the NuGet package cache generation
+$env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
+
 function FindProjects($path)
 {
     return gci -Filter project.json -Path $path -Recurse
