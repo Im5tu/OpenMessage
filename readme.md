@@ -1,6 +1,8 @@
 #OpenMessage
 
-Latest Build: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/2/badge)
+Master Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/2/badge)
+
+Dev Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/5/badge)
 
 OpenMessage aims to simplify the service bus paradigm by using pre-existing patterns to build an extensible architecture.
 
