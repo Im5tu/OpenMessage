@@ -42,8 +42,10 @@ namespace OpenMessage.Providers.Azure.Management
                 throw new ArgumentException("You cannot schedule a message to arrive in the past; time travel isn't a thing yet.");
 
             var message = Serialize(entity);
-            if (scheduleIn > TimeSpan.MinValue)
+            if (scheduleIn > TimeSpan.Zero)
+            {
                 message.ScheduledEnqueueTimeUtc = DateTime.UtcNow + scheduleIn;
+            }
 
             Logger.LogInformation($"Sending message of type: {TypeName}");
             try
