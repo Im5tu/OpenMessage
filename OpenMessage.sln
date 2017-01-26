@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26020.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8751802-CCE4-4C40-9241-E5E01DBEF627}"
 EndProject
@@ -10,21 +10,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage", "src\OpenMessage\OpenMessage.xproj", "{7D68A283-6D90-4A50-B015-D8C2BB5C7184}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B4E58D4F-40CD-45CA-AC6F-1DF4D9CB9A49}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Tests", "tests\OpenMessage.Tests\OpenMessage.Tests.xproj", "{D5C758B5-055C-41F0-A339-C8E4141076EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage", "src\OpenMessage\OpenMessage.csproj", "{7D68A283-6D90-4A50-B015-D8C2BB5C7184}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Serializer.JsonNet", "src\OpenMessage.Serializer.JsonNet\OpenMessage.Serializer.JsonNet.xproj", "{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Tests", "tests\OpenMessage.Tests\OpenMessage.Tests.csproj", "{D5C758B5-055C-41F0-A339-C8E4141076EB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Serializer.Jil", "src\OpenMessage.Serializer.Jil\OpenMessage.Serializer.Jil.xproj", "{E70C427C-7285-48AC-A13B-D18519463786}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Serializer.JsonNet", "src\OpenMessage.Serializer.JsonNet\OpenMessage.Serializer.JsonNet.csproj", "{3AB720E9-27B4-4A28-9C1F-B89EA1A4257F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Serializer.ProtobufNet", "src\OpenMessage.Serializer.ProtobufNet\OpenMessage.Serializer.ProtobufNet.xproj", "{987E4E03-FF13-496A-9B72-BC2ADF3A35D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Serializer.Jil", "src\OpenMessage.Serializer.Jil\OpenMessage.Serializer.Jil.csproj", "{E70C427C-7285-48AC-A13B-D18519463786}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Providers.Azure", "src\OpenMessage.Providers.Azure\OpenMessage.Providers.Azure.xproj", "{66F710F3-460A-450B-8B07-9CD1476E5CF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Serializer.ProtobufNet", "src\OpenMessage.Serializer.ProtobufNet\OpenMessage.Serializer.ProtobufNet.csproj", "{987E4E03-FF13-496A-9B72-BC2ADF3A35D2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenMessage.Providers.Azure.Tests", "tests\OpenMessage.Providers.Azure.Tests\OpenMessage.Providers.Azure.Tests.xproj", "{48B14E17-6FE3-4B0D-BACC-966D4273C07B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Providers.Azure", "src\OpenMessage.Providers.Azure\OpenMessage.Providers.Azure.csproj", "{66F710F3-460A-450B-8B07-9CD1476E5CF3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Providers.Azure.Tests", "tests\OpenMessage.Providers.Azure.Tests\OpenMessage.Providers.Azure.Tests.csproj", "{48B14E17-6FE3-4B0D-BACC-966D4273C07B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
