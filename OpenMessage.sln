@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Providers.Azure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Providers.Memory", "src\OpenMessage.Providers.Memory\OpenMessage.Providers.Memory.csproj", "{38FA0770-05C2-44FA-BC14-8610E6247FC1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Providers.Memory.Tests", "tests\OpenMessage.Providers.Memory.Tests\OpenMessage.Providers.Memory.Tests.csproj", "{AC88443B-E445-4751-B160-62C74A54F3EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{38FA0770-05C2-44FA-BC14-8610E6247FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38FA0770-05C2-44FA-BC14-8610E6247FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38FA0770-05C2-44FA-BC14-8610E6247FC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC88443B-E445-4751-B160-62C74A54F3EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC88443B-E445-4751-B160-62C74A54F3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC88443B-E445-4751-B160-62C74A54F3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC88443B-E445-4751-B160-62C74A54F3EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,5 +85,6 @@ Global
 		{66F710F3-460A-450B-8B07-9CD1476E5CF3} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
 		{48B14E17-6FE3-4B0D-BACC-966D4273C07B} = {B4E58D4F-40CD-45CA-AC6F-1DF4D9CB9A49}
 		{38FA0770-05C2-44FA-BC14-8610E6247FC1} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
+		{AC88443B-E445-4751-B160-62C74A54F3EF} = {B4E58D4F-40CD-45CA-AC6F-1DF4D9CB9A49}
 	EndGlobalSection
 EndGlobal
