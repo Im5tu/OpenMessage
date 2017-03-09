@@ -19,4 +19,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("7d68a283-6d90-4a50-b015-d8c2bb5c7184")]
 [assembly: InternalsVisibleTo("OpenMessage.Tests")]
 [assembly: InternalsVisibleTo("OpenMessage.Providers.Azure")]
+[assembly: InternalsVisibleTo("OpenMessage.Providers.Memory")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
