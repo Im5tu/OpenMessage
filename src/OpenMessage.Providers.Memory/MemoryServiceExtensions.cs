@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenMessage.Providers.Azure;
+using OpenMessage.Providers.Memory;
 using System;
 
 namespace OpenMessage
 {
-    public static class ServiceExtensions
+    public static class MemoryServiceExtensions
     {
         public static IServiceCollection AddMemoryChannel<T>(this IServiceCollection services)
         {
