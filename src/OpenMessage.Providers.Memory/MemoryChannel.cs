@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenMessage.Providers.Azure
+namespace OpenMessage.Providers.Memory
 {
     internal sealed class MemoryChannel<T> : ManagedObservable<T>, IDispatcher<T>
     {
