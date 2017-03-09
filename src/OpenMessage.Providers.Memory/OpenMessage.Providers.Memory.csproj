@@ -4,7 +4,7 @@
     <Description>An in memory channel for OpenMessage</Description>
     <VersionPrefix>0.0.1</VersionPrefix>
     <Authors>Im5tu;Stuart Blackler</Authors>
-    <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard1.5;net462</TargetFrameworks>
     <PackageTags>OpenMessage;Messaging;ServiceBus;aspnetcore;netstandard</PackageTags>
     <PackageProjectUrl>https://github.com/Im5tu/OpenMessage</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
