@@ -35,10 +35,12 @@ namespace OpenMessage.Providers.Azure
                 return errorTask.Task;
             }
 
+            if (scheduleIn <= TimeSpan.Zero)
+                return Task.Run(() => Notify(entity));
+
             return Task.Run(async () =>
             {
-                if (scheduleIn > TimeSpan.Zero)
-                    await Task.Delay(scheduleIn);
+                await Task.Delay(scheduleIn);
 
                 Notify(entity);
             });
