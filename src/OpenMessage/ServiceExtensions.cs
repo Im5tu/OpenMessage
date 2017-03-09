@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 
 namespace OpenMessage
 {
@@ -17,6 +18,17 @@ namespace OpenMessage
                 throw new ArgumentNullException(nameof(action));
 
             return services.AddScoped<IObserver<T>>(sp => new ActionObserver<T>(action));
+        }
+
+        /// <summary>
+        ///     Adds a broker for the given type to the service collection specified.
+        /// </summary>
+        public static IServiceCollection AddBroker<T>(this IServiceCollection services)
+        {
+            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ServiceType == typeof(MessageBroker<T>)))
+                return services;
+
+            return services.AddScoped<IBroker, MessageBroker<T>>();
         }
     }
 }

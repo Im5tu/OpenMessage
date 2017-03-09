@@ -94,13 +94,6 @@ namespace OpenMessage
         {
             return services.AddBaseServices<T>().AddTopic<T>().AddScoped<ISubscriptionFactory<T>, SubscriptionFactory<T>>();
         }
-        private static IServiceCollection AddBroker<T>(this IServiceCollection services)
-        {
-            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ServiceType == typeof(MessageBroker<T>)))
-                return services;
-
-            return services.AddScoped<IBroker, MessageBroker<T>>();
-        }
         private static IServiceCollection AddBaseServices<T>(this IServiceCollection services)
         {
             services.TryAddScoped<IConfigureOptions<OpenMessageAzureProviderOptions<T>>, OpenMessageAzureProviderOptionsConfigurator<T>>();
