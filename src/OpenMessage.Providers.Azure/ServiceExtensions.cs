@@ -8,7 +8,6 @@ using OpenMessage.Providers.Azure.Management;
 using OpenMessage.Providers.Azure.Observables;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
-using System.Linq;
 
 namespace OpenMessage
 {
