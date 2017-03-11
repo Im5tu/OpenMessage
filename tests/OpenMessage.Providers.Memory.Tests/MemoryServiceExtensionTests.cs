@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 using Xunit;
 
 namespace OpenMessage.Providers.Memory.Tests
@@ -16,7 +17,22 @@ namespace OpenMessage.Providers.Memory.Tests
 
                 act.ShouldThrow<ArgumentNullException>();
             }
-        }
 
+            [Fact]
+            public void GivenAServiceCollectionThenAddsDispatcher()
+            {
+                var services = new ServiceCollection().AddMemoryChannel<string>();
+
+                services.Any(service => service.ServiceType == typeof(IDispatcher<string>)).Should().BeTrue();
+            }
+
+            [Fact]
+            public void GivenAServiceCollectionThenAddsObservable()
+            {
+                var services = new ServiceCollection().AddMemoryChannel<string>();
+
+                services.Any(service => service.ServiceType == typeof(IObservable<string>)).Should().BeTrue();
+            }
+        }
     }
 }

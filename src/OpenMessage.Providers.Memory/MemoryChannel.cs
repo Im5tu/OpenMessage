@@ -10,7 +10,8 @@ namespace OpenMessage.Providers.Memory
     {
         private readonly IDispatchInterceptor<T>[] _dispatchInterceptors;
 
-        public MemoryChannel(ILogger<ManagedObservable<T>> logger, IEnumerable<IDispatchInterceptor<T>> dispatchInterceptors) 
+        public MemoryChannel(ILogger<ManagedObservable<T>> logger,
+            IEnumerable<IDispatchInterceptor<T>> dispatchInterceptors) 
             : base(logger)
         {
             if (dispatchInterceptors == null)
@@ -35,7 +36,7 @@ namespace OpenMessage.Providers.Memory
                 return errorTask.Task;
             }
 
-            if (scheduleIn <= TimeSpan.Zero)
+            if (scheduleIn.Equals(TimeSpan.Zero))
                 return Task.Run(() => Notify(entity));
 
             return Task.Run(async () =>
