@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenMessage.Providers.Memory;
 using System;
 
@@ -11,7 +12,9 @@ namespace OpenMessage
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            return services.AddBroker<T>().AddScoped<IDispatcher<T>, MemoryChannel<T>>().AddScoped<IObservable<T>, MemoryChannel<T>>();
+            services.TryAddScoped<MemoryChannel<T>, MemoryChannel<T>>();
+
+            return services.AddBroker<T>().AddScoped<IDispatcher<T>>(sp => sp.GetRequiredService<MemoryChannel<T>>()).AddScoped<IObservable<T>>(sp => sp.GetRequiredService<MemoryChannel<T>>());
         }
     }
 }
