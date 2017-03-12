@@ -8,7 +8,6 @@ using OpenMessage.Providers.Azure.Management;
 using OpenMessage.Providers.Azure.Observables;
 using OpenMessage.Providers.Azure.Serialization;
 using System;
-using System.Linq;
 
 namespace OpenMessage
 {
@@ -93,13 +92,6 @@ namespace OpenMessage
         private static IServiceCollection AddSubscription<T>(this IServiceCollection services)
         {
             return services.AddBaseServices<T>().AddTopic<T>().AddScoped<ISubscriptionFactory<T>, SubscriptionFactory<T>>();
-        }
-        private static IServiceCollection AddBroker<T>(this IServiceCollection services)
-        {
-            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ServiceType == typeof(MessageBroker<T>)))
-                return services;
-
-            return services.AddScoped<IBroker, MessageBroker<T>>();
         }
         private static IServiceCollection AddBaseServices<T>(this IServiceCollection services)
         {

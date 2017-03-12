@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>An in memory channel for OpenMessage</Description>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Authors>Im5tu;Stuart Blackler</Authors>
+    <TargetFrameworks>netstandard1.5</TargetFrameworks>
+    <PackageTags>OpenMessage;Messaging;ServiceBus;aspnetcore;netstandard</PackageTags>
+    <PackageProjectUrl>https://github.com/Im5tu/OpenMessage</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Im5tu/OpenMessage.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenMessage\OpenMessage.csproj" />
+  </ItemGroup>
+
+</Project>
