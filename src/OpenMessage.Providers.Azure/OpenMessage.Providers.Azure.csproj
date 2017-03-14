@@ -2,8 +2,8 @@
   
   <PropertyGroup>
     <Description>An azure specific channel for OpenMessage</Description>
-    <VersionPrefix>0.1.2</VersionPrefix>
-    <TargetFramework>net451</TargetFramework>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <TargetFrameworks>net452</TargetFrameworks>
     <PackageTags>OpenMessage;Messaging;ServiceBus;aspnetcore;netstandard;azure</PackageTags>
     <PackageProjectUrl>https://github.com/Im5tu/OpenMessage</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -14,7 +14,7 @@
     <ProjectReference Include="..\OpenMessage\OpenMessage.csproj" />
   </ItemGroup>
   
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Runtime" />
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Linq" />
@@ -24,16 +24,16 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-      <Version>1.0.0</Version>
+      <Version>1.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
-      <Version>1.0.0</Version>
+      <Version>1.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Options">
-      <Version>1.0.0</Version>
+      <Version>1.1.1</Version>
     </PackageReference>
     <PackageReference Include="WindowsAzure.ServiceBus">
-      <Version>3.4.0</Version>
+      <Version>3.4.6</Version>
     </PackageReference>
   </ItemGroup>
 

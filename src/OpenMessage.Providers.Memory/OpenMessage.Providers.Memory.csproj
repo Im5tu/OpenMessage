@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>An in memory channel for OpenMessage</Description>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Im5tu;Stuart Blackler</Authors>
-    <TargetFrameworks>netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net452</TargetFrameworks>
     <PackageTags>OpenMessage;Messaging;ServiceBus;aspnetcore;netstandard</PackageTags>
     <PackageProjectUrl>https://github.com/Im5tu/OpenMessage</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -13,6 +13,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenMessage\OpenMessage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
 </Project>
