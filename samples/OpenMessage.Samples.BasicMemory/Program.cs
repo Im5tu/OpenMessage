@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 
 namespace OpenMessage.Samples.BasicMemory
 {
@@ -20,20 +18,22 @@ namespace OpenMessage.Samples.BasicMemory
                                     .AddObserver<string>(Console.WriteLine)
                                     .BuildServiceProvider();
 
-            var brokers = services.GetRequiredService<IEnumerable<IBroker>>().ToList();
-            var dispatcher = services.GetRequiredService<IDispatcher<string>>();
-            var task = Task.Run(async () =>
+            using (services.GetRequiredService<IBrokerHost>())
             {
-                while(!cts.IsCancellationRequested)
+                var dispatcher = services.GetRequiredService<IDispatcher<string>>();
+                var task = Task.Run(async () =>
                 {
-                    await Task.Delay(1000);
-                    await dispatcher.DispatchAsync(DateTime.UtcNow.ToString());
-                }
-            });
+                    while (!cts.IsCancellationRequested)
+                    {
+                        await Task.Delay(1000);
+                        await dispatcher.DispatchAsync(DateTime.UtcNow.ToString());
+                    }
+                });
 
-            Console.ReadKey();
-            cts.Cancel();
-            task.Wait();
+                Console.ReadKey();
+                cts.Cancel();
+                task.Wait();
+            }
         }
     }
 }
