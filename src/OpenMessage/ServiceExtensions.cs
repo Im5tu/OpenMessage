@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Linq;
 
@@ -25,8 +26,10 @@ namespace OpenMessage
         /// </summary>
         public static IServiceCollection AddBroker<T>(this IServiceCollection services)
         {
-            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ServiceType == typeof(MessageBroker<T>)))
+            if (services.Any(service => service.ServiceType == typeof(IBroker) && service.ImplementationType == typeof(MessageBroker<T>)))
                 return services;
+
+            services.TryAddScoped<IBrokerHost, BrokerHost>();
 
             return services.AddScoped<IBroker, MessageBroker<T>>();
         }
