@@ -1,4 +1,4 @@
-#OpenMessage
+# OpenMessage
 
 Master Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/2/badge)
 
@@ -6,7 +6,7 @@ Dev Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/de
 
 OpenMessage aims to simplify the service bus paradigm by using pre-existing patterns to build an extensible architecture.
 
-##Getting Started
+## Getting Started
 
 The library is based around the `Microsoft.Extensions.*` packages and relies upon the abstractions for depenency injection and logging allowing you the freedom to pick the implementations that best suit your scenario.
 
@@ -38,7 +38,7 @@ Assuming you want to connect to Azure Service Bus, here is how you configure Ope
                 });
     }
     
-###Sending Messages
+### Sending Messages
 
 4 - Add either a Queue/Topic dispatcher to the service collection:
 
@@ -59,7 +59,7 @@ Assuming you want to connect to Azure Service Bus, here is how you configure Ope
         }    
     }
     
-###Receiving Messages
+### Receiving Messages
 
 4 - Add either a Queue/Subscription observable to the service collection:
 
@@ -70,7 +70,7 @@ Assuming you want to connect to Azure Service Bus, here is how you configure Ope
 
 5 - When done, resolve an `IEnumerable<IBroker>` from the service collection to begin receiving messages.
 
-##Serializers
+## Serializers
 
 You can add more than one serializer to OpenMessage. In this scenario, all registered serializers are checked to see whether they can deserialize the message. When serializing the last registered serializer is used, service collection provider depending.
 
@@ -78,7 +78,7 @@ You can add more than one serializer to OpenMessage. In this scenario, all regis
 - [x] [Jil](http://www.nuget.org/packages/OpenMessage.Serializer.Jil/)
 - [x] [Protobuf](http://www.nuget.org/packages/OpenMessage.Serializer.ProtobufNet/)
 
-##Providers
+## Providers
 
 - [x] [Azure Service Bus](http://www.nuget.org/packages/OpenMessage.Providers.Azure/)
 - [ ] Azure Event Hubs
