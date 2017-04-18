@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OpenMessage.Providers.TestSpecifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,53 +31,12 @@ namespace OpenMessage.Providers.Memory.Tests
             }
         }
 
-        public class DispatchAsync
+        public class DispatchAsync : DispatcherTests<string>
         {
-            [Fact]
-            public void GivenANullEntityThrowArgumentNullException()
-            {
-                var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
+            protected override string InterceptEntity { get; } = "The registered interceptor will catch this entity.";
 
-                Action act = () => target.DispatchAsync(null);
-                act.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("entity");
-            }
-
-            [Fact]
-            public void GivenANullEntityWhenSuppliedWithAScheduleThrowArgumentNullException()
-            {
-                var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
-
-                Action act = () => target.DispatchAsync(null, TimeSpan.Zero);
-                act.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("entity");
-            }
-
-            [Fact]
-            public void GivenAnInvalidScheduleTimeThrowArgumentException()
-            {
-                var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
-
-                Action act = () => target.DispatchAsync(string.Empty, TimeSpan.MinValue);
-                act.ShouldThrow<ArgumentException>();
-            }
-
-            [Fact]
-            public void GivenAnEntityWhenInterceptorReturnsFalseThenTaskFaultsWithException()
-            {
-                var interceptor = new Mock<IDispatchInterceptor<string>>();
-                interceptor.Setup(x => x.Intercept(It.IsAny<string>())).Returns(false);
-                var target = new MemoryChannel<string>(DefaultLogger(), new[] { interceptor.Object });
-
-                var tsk = target.DispatchAsync("test");
-                try
-                {
-                    tsk.Wait();
-                }
-                catch { }
-
-                tsk.IsFaulted.Should().BeTrue();
-                tsk.Exception.Should().NotBeNull();
-                interceptor.Verify(x => x.Intercept(It.IsAny<string>()), Times.Once);
-            }
+            protected override IServiceCollection ConfigureServices(IServiceCollection services) => 
+                base.ConfigureServices(services).AddMemoryChannel<string>();
         }
 
         public class Subscribe
