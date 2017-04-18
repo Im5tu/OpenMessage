@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OpenMessage.Providers.TestSpecifications;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -39,32 +38,17 @@ namespace OpenMessage.Providers.Memory.Tests
                 base.ConfigureServices(services).AddMemoryChannel<string>();
         }
 
-        public class Subscribe
+        public class Subscribe : ObservableTests<string>
         {
-            [Fact]
-            public void GivenANullObserverThrowArgumentNullException()
-            {
-                var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
-
-                Action act = () => target.Subscribe(null);
-
-                act.ShouldThrow<ArgumentNullException>().And.ParamName.Should().Be("observer");
-            }
-
-            [Fact]
-            public void GivenAnObserverThenShouldReturnNonNullObserver()
-            {
-                var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
-
-                target.Subscribe(new ActionObserver<string>(str => { })).Should().NotBeNull();
-            }
+            protected override IServiceCollection ConfigureServices(IServiceCollection services) =>
+                services.AddMemoryChannel<string>();
         }
 
         [Fact]
         public void GivenAnEntityIsDispatchedThenRegisteredObserverReceivesMessage()
         {
             var testObject = Guid.NewGuid().ToString();
-            var target = new MemoryChannel<string>(DefaultLogger(), DefaultEnumerable());
+            var target = new MemoryChannel<string>(new Mock<ILogger<ManagedObservable<string>>>().Object, Enumerable.Empty<IDispatchInterceptor<string>>());
             var called = false;
             using (target.Subscribe(new ActionObserver<string>(str =>
             {
@@ -75,8 +59,5 @@ namespace OpenMessage.Providers.Memory.Tests
 
             called.Should().BeTrue();
         }
-
-        static ILogger<ManagedObservable<string>> DefaultLogger() => new Mock<ILogger<ManagedObservable<string>>>().Object;
-        static IEnumerable<IDispatchInterceptor<string>> DefaultEnumerable() => Enumerable.Empty<IDispatchInterceptor<string>>();
     }
 }
