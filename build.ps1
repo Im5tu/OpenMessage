@@ -3,7 +3,7 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
 
 function FindProjects($path)
 {
-    return gci -Filter project.json -Path $path -Recurse
+    return gci -Filter *.csproj -Path $path -Recurse
 }
 
 function GetProjectName($path)
@@ -38,7 +38,8 @@ function Test ($location)
 {  
     $project = GetProjectName $location
     Write-Host "Testing project '$project'..." -ForegroundColor Green
-    . dotnet test $location --no-build -xml ("testResults\{0}.TestResults.xml" -f $project) 
+    $outputXml = ("testResults\{0}.TestResults.xml" -f $project) # TODO :: Find out how to output xml results
+    . dotnet test $location --no-build
 }
 
 FindProjects "tests" | % { Test $_.FullName }
