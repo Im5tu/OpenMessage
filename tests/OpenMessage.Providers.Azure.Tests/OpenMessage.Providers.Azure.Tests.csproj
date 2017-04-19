@@ -6,7 +6,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenMessage.Providers.Azure\OpenMessage.Providers.Azure.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.JsonNet\OpenMessage.Serializer.JsonNet.csproj" />
     <ProjectReference Include="..\..\src\OpenMessage\OpenMessage.csproj" />
+    <ProjectReference Include="..\OpenMessage.Providers.TestSpecifications\OpenMessage.Providers.TestSpecifications.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
