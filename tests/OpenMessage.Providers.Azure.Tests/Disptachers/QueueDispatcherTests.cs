@@ -9,6 +9,6 @@ namespace OpenMessage.Providers.Azure.Tests.Disptachers
         protected override string InterceptEntity => nameof(QueueDispatcherTests);
 
         protected override IServiceCollection ConfigureServices(IServiceCollection services)
-            => services.AddOpenMessage().AddQueueDispatcher<string>().AddJsonNetSerializer().Configure<OpenMessageAzureProviderOptions<string>>(options => options.ConnectionString = "test");
+            => base.ConfigureServices(services).AddOpenMessage().AddQueueDispatcher<string>().AddJsonNetSerializer().Configure<OpenMessageAzureProviderOptions<string>>(options => options.ConnectionString = "test");
     }
 }
