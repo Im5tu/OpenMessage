@@ -65,7 +65,7 @@ namespace OpenMessage.Providers.TestSpecifications
         protected override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             _interceptor = new Mock<IDispatchInterceptor<T>>();
-            _interceptor.Setup(x => x.Intercept(It.IsAny<T>())).Returns((T val) => !ReferenceEquals(val, InterceptEntity));
+            _interceptor.Setup(x => x.Intercept(It.IsAny<T>())).Returns((T val) => ReferenceEquals(val, InterceptEntity));
 
             return services.AddSingleton(_interceptor.Object);
         }
