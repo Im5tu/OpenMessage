@@ -10,7 +10,7 @@ namespace OpenMessage.Serializer.Jil
     public static class JilSerializerServiceExtensions
     {
         /// <summary>
-        ///     Adds the Jil serializer & deserializer
+        ///     Adds the Jil serializer &amp; deserializer
         /// </summary>
         /// <param name="messagingBuilder">The host to configure</param>
         /// <returns>The modified builder</returns>

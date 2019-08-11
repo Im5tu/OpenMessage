@@ -8,7 +8,7 @@ namespace OpenMessage.Serializer.Jil
 {
     internal sealed class JilSerializer : ISerializer, IDeserializer
     {
-        private static readonly string _contentType = "binary/hyperion";
+        private static readonly string _contentType = "application/json";
 
         public string ContentType { get; } = _contentType;
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
