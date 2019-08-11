@@ -9,12 +9,12 @@ using OpenMessage.Apache.Kafka.Configuration;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extensions for adding a Kafka Consumer or Dispatcher
+    ///     Extensions for adding a Kafka Consumer or Dispatcher
     /// </summary>
     public static class KafkaServiceExtensions
     {
         /// <summary>
-        /// Adds a kafka consumer
+        ///     Adds a kafka consumer
         /// </summary>
         /// <param name="messagingBuilder">The host builder</param>
         /// <typeparam name="T">The type to consume</typeparam>
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a kafka consumer
+        ///     Adds a kafka consumer
         /// </summary>
         /// <param name="messagingBuilder">The host builder</param>
         /// <typeparam name="TKey">The type of the key</typeparam>
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a kafka dispatcher
+        ///     Adds a kafka dispatcher
         /// </summary>
         /// <param name="messagingBuilder">The host builder</param>
         /// <param name="options">Options for the dispatcher</param>
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a kafka dispatcher
+        ///     Adds a kafka dispatcher
         /// </summary>
         /// <param name="messagingBuilder">The host builder</param>
         /// <param name="options">Options for the dispatcher</param>
