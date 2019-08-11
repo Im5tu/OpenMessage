@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return hostBuilder.ConfigureServices((context, services) =>
             {
                 builder?.Invoke(new MessagingBuilder(context, services));
-                services.AddSerialisation();
+                services.AddSerialization();
                 services.TryAddSingleton<ISerializer, DefaultSerializer>();
                 services.TryAddSingleton<IDeserializer, DefaultDeserializer>();
             });
@@ -184,7 +184,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The service collection to modify</param>
         /// <returns>The modified service collection</returns>
-        public static IServiceCollection AddSerialisation(this IServiceCollection services)
+        public static IServiceCollection AddSerialization(this IServiceCollection services)
         {
             services.TryAddSingleton<IDeserializationProvider, DeserializationProvider>();
             return services;

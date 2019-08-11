@@ -29,7 +29,7 @@ namespace OpenMessage.Serializer.JsonDotNet
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSerialisation().AddDeserializer<JsonDotNetDeserializer>();
+            builder.Services.AddSerialization().AddDeserializer<JsonDotNetDeserializer>();
             return builder;
         }
 
@@ -42,7 +42,7 @@ namespace OpenMessage.Serializer.JsonDotNet
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSerialisation().AddSerializer<JsonDotNetSerializer>();
+            builder.Services.AddSerialization().AddSerializer<JsonDotNetSerializer>();
             return builder;
         }
     }

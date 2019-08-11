@@ -7,13 +7,12 @@ using OpenMessage.Serialisation;
 
 namespace OpenMessage.Serializer.Hyperion
 {
-    using Serializer = global::Hyperion.Serializer;
     // TODO :: Expose settings via options
 
     internal sealed class HyperionSerializer : ISerializer, IDeserializer
     {
         private static readonly string _contentType = "binary/hyperion";
-        private static readonly Serializer _serialiser = new Serializer(new SerializerOptions(preserveObjectReferences: true));
+        private static readonly global::Hyperion.Serializer _serialiser = new global::Hyperion.Serializer(new SerializerOptions(preserveObjectReferences: true));
 
         public string ContentType { get; } = _contentType;
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
