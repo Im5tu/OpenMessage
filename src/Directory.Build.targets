@@ -1,0 +1,7 @@
+<Project>
+    <Import Project="..\Directory.Build.targets" Condition="Exists('..\Directory.Build.targets')"/>
+
+    <ItemGroup Condition="!$(IsCoreProject)">
+        <ProjectReference Include="..\OpenMessage\OpenMessage.csproj"/>
+    </ItemGroup>
+</Project>

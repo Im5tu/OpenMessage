@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')"/>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild Condition="$(Coniguration) == 'Release'">true</GeneratePackageOnBuild>
+
+    <IsCoreProject>false</IsCoreProject>
+    <IsSerializer>false</IsSerializer>
+    <IsCoreProject Condition="$(MSBuildProjectName) == 'OpenMessage'">true</IsCoreProject>
+    <IsSerializer Condition="!$(IsCoreProject) AND $(MSBuildProjectName.StartsWith('OpenMessage.Serializer'))">true</IsSerializer>
+    <IsProvider Condition="!$(IsCoreProject) AND !$(IsSerializer)">true</IsProvider>
+  </PropertyGroup>
+</Project>

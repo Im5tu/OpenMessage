@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Im5tu;Stuart Blackler</Authors>
+    <PackageTags>OpenMessage;Messaging;ServiceBus;aspnetcore;netstandard</PackageTags>
+    <PackageProjectUrl>https://github.com/Im5tu/OpenMessage</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/Im5tu/OpenMessage.git</RepositoryUrl>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+</Project>
