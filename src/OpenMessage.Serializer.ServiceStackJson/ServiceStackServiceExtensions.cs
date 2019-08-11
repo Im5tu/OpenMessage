@@ -10,7 +10,7 @@ namespace OpenMessage.Serializer.ServiceStackJson
     public static class ServiceStackJsonSerializerServiceExtensions
     {
         /// <summary>
-        ///     Adds the ServiceStackJson serializer & deserializer
+        ///     Adds the ServiceStackJson serializer &amp; deserializer
         /// </summary>
         /// <param name="messagingBuilder">The host to configure</param>
         /// <returns>The modified builder</returns>

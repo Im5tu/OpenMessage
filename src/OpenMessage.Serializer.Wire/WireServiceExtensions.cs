@@ -10,7 +10,7 @@ namespace OpenMessage.Serializer.Wire
     public static class WireSerializerServiceExtensions
     {
         /// <summary>
-        ///     Adds the Wire serializer & deserializer
+        ///     Adds the Wire serializer &amp; deserializer
         /// </summary>
         /// <param name="messagingBuilder">The host to configure</param>
         /// <returns>The modified builder</returns>
