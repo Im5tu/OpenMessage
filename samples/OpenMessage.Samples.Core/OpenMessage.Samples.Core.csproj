@@ -11,6 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.Hyperion\OpenMessage.Serializer.Hyperion.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.Jil\OpenMessage.Serializer.Jil.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.JsonDotNet\OpenMessage.Serializer.JsonDotNet.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.MessagePack\OpenMessage.Serializer.MessagePack.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.MsgPackCli\OpenMessage.Serializer.MsgPackCli.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.Protobuf\OpenMessage.Serializer.Protobuf.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.ServiceStackJson\OpenMessage.Serializer.ServiceStackJson.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.Utf8Json\OpenMessage.Serializer.Utf8Json.csproj" />
+    <ProjectReference Include="..\..\src\OpenMessage.Serializer.Wire\OpenMessage.Serializer.Wire.csproj" />
     <ProjectReference Include="..\..\src\OpenMessage\OpenMessage.csproj" />
   </ItemGroup>
 
