@@ -22,6 +22,7 @@ namespace OpenMessage.Apache.Kafka
         private readonly OffsetTracker _offsetTracker = new OffsetTracker();
         private readonly IDeserializationProvider _deserializationProvider;
         private readonly IOptionsMonitor<KafkaOptions> _options;
+        private readonly Action<KafkaMessage<TKey, TValue>> _acknowledgementAction;
         private IConsumer<byte[], byte[]> _consumer;
         private Task _trackAcknowledgedTask;
         private string _topicName;
@@ -33,6 +34,7 @@ namespace OpenMessage.Apache.Kafka
         {
             _deserializationProvider = deserializationProvider ?? throw new ArgumentNullException(nameof(deserializationProvider));
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _acknowledgementAction = msg => _offsetTracker.AckOffset(msg.Partition, msg.Offset);
         }
 
         public void Start(string consumerId)
@@ -102,8 +104,7 @@ namespace OpenMessage.Apache.Kafka
 
                     _offsetTracker.AddOffset(message.Partition, message.Offset);
 
-                    return new KafkaMessage<TKey, TValue>(() =>
-                        _offsetTracker.AckOffset(message.Partition, message.Offset))
+                    return new KafkaMessage<TKey, TValue>(_acknowledgementAction, message.Partition.Value, message.Offset.Value)
                     {
                         Id = key,
                         Properties = messageProperties,

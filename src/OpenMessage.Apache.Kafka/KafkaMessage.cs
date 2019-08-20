@@ -7,7 +7,10 @@ namespace OpenMessage.Apache.Kafka
 {
     internal sealed class KafkaMessage<TKey, TValue> : Message<TValue>, ISupportAcknowledgement, ISupportIdentification<TKey>, ISupportProperties
     {
-        private readonly Action _postiveAcknowledgeAction;
+        internal long Offset { get; }
+        internal int Partition { get; }
+
+        private readonly Action<KafkaMessage<TKey, TValue>> _postiveAcknowledgeAction;
         private AcknowledgementState _acknowledgementState = AcknowledgementState.NotAcknowledged;
 
         /// <inheritdoc />
@@ -21,7 +24,7 @@ namespace OpenMessage.Apache.Kafka
 
             if (positivelyAcknowledge)
             {
-                _postiveAcknowledgeAction?.Invoke();
+                _postiveAcknowledgeAction?.Invoke(this);
                 _acknowledgementState = AcknowledgementState.Acknowledged;
             }
             else
@@ -38,8 +41,10 @@ namespace OpenMessage.Apache.Kafka
         /// <inheritdoc />
         public IEnumerable<KeyValuePair<string, string>> Properties { get; internal set; } = Enumerable.Empty<KeyValuePair<string, string>>();
 
-        internal KafkaMessage(Action postiveAcknowledgeAction)
+        internal KafkaMessage(Action<KafkaMessage<TKey, TValue>> postiveAcknowledgeAction, int partition, long offset)
         {
+            Partition = partition;
+            Offset = offset;
             _postiveAcknowledgeAction = postiveAcknowledgeAction ?? throw new ArgumentNullException(nameof(postiveAcknowledgeAction));
         }
     }
