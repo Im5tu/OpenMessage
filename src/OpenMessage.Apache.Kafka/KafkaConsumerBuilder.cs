@@ -1,23 +1,20 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenMessage;
-using OpenMessage.Apache.Kafka;
 using OpenMessage.Apache.Kafka.Configuration;
 using OpenMessage.Apache.Kafka.HostedServices;
+using OpenMessage.Configuration;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace OpenMessage.Apache.Kafka
 {
-    internal sealed class KafkaConsumerBuilder<TKey, TValue> : IKafkaConsumerBuilder<TKey, TValue>
+    internal sealed class KafkaConsumerBuilder<TKey, TValue> : Builder, IKafkaConsumerBuilder<TKey, TValue>
     {
-        private readonly IMessagingBuilder _messagingBuilder;
-        private readonly string _consumerId = Guid.NewGuid().ToString("N");
-
         private string _topicName = TypeCache<TValue>.FriendlyName.ToLowerInvariant().Replace("<", ".").Replace(">", ".");
         private Action<HostBuilderContext, KafkaOptions> _options;
 
-        public KafkaConsumerBuilder(IMessagingBuilder messagingBuilder)
+        public KafkaConsumerBuilder(IMessagingBuilder hostBuilder)
+            : base(hostBuilder)
         {
-            _messagingBuilder = messagingBuilder;
         }
 
         public IKafkaConsumerBuilder<TKey, TValue> FromConfiguration(Action<KafkaOptions> configuration)
@@ -39,17 +36,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return this;
         }
 
-        public void BuildConsumer()
+        public override void Build()
         {
-            var appName = _messagingBuilder.Context.HostingEnvironment.ApplicationName;
-            _messagingBuilder.Services.AddTransient<IKafkaConsumer<TKey, TValue>, KafkaConsumer<TKey, TValue>>();
-            _messagingBuilder.Services.AddSingleton<IHostedService>(sp => ActivatorUtilities.CreateInstance<KafkaMessagePump<TKey, TValue>>(sp, _consumerId));
-            _messagingBuilder.Services.Configure<KafkaOptions>(_consumerId, options =>
+            var appName = HostBuilder.Context.HostingEnvironment.ApplicationName;
+            HostBuilder.Services.AddTransient<IKafkaConsumer<TKey, TValue>, KafkaConsumer<TKey, TValue>>();
+            HostBuilder.Services.AddConsumerService<KafkaMessagePump<TKey, TValue>>(ConsumerId);
+            ConfigureOptions<KafkaOptions>((cntx, o) =>
             {
-                options.TopicName = _topicName;
-                _options?.Invoke(_messagingBuilder.Context, options);
+                o.TopicName = _topicName;
+                if (_options != null)
+                    _options(cntx, o);
             });
-            _messagingBuilder.Services.PostConfigure<KafkaOptions>(_consumerId, options =>
+            HostBuilder.Services.PostConfigure<KafkaOptions>(ConsumerId, options =>
             {
                 if (!options.KafkaConfiguration.ContainsKey("group.id"))
                     options.KafkaConfiguration["group.id"] = appName;

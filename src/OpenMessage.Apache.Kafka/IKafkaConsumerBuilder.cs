@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using OpenMessage.Apache.Kafka.Configuration;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace OpenMessage.Apache.Kafka
 {
     /// <summary>
     /// </summary>
@@ -34,6 +34,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         ///     Builds the consumer
         /// </summary>
-        void BuildConsumer();
+        void Build();
     }
 }

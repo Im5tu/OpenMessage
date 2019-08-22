@@ -9,7 +9,7 @@ namespace OpenMessage.Samples.Kafka
 {
     internal class Program
     {
-        private static int _counter = 0;
+        private static int _counter;
 
         private static async Task Main()
         {
@@ -17,7 +17,7 @@ namespace OpenMessage.Samples.Kafka
                 .ConfigureServices(services =>
                         services.AddOptions()
                             .AddLogging()
-                            .AddProducerService<Dictionary<string, string>>() // Adds a producer that calls configured dispatcher
+                            .AddMassProducerService<Dictionary<string, string>>() // Adds a producer that calls configured dispatcher
                 )
                 .ConfigureMessaging(host =>
                 {
@@ -38,7 +38,7 @@ namespace OpenMessage.Samples.Kafka
                     // Consume from the same topic as we are writing to
                     host.ConfigureKafkaConsumer<Dictionary<string, string>>()
                         .FromTopic("logs")
-                        .BuildConsumer();
+                        .Build();
                 })
                 .Build()
                 .RunAsync();

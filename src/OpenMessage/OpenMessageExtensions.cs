@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -276,6 +277,12 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services;
+        }
+
+        public static IServiceCollection AddConsumerService<T>(this IServiceCollection services, string consumerId)
+            where T : IHostedService
+        {
+            return services.AddSingleton<IHostedService>(sp => ActivatorUtilities.CreateInstance<T>(sp, consumerId));
         }
 
         #endregion
