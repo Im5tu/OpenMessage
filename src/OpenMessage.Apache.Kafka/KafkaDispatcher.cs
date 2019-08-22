@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,6 +78,9 @@ namespace OpenMessage.Apache.Kafka
 
                 if (!valueType)
                     h.Add(KnownProperties.ValueTypeName, _valueType);
+
+                if (Activity.Current != null)
+                    h.Add(KnownProperties.ActivityId, Encoding.UTF8.GetBytes(Activity.Current.Id));
 
                 return h;
             }

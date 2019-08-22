@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenMessage.Serialisation;
 
 namespace OpenMessage.Pipelines
 {
@@ -14,6 +18,8 @@ namespace OpenMessage.Pipelines
     /// <typeparam name="T">The type that is contained in the message</typeparam>
     public abstract class ConsumerPumpBase<T> : BackgroundService
     {
+        private DiagnosticSource _diagnostics = new DiagnosticListener("OpenMessage");
+
         /// <summary>
         ///     The reader of the messaging channel
         /// </summary>
@@ -73,6 +79,15 @@ namespace OpenMessage.Pipelines
                         msg = await ChannelReader.ReadAsync(cancellationToken);
                         using var timedCts = new CancellationTokenSource(Options.PipelineTimeout);
                         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timedCts.Token);
+
+
+                        if (TryGetActivityId(msg, out var activityId) && !string.IsNullOrWhiteSpace(activityId))
+                        {
+                            var activity = new Activity("ConsumeMessage");
+                            activity.SetParentId(activityId);
+                            _diagnostics.StartActivity(activity, new { }); // TODO :: AnonymousObject.Empty
+                        }
+
                         await OnMessageConsumed(msg, cts.Token);
                     }
                     catch (OperationCanceledException) { }
@@ -104,6 +119,37 @@ namespace OpenMessage.Pipelines
         {
             Logger.LogInformation("Stopping consumer pump: " + GetType().GetFriendlyName());
             return base.StartAsync(cancellationToken);
+        }
+
+        private static bool TryGetActivityId(Message<T> message, out string activityId)
+        {
+            activityId = null;
+
+            switch (message)
+            {
+                case ISupportProperties p:
+                {
+                    foreach (var prop in p.Properties)
+                        if (prop.Key == KnownProperties.ActivityId)
+                        {
+                            activityId = prop.Value;
+                            return true;
+                        }
+                    break;
+                }
+                case ISupportProperties<byte[]> p2:
+                {
+                    foreach (var prop in p2.Properties)
+                        if (prop.Key == KnownProperties.ActivityId)
+                        {
+                            activityId = Encoding.UTF8.GetString(prop.Value);
+                            return true;
+                        }
+                    break;
+                }
+            }
+
+            return false;
         }
     }
 }
