@@ -41,7 +41,7 @@ namespace OpenMessage.Pipelines
         }
 
         /// <inheritDoc />
-        protected abstract override Task ExecuteAsync(CancellationToken stoppingToken);
+        protected abstract override Task ExecuteAsync(CancellationToken cancellationToken);
 
         /// <inheritDoc />
         public override Task StopAsync(CancellationToken cancellationToken)

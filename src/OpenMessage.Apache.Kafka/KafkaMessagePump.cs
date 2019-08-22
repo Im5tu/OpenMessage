@@ -28,14 +28,14 @@ namespace OpenMessage.Apache.Kafka.HostedServices
             await base.StartAsync(cancellationToken);
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
                 try
                 {
-                    var kafkaMessage = await _kafkaConsumer.ConsumeAsync(stoppingToken);
+                    var kafkaMessage = await _kafkaConsumer.ConsumeAsync(cancellationToken);
                     if (kafkaMessage != null)
-                        await ChannelWriter.WriteAsync(kafkaMessage, stoppingToken);
+                        await ChannelWriter.WriteAsync(kafkaMessage, cancellationToken);
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
