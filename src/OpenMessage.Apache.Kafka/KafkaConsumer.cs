@@ -16,7 +16,6 @@ namespace OpenMessage.Apache.Kafka
 {
     internal sealed class KafkaConsumer<TKey, TValue> : KafkaClient, IKafkaConsumer<TKey, TValue>
     {
-        private static readonly string DefaultContentType = "application/json";
         private static readonly string TimestampFormat = "o";
 
         private readonly OffsetTracker _offsetTracker = new OffsetTracker();
@@ -97,7 +96,8 @@ namespace OpenMessage.Apache.Kafka
                     }
 
                     var messageProperties = ParseMessageHeaders(message, out var contentType);
-                    if (string.IsNullOrWhiteSpace(contentType)) contentType = DefaultContentType;
+                    if (string.IsNullOrWhiteSpace(contentType))
+                        contentType = ContentTypes.Json;
 
                     var key = _deserializationProvider.From<TKey>(message.Key, contentType);
                     var value = _deserializationProvider.From<TValue>(message.Value, contentType);
@@ -126,7 +126,7 @@ namespace OpenMessage.Apache.Kafka
 
         private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> message, out string contentType)
         {
-            contentType = DefaultContentType;
+            contentType = ContentTypes.Json;
 
             if (message.Headers == null)
                 return Enumerable.Empty<KeyValuePair<string, string>>();
