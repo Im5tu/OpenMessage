@@ -27,7 +27,7 @@ namespace OpenMessage.AWS.SQS.Configuration
 
         public override void Build()
         {
-            ConfigureOptions(_configuration);
+            ConfigureOptions(_configuration, true);
             HostBuilder.Services.AddSingleton<IDispatcher<T>, SqsDispatcher<T>>();
         }
     }
