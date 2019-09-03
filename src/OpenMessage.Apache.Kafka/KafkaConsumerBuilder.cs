@@ -9,7 +9,7 @@ namespace OpenMessage.Apache.Kafka
 {
     internal sealed class KafkaConsumerBuilder<TKey, TValue> : Builder, IKafkaConsumerBuilder<TKey, TValue>
     {
-        private string _topicName = TypeCache<TValue>.FriendlyName.ToLowerInvariant().Replace("<", ".").Replace(">", ".");
+        private string _topicName = TypeCache<TValue>.FriendlyName.ToLowerInvariant().Replace("<", "_").Replace(">", "_");
         private Action<HostBuilderContext, KafkaOptions> _options;
 
         public KafkaConsumerBuilder(IMessagingBuilder hostBuilder)
