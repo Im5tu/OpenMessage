@@ -61,7 +61,7 @@ namespace OpenMessage.AWS.SQS
             }
 
             var response = await _client.ReceiveMessageAsync(request);
-            if (response.HttpStatusCode != HttpStatusCode.OK)
+            if (response.HttpStatusCode != HttpStatusCode.OK || (response.Messages?.Count ?? 0) == 0)
                 return _emptyList;
 
             var result = new List<SqsMessage<T>>(response.Messages.Count);
