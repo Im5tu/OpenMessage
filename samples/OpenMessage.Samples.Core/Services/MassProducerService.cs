@@ -22,9 +22,18 @@ namespace OpenMessage.Samples.Core.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.WhenAll(Enumerable.Range(1, 5000 * 5).Select(x => _dispatcher.DispatchAsync(_fixture.Create<T>())));
-
-                await Task.Delay(100);
+                await Task.Delay(1000);
+                await Task.WhenAll(Enumerable.Range(1, 100).Select(async x =>
+                {
+                    try
+                    {
+                        await _dispatcher.DispatchAsync(_fixture.Create<T>());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }));
             }
         }
     }
