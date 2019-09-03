@@ -78,7 +78,7 @@ namespace OpenMessage.Samples.Setup
                 Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "XXX", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "XXX", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "XXX", EnvironmentVariableTarget.Process);
-                Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "eu-west-2", EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "us-east-1", EnvironmentVariableTarget.Process);
 
                 var snsClient = new AmazonSimpleNotificationServiceClient(new AmazonSimpleNotificationServiceConfig
                 {
@@ -101,12 +101,18 @@ namespace OpenMessage.Samples.Setup
                 {
                     Endpoint = queueResponse.QueueUrl,
                     TopicArn = topicResponse.TopicArn,
-                    Protocol = "sqs"
+                    Protocol = "sqs",
+                    ReturnSubscriptionArn = true,
+                    Attributes = new Dictionary<string, string>
+                    {
+                        ["RawMessageDelivery"] = "true"
+                    }
                 };
-                await snsClient.SubscribeAsync(subscribeRequest);
+                var subscribeResponse = await snsClient.SubscribeAsync(subscribeRequest);
 
                 (await snsClient.ListTopicsAsync()).Topics.ForEach(x => Console.WriteLine("[AWS] Topic: " + x.TopicArn));
                 (await sqsClient.ListQueuesAsync(new ListQueuesRequest())).QueueUrls.ForEach(x => Console.WriteLine("[AWS] Queue: " + x));
+                (await snsClient.ListSubscriptionsAsync(new ListSubscriptionsRequest())).Subscriptions.ForEach(x => Console.WriteLine("[AWS] Subscription: " + x.TopicArn + " -> " + x.Endpoint));
             }
             catch (Exception e)
             {
