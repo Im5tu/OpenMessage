@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenMessage.AWS.SNS;
 using OpenMessage.AWS.SQS;
 using OpenMessage.Samples.Core.Models;
 

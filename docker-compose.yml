@@ -91,6 +91,7 @@ services:
       PORT_WEB_UI: 8082
       AWS_ACCESS_KEY_ID: XXX
       AWS_SECRET_ACCESS_KEY: XXX
+      DEBUG: 1
     ports:
       - 4575:4575
       - 4576:4576

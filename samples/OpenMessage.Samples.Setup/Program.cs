@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Amazon;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Amazon.Util;
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
-using LocalStack.Client;
-using LocalStack.Client.Contracts;
 
 namespace OpenMessage.Samples.Setup
 {

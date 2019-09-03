@@ -31,7 +31,6 @@ namespace OpenMessage.AWS.SQS
             var sqsConfig = new AmazonSQSConfig
             {
                 ServiceURL = config.ServiceURL
-
             };
 
             if (!string.IsNullOrEmpty(config.RegionEndpoint))

@@ -54,9 +54,9 @@ namespace OpenMessage.AWS.SNS
             };
 
             var response = await _client.PublishAsync(request, cancellationToken);
-
             if (response.HttpStatusCode != HttpStatusCode.OK)
-                throw new Exception("Failed to send message");        }
+                throw new Exception("Failed to send message");
+        }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)
         {
