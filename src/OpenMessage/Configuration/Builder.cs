@@ -15,7 +15,7 @@ namespace OpenMessage.Configuration
         }
 
 
-        protected void ConfigureOptions<T>(Action<T> configurator)
+        protected void ConfigureOptions<T>(Action<T> configurator, bool defaultOptions = false)
             where T :class
         {
             if (configurator == null)
@@ -24,13 +24,16 @@ namespace OpenMessage.Configuration
             HostBuilder.Services.Configure<T>(ConsumerId, configurator);
         }
 
-        protected void ConfigureOptions<T>(Action<HostBuilderContext, T> configurator)
+        protected void ConfigureOptions<T>(Action<HostBuilderContext, T> configurator, bool defaultOptions = false)
             where T :class
         {
             if (configurator == null)
                 return;
 
-            HostBuilder.Services.Configure<T>(ConsumerId, options => configurator(HostBuilder.Context, options));
+            if (!defaultOptions)
+                HostBuilder.Services.Configure<T>(ConsumerId, options => configurator(HostBuilder.Context, options));
+            else
+                HostBuilder.Services.Configure<T>(options => configurator(HostBuilder.Context, options));
         }
 
         public abstract void Build();

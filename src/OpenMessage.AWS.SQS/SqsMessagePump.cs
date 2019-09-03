@@ -12,7 +12,7 @@ namespace OpenMessage.AWS.SQS
         private readonly ISqsConsumer<T> _sqsConsumer;
         private readonly string _consumerId;
 
-        public SqsMessagePump(ChannelWriter<Message<T>> channelWriter, ILogger logger, ISqsConsumer<T> sqsConsumer, string consumerId)
+        public SqsMessagePump(ChannelWriter<Message<T>> channelWriter, ILogger<SqsMessagePump<T>> logger, ISqsConsumer<T> sqsConsumer, string consumerId)
             : base(channelWriter, logger)
         {
             _sqsConsumer = sqsConsumer ?? throw new ArgumentNullException(nameof(sqsConsumer));

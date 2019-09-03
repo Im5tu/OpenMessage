@@ -5,7 +5,7 @@ namespace OpenMessage.AWS.SNS
 {
     public static class SnsServiceExtensions
     {
-        public static ISnsDispatcherBuilder<T> ConfigureSqsDispatcher<T>(this IMessagingBuilder messagingBuilder)
+        public static ISnsDispatcherBuilder<T> ConfigureSnsDispatcher<T>(this IMessagingBuilder messagingBuilder)
         {
             messagingBuilder.Services.TryAddConsumerService<T>();
             return new SnsDispatcherBuilder<T>(messagingBuilder);

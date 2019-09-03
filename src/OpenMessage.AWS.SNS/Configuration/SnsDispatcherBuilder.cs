@@ -15,7 +15,7 @@ namespace OpenMessage.AWS.SNS.Configuration
 
         public override void Build()
         {
-            ConfigureOptions(_configuration);
+            ConfigureOptions(_configuration, true);
             HostBuilder.Services.AddSingleton<IDispatcher<T>, SnsDispatcher<T>>();
         }
 
