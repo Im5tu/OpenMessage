@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenMessage.Samples.Core.Models;
 
 namespace OpenMessage.Samples.Kafka
 {
@@ -17,12 +18,12 @@ namespace OpenMessage.Samples.Kafka
                 .ConfigureServices(services =>
                         services.AddOptions()
                             .AddLogging()
-                            .AddMassProducerService<Dictionary<string, string>>() // Adds a producer that calls configured dispatcher
+                            .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                 )
                 .ConfigureMessaging(host =>
                 {
                     // Adds a handler that writes to console every 1000 messages
-                    host.ConfigureHandler<Dictionary<string, string>>(msg =>
+                    host.ConfigureHandler<SimpleModel>(msg =>
                     {
                         var counter = Interlocked.Increment(ref _counter);
                         if (counter % 1000 == 0)
@@ -30,15 +31,10 @@ namespace OpenMessage.Samples.Kafka
                     });
 
                     // Allow us to write to kafka
-                    host.ConfigureKafkaDispatcher<Dictionary<string, string>>(options =>
-                    {
-                        options.TopicName = "logs";
-                    });
+                    host.ConfigureKafkaDispatcher<SimpleModel>(options => { });
 
                     // Consume from the same topic as we are writing to
-                    host.ConfigureKafkaConsumer<Dictionary<string, string>>()
-                        .FromTopic("logs")
-                        .Build();
+                    host.ConfigureKafkaConsumer<SimpleModel>().Build();
                 })
                 .Build()
                 .RunAsync();
