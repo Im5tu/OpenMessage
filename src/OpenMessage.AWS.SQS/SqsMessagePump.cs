@@ -32,8 +32,15 @@ namespace OpenMessage.AWS.SQS
                 try
                 {
                     var messages = await _sqsConsumer.ConsumeAsync();
-                    foreach (var message in messages)
-                        await ChannelWriter.WriteAsync(message, cancellationToken);
+                    if (messages.Count == 0)
+                    {
+                        await Task.Delay(100);
+                    }
+                    else
+                    {
+                        foreach (var message in messages)
+                            await ChannelWriter.WriteAsync(message, cancellationToken);
+                    }
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
