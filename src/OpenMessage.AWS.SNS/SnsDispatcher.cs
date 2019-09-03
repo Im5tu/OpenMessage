@@ -16,6 +16,7 @@ namespace OpenMessage.AWS.SNS
 {
     internal sealed class SnsDispatcher<T> : IDispatcher<T>
     {
+        private static readonly string AttributeType = "String";
         private readonly ISerializer _serializer;
         private readonly AmazonSimpleNotificationServiceClient _client;
         private readonly MessageAttributeValue _contentType;
@@ -36,8 +37,8 @@ namespace OpenMessage.AWS.SNS
                 snsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.RegionEndpoint);
 
             _client = new AmazonSimpleNotificationServiceClient(snsConfig);
-            _contentType = new MessageAttributeValue {StringValue = _serializer.ContentType};
-            _valueTypeName = new MessageAttributeValue {StringValue = typeof(T).AssemblyQualifiedName};
+            _contentType = new MessageAttributeValue {DataType = AttributeType, StringValue = _serializer.ContentType};
+            _valueTypeName = new MessageAttributeValue {DataType = AttributeType, StringValue = typeof(T).AssemblyQualifiedName};
             _topicArn = config.TopicArn;
         }
 
@@ -67,26 +68,26 @@ namespace OpenMessage.AWS.SNS
             };
 
             if (Activity.Current != null)
-                result[KnownProperties.ActivityId] = new MessageAttributeValue {StringValue = Activity.Current.Id};
+                result[KnownProperties.ActivityId] = new MessageAttributeValue {DataType = AttributeType, StringValue = Activity.Current.Id};
 
             switch (message)
             {
                 case ISupportProperties p:
                 {
                     foreach (var prop in p.Properties)
-                        result[prop.Key] = new MessageAttributeValue {StringValue = prop.Value};
+                        result[prop.Key] = new MessageAttributeValue {DataType = AttributeType, StringValue = prop.Value};
                     break;
                 }
                 case ISupportProperties<byte[]> p2:
                 {
                     foreach (var prop in p2.Properties)
-                        result[prop.Key] = new MessageAttributeValue {StringValue = Encoding.UTF8.GetString(prop.Value)};
+                        result[prop.Key] = new MessageAttributeValue {DataType = AttributeType, StringValue = Encoding.UTF8.GetString(prop.Value)};
                     break;
                 }
                 case ISupportProperties<byte[], byte[]> p3:
                 {
                     foreach (var prop in p3.Properties)
-                        result[Encoding.UTF8.GetString(prop.Key)] = new MessageAttributeValue {StringValue = Encoding.UTF8.GetString(prop.Value)};
+                        result[Encoding.UTF8.GetString(prop.Key)] = new MessageAttributeValue {DataType = AttributeType, StringValue = Encoding.UTF8.GetString(prop.Value)};
                     break;
                 }
             }
