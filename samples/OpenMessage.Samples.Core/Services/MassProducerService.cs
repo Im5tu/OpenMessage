@@ -22,7 +22,7 @@ namespace OpenMessage.Samples.Core.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(1000);
+                await Task.Delay(100);
                 await Task.WhenAll(Enumerable.Range(1, 100).Select(async x =>
                 {
                     try

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenMessage.AWS.SNS;
 using OpenMessage.AWS.SQS;
 using OpenMessage.Samples.Core.Models;
 
@@ -31,7 +32,7 @@ namespace OpenMessage.Samples.AWS
                     host.ConfigureHandler<SimpleModel>(msg =>
                     {
                         var counter = Interlocked.Increment(ref _counter);
-                        if (counter % 1000 == 0)
+                        if (counter % 100 == 0)
                             Console.WriteLine("Counter: " + counter);
                     });
 
