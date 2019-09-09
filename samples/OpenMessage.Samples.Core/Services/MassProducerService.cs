@@ -20,9 +20,10 @@ namespace OpenMessage.Samples.Core.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Delay(100);
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(100);
                 await Task.WhenAll(Enumerable.Range(1, 100).Select(async x =>
                 {
                     try
