@@ -1,29 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using OpenMessage.Samples.Core.Models;
 
 namespace OpenMessage.Samples.Memory
 {
     internal class Program
     {
+        private static int _counter;
+
         private static async Task Main()
         {
             await Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                         services.AddOptions()
                             .AddLogging()
-                            .AddMassProducerService<Dictionary<string, string>>() // Adds a producer that calls configured dispatcher
+                            .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                 )
                 .ConfigureMessaging(host =>
                 {
                     // Adds a memory based consumer and dispatcher
-                    host.ConfigureMemory<Dictionary<string, string>>();
+                    host.ConfigureMemory<SimpleModel>();
 
-                    // Add a handler that writes the entire message in json format to the console
-                    host.ConfigureHandler<Dictionary<string, string>>(msg => Console.WriteLine(JsonConvert.SerializeObject(msg.Value)));
+                    // Adds a handler that writes to console every 1000 messages
+                    host.ConfigureHandler<SimpleModel>(msg =>
+                    {
+                        var counter = Interlocked.Increment(ref _counter);
+                        if (counter % 1000 == 0)
+                            Console.WriteLine("Counter: " + counter);
+                    });
                 })
                 .Build()
                 .RunAsync();
