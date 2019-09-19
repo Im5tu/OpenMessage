@@ -7,6 +7,9 @@
     <Version>1.0.0</Version>
     <PackageVersion>$(Version)-preview-1</PackageVersion>
     <PackageOutputPath>$(RootFolder)/artifacts</PackageOutputPath>
+    <PackageReleaseNotes>Preview release for use with .net core 3</PackageReleaseNotes>
+    <Title>$(MSBuildProjectName)</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <IsCoreProject>false</IsCoreProject>
     <IsSerializer>false</IsSerializer>
