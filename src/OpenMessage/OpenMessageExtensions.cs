@@ -278,12 +278,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        /// <summary>
+        ///     Adds the background channel
+        /// </summary>
+        /// <param name="services">The service collection to modify</param>
+        /// <param name="consumerId">The consumer id</param>
+        /// <typeparam name="T">The type to handle</typeparam>
+        /// <returns>The modified service collection</returns>
         public static IServiceCollection AddConsumerService<T>(this IServiceCollection services, string consumerId)
             where T : IHostedService
         {
             return services.AddSingleton<IHostedService>(sp => ActivatorUtilities.CreateInstance<T>(sp, consumerId));
         }
-
         #endregion
     }
 }
