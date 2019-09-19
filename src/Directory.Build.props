@@ -3,7 +3,10 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GeneratePackageOnBuild Condition="$(Coniguration) == 'Release'">true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <PackageVersion>$(Version)-preview-1</PackageVersion>
+    <PackageOutputPath>$(RootFolder)/artifacts</PackageOutputPath>
 
     <IsCoreProject>false</IsCoreProject>
     <IsSerializer>false</IsSerializer>
