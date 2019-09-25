@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -171,6 +173,39 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (configurator != null)
                 messagingBuilder.Services.Configure<PipelineOptions<T>>(options => { configurator(messagingBuilder.Context, options); });
+
+            return messagingBuilder;
+        }
+
+        /// <summary>
+        ///     Configures all handlers that can be found in the specified assemblies
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="assembliesToScan">The assemblies to scan</param>
+        /// <returns>The OpenMessageBuilder</returns>
+        public static IMessagingBuilder ConfigureAllHandlers(this IMessagingBuilder messagingBuilder, params Assembly[] assembliesToScan)
+        {
+            if (assembliesToScan?.Length == 0)
+            {
+                assembliesToScan = new [] {Assembly.GetEntryAssembly()};
+            }
+
+            var ht = typeof(IHandler<>);
+            IEnumerable<Type> HandlerInterfaceFilter(TypeInfo ti)
+                => ti.ImplementedInterfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == ht);
+
+            foreach (var assembly in assembliesToScan)
+            {
+                var types = assembly.GetTypes().Where(x => !x.IsAbstract && !x.IsInterface && HandlerInterfaceFilter(x.GetTypeInfo()).Any());
+                foreach (var handlerType in types)
+                {
+                    var implementedHandlers = HandlerInterfaceFilter(handlerType.GetTypeInfo());
+                    foreach (var implementedHandler in implementedHandlers)
+                    {
+                        messagingBuilder.Services.AddScoped(implementedHandler, handlerType);
+                    }
+                }
+            }
 
             return messagingBuilder;
         }
