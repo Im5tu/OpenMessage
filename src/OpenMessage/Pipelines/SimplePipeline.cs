@@ -72,8 +72,16 @@ namespace OpenMessage.Pipelines
         /// <returns>A task that completes when the message has been handled</returns>
         protected virtual async Task OnHandleAsync(IServiceProvider serviceScope, Message<T> message, CancellationToken cancellationToken)
         {
-            foreach (var handler in serviceScope.GetRequiredService<IEnumerable<IHandler<T>>>())
-                await handler.HandleAsync(message, cancellationToken);
+            try
+            {
+                foreach (var handler in serviceScope.GetRequiredService<IEnumerable<IHandler<T>>>())
+                    await handler.HandleAsync(message, cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, e.Message);
+                throw;
+            }
         }
     }
 }
