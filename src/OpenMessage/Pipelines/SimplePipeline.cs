@@ -25,7 +25,7 @@ namespace OpenMessage.Pipelines
         /// <summary>
         ///     The current options for the pipeline
         /// </summary>
-        protected IOptionsSnapshot<PipelineOptions<T>> Options { get; }
+        protected IOptionsMonitor<PipelineOptions<T>> Options { get; }
 
         /// <summary>
         ///     ctor
@@ -34,7 +34,7 @@ namespace OpenMessage.Pipelines
         /// <param name="options">The options to use</param>
         /// <param name="logger">The logger</param>
         public SimplePipeline(IServiceScopeFactory serviceScopeFactory,
-            IOptionsSnapshot<PipelineOptions<T>> options,
+            IOptionsMonitor<PipelineOptions<T>> options,
             ILogger<SimplePipeline<T>> logger)
             : this(serviceScopeFactory, options, (ILogger) logger)
         {
@@ -47,7 +47,7 @@ namespace OpenMessage.Pipelines
         /// <param name="options">The options to use</param>
         /// <param name="logger">The logger</param>
         protected SimplePipeline(IServiceScopeFactory serviceScopeFactory,
-            IOptionsSnapshot<PipelineOptions<T>> options,
+            IOptionsMonitor<PipelineOptions<T>> options,
             ILogger logger)
         {
             _services = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
