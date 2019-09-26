@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenMessage.Configuration;
@@ -27,6 +28,12 @@ namespace OpenMessage.AWS.SNS.Configuration
         public ISnsDispatcherBuilder<T> FromConfiguration(Action<HostBuilderContext, SNSOptions<T>> configuration)
         {
             _configuration = configuration;
+            return this;
+        }
+
+        public ISnsDispatcherBuilder<T> FromConfiguration(string configurationSection)
+        {
+            _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
             return this;
         }
     }
