@@ -28,7 +28,6 @@ namespace OpenMessage.AWS.SQS
         /// <returns>An SQS dispatcher builder</returns>
         public static ISqsDispatcherBuilder<T> ConfigureSqsDispatcher<T>(this IMessagingBuilder messagingBuilder)
         {
-            messagingBuilder.Services.TryAddConsumerService<T>();
             return new SqsDispatcherBuilder<T>(messagingBuilder);
         }
     }
