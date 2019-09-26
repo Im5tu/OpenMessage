@@ -24,6 +24,14 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <returns>The SQS consumer builder</returns>
         ISqsConsumerBuilder<T> FromConfiguration(Action<HostBuilderContext, SQSConsumerOptions> configuration);
 
+
+        /// <summary>
+        /// Configure the dispatcher with the specified options
+        /// </summary>
+        /// <param name="configurationSection">The configuration section to use</param>
+        /// <returns>The SQS dispatcher builder</returns>
+        ISqsConsumerBuilder<T> FromConfiguration(string configurationSection);
+
         /// <summary>
         /// Configure how many consumers to construct for a competing consumer scenario
         /// </summary>

@@ -23,5 +23,12 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <param name="configuration">The configuration action</param>
         /// <returns>The SQS dispatcher builder</returns>
         ISqsDispatcherBuilder<T> FromConfiguration(Action<HostBuilderContext, SQSDispatcherOptions<T>> configuration);
+
+        /// <summary>
+        /// Configure the dispatcher with the specified options
+        /// </summary>
+        /// <param name="configurationSection">The configuration section to use</param>
+        /// <returns>The SQS dispatcher builder</returns>
+        ISqsDispatcherBuilder<T> FromConfiguration(string configurationSection);
     }
 }

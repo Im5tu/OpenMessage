@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenMessage.Configuration;
@@ -22,6 +23,12 @@ namespace OpenMessage.AWS.SQS.Configuration
         public ISqsDispatcherBuilder<T> FromConfiguration(Action<HostBuilderContext, SQSDispatcherOptions<T>> configuration)
         {
             _configuration = configuration;
+            return this;
+        }
+
+        public ISqsDispatcherBuilder<T> FromConfiguration(string configurationSection)
+        {
+            _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
             return this;
         }
 

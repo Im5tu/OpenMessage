@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -36,6 +37,11 @@ namespace OpenMessage.AWS.SQS.Configuration
             return this;
         }
 
+        public ISqsConsumerBuilder<T> FromConfiguration(string configurationSection)
+        {
+            _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
+            return this;
+        }
 
         public override void Build()
         {
