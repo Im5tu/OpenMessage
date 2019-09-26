@@ -16,7 +16,6 @@ namespace OpenMessage.AWS.SNS
         /// <returns>An SNS dispatcher builder</returns>
         public static ISnsDispatcherBuilder<T> ConfigureSnsDispatcher<T>(this IMessagingBuilder messagingBuilder)
         {
-            messagingBuilder.Services.TryAddConsumerService<T>();
             return new SnsDispatcherBuilder<T>(messagingBuilder);
         }
     }

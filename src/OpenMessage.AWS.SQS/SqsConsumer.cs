@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.SQS;
@@ -29,18 +30,31 @@ namespace OpenMessage.AWS.SQS
 
         public void Initialize(string consumerId)
         {
-            _currentConsumerOptions = _options.Get(consumerId);
-            var config = new AmazonSQSConfig
+            while (true)
             {
-                ServiceURL = _currentConsumerOptions.ServiceURL
-            };
+                try
+                {
+                    _currentConsumerOptions = _options.Get(consumerId);
+                    var config = new AmazonSQSConfig
+                    {
+                        ServiceURL = _currentConsumerOptions.ServiceURL
+                    };
 
-            if (!string.IsNullOrEmpty(_currentConsumerOptions.RegionEndpoint))
-                config.RegionEndpoint = RegionEndpoint.GetBySystemName(_currentConsumerOptions.RegionEndpoint);
+                    if (!string.IsNullOrEmpty(_currentConsumerOptions.RegionEndpoint))
+                        config.RegionEndpoint = RegionEndpoint.GetBySystemName(_currentConsumerOptions.RegionEndpoint);
 
 
-            _client = new AmazonSQSClient(config);
-            _acknowledgementAction = msg => _client.DeleteMessageAsync(msg.QueueUrl, msg.ReceiptHandle);
+                    _client = new AmazonSQSClient(config);
+                    _acknowledgementAction = msg => _client.DeleteMessageAsync(msg.QueueUrl, msg.ReceiptHandle);
+
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                }
+            }
         }
 
         public async Task<List<SqsMessage<T>>> ConsumeAsync()
