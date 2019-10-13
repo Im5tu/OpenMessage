@@ -15,6 +15,8 @@ namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsConsumer<T> : ISqsConsumer<T>
     {
+        private static readonly string MisconfiguredConsumerMessage = "Consumer has not been initialized. Please call Initialize with the configured consumer id.";
+
         private readonly IOptionsMonitor<SQSConsumerOptions> _options;
         private readonly IDeserializationProvider _deserializationProvider;
         private IAmazonSQS _client;
@@ -58,8 +60,8 @@ namespace OpenMessage.AWS.SQS
 
         public async Task<List<SqsMessage<T>>> ConsumeAsync(CancellationToken cancellationToken)
         {
-            _currentConsumerOptions.Must().NotBeNull("Consumer has not been initialized. Please call Initialize with the configured consumer id.");
-            _client.Must().NotBeNull("Consumer has not been initialized. Please call Initialize with the configured consumer id.");
+            _currentConsumerOptions.Must().NotBeNull(MisconfiguredConsumerMessage);
+            _client.Must().NotBeNull(MisconfiguredConsumerMessage);
 
             var request = new ReceiveMessageRequest
             {
