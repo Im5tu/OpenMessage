@@ -16,8 +16,7 @@ namespace OpenMessage.Pipelines
     /// <typeparam name="T">The type that is contained in the message</typeparam>
     public abstract class ConsumerPumpBase<T> : BackgroundService
     {
-        private DiagnosticSource _diagnostics = new DiagnosticListener("OpenMessage");
-        private static readonly string ConsumeActivityName = "ConsumeMessage";
+        private static readonly string ConsumeActivityName = "Consumer.Process";
 
         /// <summary>
         ///     The reader of the messaging channel
@@ -73,22 +72,15 @@ namespace OpenMessage.Pipelines
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     Message<T> msg = null;
-                    Activity activity = null;
                     try
                     {
                         msg = await ChannelReader.ReadAsync(cancellationToken);
                         using var timedCts = new CancellationTokenSource(Options.PipelineTimeout);
                         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timedCts.Token);
 
-                        activity = new Activity(ConsumeActivityName);
-                        if (TryGetActivityId(msg, out var activityId) && !string.IsNullOrWhiteSpace(activityId))
-                        {
-                            activity.SetParentId(activityId);
-                        }
+                        _ = TryGetActivityId(msg, out var activityId);
 
-                        _diagnostics.StartActivity(activity, AnonymousObject.Empty);
-
-                        await OnMessageConsumed(msg, cts.Token);
+                        await OnMessageConsumed(msg, Trace.WithActivity(ConsumeActivityName, activityId), cts.Token);
                     }
                     catch (TaskCanceledException) { }
                     catch (Exception ex)
@@ -97,11 +89,6 @@ namespace OpenMessage.Pipelines
 
                         if (Options.AutoAcknowledge == true && msg != null && msg is ISupportAcknowledgement aam)
                             await aam.AcknowledgeAsync(false);
-                    }
-                    finally
-                    {
-                        if (activity != null)
-                            _diagnostics.StopActivity(activity, AnonymousObject.Empty);
                     }
                 }
             }
@@ -116,8 +103,9 @@ namespace OpenMessage.Pipelines
         /// </summary>
         /// <param name="message">The message consumed.</param>
         /// <param name="cancellationToken">The cancellation token configured to timeout in the configured time.</param>
+        /// <param name="tracer">The current activity tracer.</param>
         /// <returns>A task that completes when the handle method completes</returns>
-        protected abstract Task OnMessageConsumed(Message<T> message, CancellationToken cancellationToken);
+        protected abstract Task OnMessageConsumed(Message<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken);
 
         /// <inheritDoc />
         public override Task StopAsync(CancellationToken cancellationToken)

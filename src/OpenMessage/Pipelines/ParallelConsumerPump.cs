@@ -16,14 +16,17 @@ namespace OpenMessage.Pipelines
         {
         }
 
-        protected override Task OnMessageConsumed(Message<T> message, CancellationToken cancellationToken)
+        protected override Task OnMessageConsumed(Message<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken)
         {
             _ = Task.Run(async () =>
             {
-                await Pipeline.HandleAsync(message, cancellationToken);
+                using (tracer)
+                {
+                    await Pipeline.HandleAsync(message, cancellationToken);
 
-                if (Options.AutoAcknowledge == true && message is ISupportAcknowledgement aam)
-                    await aam.AcknowledgeAsync();
+                    if (Options.AutoAcknowledge == true && message is ISupportAcknowledgement aam)
+                        await aam.AcknowledgeAsync();
+                }
             }, cancellationToken);
             return Task.CompletedTask;
         }
