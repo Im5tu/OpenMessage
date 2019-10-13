@@ -65,7 +65,7 @@ namespace OpenMessage.Apache.Kafka
                             if (loggerEnabled)
                                 Logger.LogInformation($"Committing '{_topicName}' on partition '{offset.Partition}' to offset '{offset.Offset}'");
 
-                            _consumer.StoreOffset(new TopicPartitionOffset(new TopicPartition(_topicName, new Partition(offset.Partition)), new Offset(offset.Offset)));
+                            _consumer.StoreOffset(new TopicPartitionOffset(new TopicPartition(_topicName, new Partition(offset.Partition)), new Offset(offset.Offset + 1)));
                             _offsetTracker.PruneCommitted(offset);
                         }
                     }
