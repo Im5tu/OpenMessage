@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenMessage.AWS.SQS
@@ -7,6 +8,6 @@ namespace OpenMessage.AWS.SQS
     {
         void Initialize(string consumerId);
 
-        Task<List<SqsMessage<T>>> ConsumeAsync();
+        Task<List<SqsMessage<T>>> ConsumeAsync(CancellationToken cancellationToken);
     }
 }

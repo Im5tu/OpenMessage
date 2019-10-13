@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -57,7 +57,7 @@ namespace OpenMessage.AWS.SQS
             }
         }
 
-        public async Task<List<SqsMessage<T>>> ConsumeAsync()
+        public async Task<List<SqsMessage<T>>> ConsumeAsync(CancellationToken cancellationToken)
         {
             _currentConsumerOptions.Must().NotBeNull("Consumer has not been initialized. Please call Initialize with the configured consumer id.");
             _client.Must().NotBeNull("Consumer has not been initialized. Please call Initialize with the configured consumer id.");
@@ -74,7 +74,7 @@ namespace OpenMessage.AWS.SQS
                 request.VisibilityTimeout = _currentConsumerOptions.VisibilityTimeout.Value;
             }
 
-            var response = await _client.ReceiveMessageAsync(request);
+            var response = await _client.ReceiveMessageAsync(request, cancellationToken);
             if (response.HttpStatusCode != HttpStatusCode.OK || (response.Messages?.Count ?? 0) == 0)
                 return _emptyList;
 
