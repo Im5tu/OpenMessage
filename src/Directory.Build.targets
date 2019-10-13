@@ -1,7 +1,11 @@
 <Project>
-    <Import Project="..\Directory.Build.targets" Condition="Exists('..\Directory.Build.targets')"/>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../')))" />
 
     <ItemGroup Condition="!$(IsCoreProject)">
         <ProjectReference Include="..\OpenMessage\OpenMessage.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All"/>
     </ItemGroup>
 </Project>

@@ -6,10 +6,22 @@
     <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
     <Version>1.0.0</Version>
     <PackageVersion>$(Version)-preview-3</PackageVersion>
-    <PackageOutputPath>$(RootFolder)/artifacts</PackageOutputPath>
-    <PackageReleaseNotes>Preview release for use with .net core 3</PackageReleaseNotes>
+    <PackageOutputPath>$(RepositoryRoot)/artifacts</PackageOutputPath>
+    <PackageReleaseNotes>Preview release for use with .Net Core 3</PackageReleaseNotes>
     <Title>$(MSBuildProjectName)</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <!-- NU5048: PackageIconUrl is no longer supported -->
+    <!-- NU5105: Ignore warning about semver -->
+    <NoWarn>$(NoWarn);NU5048;NU5105</NoWarn>
+    <!-- Ensure that the url to the repository is published as part of the package -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Ensure that pdb's can be added to nuget packages -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <!-- Default to allowing source link -->
+    <EnableSourceLink Condition="$(EnableSourceLink) == ''">true</EnableSourceLink>
+
 
     <IsCoreProject>false</IsCoreProject>
     <IsSerializer>false</IsSerializer>
