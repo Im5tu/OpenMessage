@@ -1,3 +1,6 @@
+using System;
+using Amazon.SQS;
+
 namespace OpenMessage.AWS.SQS.Configuration
 {
     /// <summary>
@@ -20,5 +23,10 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// The region endpoint to use
         /// </summary>
         public string RegionEndpoint { get; set; }
+
+        /// <summary>
+        /// Allow the configuration of the raw AWS SQS Dispatcher Config during initialization of the dispatcher.
+        /// </summary>
+        public Action<AmazonSQSConfig> AwsDispatcherConfiguration { get; set; }
     }
 }

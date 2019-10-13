@@ -41,6 +41,6 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         /// Allow the configuration of the raw AWS SQS Client Config during initialization of the consumer.
         /// </summary>
-        public Action<AmazonSQSConfig>? AwsConsumerConfiguration { get; set; }
+        public Action<AmazonSQSConfig> AwsConsumerConfiguration { get; set; }
     }
 }

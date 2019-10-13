@@ -37,6 +37,8 @@ namespace OpenMessage.AWS.SQS
             if (!string.IsNullOrEmpty(config.RegionEndpoint))
                 sqsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.RegionEndpoint);
 
+            config.AwsDispatcherConfiguration?.Invoke(sqsConfig);
+
             _client = new AmazonSQSClient(sqsConfig);
             _contentType = new MessageAttributeValue {DataType = AttributeType, StringValue = _serializer.ContentType};
             _valueTypeName = new MessageAttributeValue {DataType = AttributeType, StringValue = typeof(T).AssemblyQualifiedName};
@@ -56,7 +58,12 @@ namespace OpenMessage.AWS.SQS
 
             var response = await _client.SendMessageAsync(request, cancellationToken);
             if (response.HttpStatusCode != HttpStatusCode.OK)
-                throw new Exception("Failed to send message");
+                ThrowExceptionFromHttpResponse(response);
+        }
+
+        private void ThrowExceptionFromHttpResponse(SendMessageResponse response)
+        {
+            throw new Exception($"Failed to send the message to SQS. Type: '{TypeCache<T>.FriendlyName}' Queue Url: '{_queueUrl ?? "<NULL>"}' Status Code: '{response.HttpStatusCode}'.");
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)
