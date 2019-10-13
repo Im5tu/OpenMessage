@@ -17,6 +17,7 @@ namespace OpenMessage.Pipelines
     public abstract class ConsumerPumpBase<T> : BackgroundService
     {
         private DiagnosticSource _diagnostics = new DiagnosticListener("OpenMessage");
+        private static readonly string ConsumeActivityName = "ConsumeMessage";
 
         /// <summary>
         ///     The reader of the messaging channel
@@ -72,29 +73,35 @@ namespace OpenMessage.Pipelines
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     Message<T> msg = null;
+                    Activity activity = null;
                     try
                     {
                         msg = await ChannelReader.ReadAsync(cancellationToken);
                         using var timedCts = new CancellationTokenSource(Options.PipelineTimeout);
                         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timedCts.Token);
 
-
+                        activity = new Activity(ConsumeActivityName);
                         if (TryGetActivityId(msg, out var activityId) && !string.IsNullOrWhiteSpace(activityId))
                         {
-                            var activity = new Activity("ConsumeMessage");
                             activity.SetParentId(activityId);
-                            _diagnostics.StartActivity(activity, new { }); // TODO :: AnonymousObject.Empty
                         }
+
+                        _diagnostics.StartActivity(activity, AnonymousObject.Empty);
 
                         await OnMessageConsumed(msg, cts.Token);
                     }
-                    catch (OperationCanceledException) { }
+                    catch (TaskCanceledException) { }
                     catch (Exception ex)
                     {
                         Logger.LogError(ex, ex.Message);
 
                         if (Options.AutoAcknowledge == true && msg != null && msg is ISupportAcknowledgement aam)
                             await aam.AcknowledgeAsync(false);
+                    }
+                    finally
+                    {
+                        if (activity != null)
+                            _diagnostics.StopActivity(activity, AnonymousObject.Empty);
                     }
                 }
             }
