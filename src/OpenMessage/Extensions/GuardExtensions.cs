@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+#nullable enable
+
 namespace OpenMessage.Extensions
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace OpenMessage.Extensions
         /// <typeparam name="T">The type of the entity under guard</typeparam>
         /// <returns>An instance of <see cref="Guarded{T}" /></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Guarded<T> Must<T>(this T entity, string name = null)
+        public static Guarded<T> Must<T>(this T entity, string? name = null)
         {
             return new Guarded<T>(entity, name);
         }
@@ -28,7 +30,7 @@ namespace OpenMessage.Extensions
         /// <param name="message">The exception message to use.</param>
         /// <typeparam name="T">The type of the entity under guard</typeparam>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNull<T>(this Guarded<T> entity, string message = null)
+        public static void NotBeNull<T>(this Guarded<T> entity, string? message = null)
         {
             if (!TypeCache<T>.IsReferenceType || entity.Value != null)
                 return;
@@ -51,13 +53,14 @@ namespace OpenMessage.Extensions
         ///     Enforce that the entity is not null or default.
         /// </summary>
         /// <param name="entity">The entity under guard</param>
-        /// <param name="message">The exception message to use.</param>
         /// <typeparam name="T">The type of the entity under guard</typeparam>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNullOrDefault<T>(this Guarded<T> entity, string message = null)
+        public static void NotBeNullOrDefault<T>(this Guarded<T> entity)
         {
+            #nullable disable
             if (!EqualityComparer<T>.Default.Equals(entity.Value, default(T)))
                 return;
+            #nullable restore
 
             if (entity.Name == null)
                 Throw.ArgumentException();
@@ -69,9 +72,8 @@ namespace OpenMessage.Extensions
         ///     Enforce that the entity is not null or empty.
         /// </summary>
         /// <param name="entity">The entity under guard</param>
-        /// <param name="message">The exception message to use.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNullOrEmpty(this Guarded<string> entity, string message = null)
+        public static void NotBeNullOrEmpty(this Guarded<string> entity)
         {
             if (!string.IsNullOrEmpty(entity.Value))
                 return;
@@ -86,10 +88,9 @@ namespace OpenMessage.Extensions
         ///     Enforce that the entity is null and has elements in the array
         /// </summary>
         /// <param name="entity">The entity under guard</param>
-        /// <param name="message">The exception message to use.</param>
         /// <typeparam name="T">The type of the entity under guard</typeparam>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNullOrEmpty<T>(this Guarded<T[]> entity, string message = null)
+        public static void NotBeNullOrEmpty<T>(this Guarded<T[]> entity)
         {
             if (entity.Value?.Length > 0)
                 return;
@@ -104,10 +105,9 @@ namespace OpenMessage.Extensions
         ///     Enforce that the entity is null and has elements in the collection
         /// </summary>
         /// <param name="entity">The entity under guard</param>
-        /// <param name="message">The exception message to use.</param>
         /// <typeparam name="T">The type of the entity under guard</typeparam>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNullOrEmpty<T>(this Guarded<ICollection<T>> entity, string message = null)
+        public static void NotBeNullOrEmpty<T>(this Guarded<ICollection<T>> entity)
         {
             if (entity.Value?.Count > 0)
                 return;
@@ -122,9 +122,8 @@ namespace OpenMessage.Extensions
         ///     Enforce that the entity is not null, empty or whitespace.
         /// </summary>
         /// <param name="entity">The entity under guard</param>
-        /// <param name="message">The exception message to use.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NotBeNullOrWhiteSpace(this Guarded<string> entity, string message = null)
+        public static void NotBeNullOrWhiteSpace(this Guarded<string> entity)
         {
             if (!string.IsNullOrWhiteSpace(entity.Value))
                 return;

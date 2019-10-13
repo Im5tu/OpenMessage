@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Channels;
 using OpenMessage;
+using OpenMessage.Extensions;
 using OpenMessage.Memory;
 
 namespace Microsoft.Extensions.DependencyInjection

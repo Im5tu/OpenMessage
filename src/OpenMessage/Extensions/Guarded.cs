@@ -1,4 +1,6 @@
-﻿namespace OpenMessage.Extensions
+﻿#nullable enable
+
+namespace OpenMessage.Extensions
 {
     /// <summary>
     ///     Represents an entity which must be protected with one or more conditions
@@ -14,12 +16,12 @@
         /// <summary>
         ///     The name of the entity
         /// </summary>
-        public readonly string Name;
+        public readonly string? Name;
 
         /// <summary>
         ///     ctor
         /// </summary>
-        public Guarded(T value, string name = null)
+        public Guarded(T value, string? name = null)
         {
             Value = value;
             Name = name;

@@ -1,5 +1,7 @@
 ﻿using System;
 
+#nullable enable
+
 namespace OpenMessage.Extensions
 {
     /// <summary>
@@ -52,7 +54,7 @@ namespace OpenMessage.Extensions
         /// </summary>
         /// <param name="message">The message to to use in the exception</param>
         /// <exception cref="System.Exception">The exception with a specified message, if applicable</exception>
-        public static void Exception(string message = null)
+        public static void Exception(string? message = null)
         {
             if (message == null)
                 throw new Exception();
