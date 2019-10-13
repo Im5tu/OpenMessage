@@ -36,6 +36,7 @@ namespace OpenMessage.AWS.SNS
             if (!string.IsNullOrEmpty(config.RegionEndpoint))
                 snsConfig.RegionEndpoint = RegionEndpoint.GetBySystemName(config.RegionEndpoint);
 
+            config.AwsDispatcherConfiguration?.Invoke(snsConfig);
             _client = new AmazonSimpleNotificationServiceClient(snsConfig);
             _contentType = new MessageAttributeValue {DataType = AttributeType, StringValue = _serializer.ContentType};
             _valueTypeName = new MessageAttributeValue {DataType = AttributeType, StringValue = typeof(T).AssemblyQualifiedName};
@@ -54,9 +55,25 @@ namespace OpenMessage.AWS.SNS
                 TopicArn = _topicArn
             };
 
-            var response = await _client.PublishAsync(request, cancellationToken);
-            if (response.HttpStatusCode != HttpStatusCode.OK)
-                throw new Exception("Failed to send message");
+            try
+            {
+                var response = await _client.PublishAsync(request, cancellationToken);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
+                    ThrowExceptionFromHttpResponse(response.HttpStatusCode);
+            }
+            catch (AmazonSimpleNotificationServiceException e) when (e.ErrorCode == "NotFound")
+            {
+                ThrowExceptionFromHttpResponse(e.StatusCode, e);
+            }
+        }
+
+        private void ThrowExceptionFromHttpResponse(HttpStatusCode statusCode, Exception innerException = null)
+        {
+            var msg = $"Failed to send the message to SNS. Type: '{TypeCache<T>.FriendlyName}' Topic ARN: '{_topicArn ?? "<NULL>"}' Status Code: '{statusCode}'.";
+            if (innerException == null)
+                throw new Exception(msg);
+
+            throw new Exception(msg, innerException);
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)

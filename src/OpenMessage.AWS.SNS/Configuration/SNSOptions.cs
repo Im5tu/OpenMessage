@@ -1,3 +1,6 @@
+using System;
+using Amazon.SimpleNotificationService;
+
 namespace OpenMessage.AWS.SNS.Configuration
 {
     /// <summary>
@@ -20,5 +23,10 @@ namespace OpenMessage.AWS.SNS.Configuration
         /// The topic ARN to send to
         /// </summary>
         public string TopicArn { get; set; }
+
+        /// <summary>
+        /// Allow the configuration of the raw AWS SNS Dispatcher Config during initialization of the dispatcher.
+        /// </summary>
+        public Action<AmazonSimpleNotificationServiceConfig> AwsDispatcherConfiguration { get; set; }
     }
 }
