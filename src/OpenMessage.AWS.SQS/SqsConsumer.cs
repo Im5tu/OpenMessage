@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -43,10 +43,9 @@ namespace OpenMessage.AWS.SQS
                     if (!string.IsNullOrEmpty(_currentConsumerOptions.RegionEndpoint))
                         config.RegionEndpoint = RegionEndpoint.GetBySystemName(_currentConsumerOptions.RegionEndpoint);
 
-
-                    _client = new AmazonSQSClient(config);
+                    _currentConsumerOptions.AwsConsumerConfiguration?.Invoke(config);
                     _acknowledgementAction = msg => _client.DeleteMessageAsync(msg.QueueUrl, msg.ReceiptHandle);
-
+                    _client = new AmazonSQSClient(config);
                     return;
                 }
                 catch (Exception e)

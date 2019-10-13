@@ -1,4 +1,7 @@
-﻿namespace OpenMessage.AWS.SQS.Configuration
+﻿using System;
+using Amazon.SQS;
+
+namespace OpenMessage.AWS.SQS.Configuration
 {
     /// <summary>
     /// Options for an SQS consumer
@@ -34,5 +37,10 @@
         /// How long to leave the message on the queue before it becomes consumable again
         /// </summary>
         public int? VisibilityTimeout { get; set; }
+
+        /// <summary>
+        /// Allow the configuration of the raw AWS SQS Client Config during initialization of the consumer.
+        /// </summary>
+        public Action<AmazonSQSConfig>? AwsConsumerConfiguration { get; set; }
     }
 }
