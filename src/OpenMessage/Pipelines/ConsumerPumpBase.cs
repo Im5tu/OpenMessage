@@ -69,7 +69,7 @@ namespace OpenMessage.Pipelines
         {
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested && !ChannelReader.Completion.IsCompleted)
                 {
                     Message<T> msg = null;
                     try
@@ -83,6 +83,7 @@ namespace OpenMessage.Pipelines
                         await OnMessageConsumed(msg, Trace.WithActivity(ConsumeActivityName, activityId), cts.Token);
                     }
                     catch (TaskCanceledException) { }
+                    catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
                         Logger.LogError(ex, ex.Message);
