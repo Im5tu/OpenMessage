@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.73" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.79" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.0.0" />
   </ItemGroup>
 
