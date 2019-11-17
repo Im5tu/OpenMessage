@@ -82,8 +82,8 @@ With OpenMessage you can easily receive from multiple sources in a centralised p
 Here is a list of the available providers:
 
 - [x] Apache Kafka
-- [ ] AWS SQS
-- [ ] AWS SNS
+- [x] AWS SQS
+- [x] AWS SNS
 - [ ] AWS Kinesis
 - [ ] AWS EventBridge
 - [ ] Azure Event Hubs
