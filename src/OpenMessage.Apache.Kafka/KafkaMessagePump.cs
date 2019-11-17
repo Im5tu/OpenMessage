@@ -37,10 +37,10 @@ namespace OpenMessage.Apache.Kafka.HostedServices
                     if (kafkaMessage != null)
                         await ChannelWriter.WriteAsync(kafkaMessage, cancellationToken);
                 }
-                catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, ex.Message);
+                    if (!cancellationToken.IsCancellationRequested)
+                        Logger.LogError(ex, ex.Message);
                 }
         }
 

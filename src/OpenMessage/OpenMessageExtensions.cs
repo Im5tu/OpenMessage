@@ -259,7 +259,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection TryAddChannel<T>(this IServiceCollection services, Func<IServiceProvider, Channel<T>> channelCreator = null)
         {
             if (channelCreator == null)
-                services.TryAddSingleton(sp => Channel.CreateUnbounded<T>(new UnboundedChannelOptions {SingleReader = true, SingleWriter = false}));
+                services.TryAddSingleton(sp =>
+                {
+                    var pipelineOptions = sp.GetRequiredService<IOptionsMonitor<PipelineOptions<T>>>().CurrentValue;
+
+                    return pipelineOptions.UseBoundedChannel.GetValueOrDefault(true)
+                        ? Channel.CreateBounded<T>(new BoundedChannelOptions(pipelineOptions.BoundedChannelLimit.GetValueOrDefault(Environment.ProcessorCount * 10)) {SingleReader = true, SingleWriter = false})
+                        : Channel.CreateUnbounded<T>(new UnboundedChannelOptions {SingleReader = true, SingleWriter = false});
+                });
             else
                 services.TryAddSingleton(channelCreator);
 

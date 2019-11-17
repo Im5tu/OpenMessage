@@ -16,7 +16,7 @@ namespace OpenMessage.Pipelines
     /// <typeparam name="T">The type that is contained in the message</typeparam>
     public abstract class ConsumerPumpBase<T> : BackgroundService
     {
-        private static readonly string ConsumeActivityName = "Consumer.Process";
+        private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
 
         /// <summary>
         ///     The reader of the messaging channel
@@ -82,11 +82,10 @@ namespace OpenMessage.Pipelines
 
                         await OnMessageConsumed(msg, Trace.WithActivity(ConsumeActivityName, activityId), cts.Token);
                     }
-                    catch (TaskCanceledException) { }
-                    catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, ex.Message);
+                        if (!cancellationToken.IsCancellationRequested)
+                            Logger.LogError(ex, ex.Message);
 
                         if (Options.AutoAcknowledge == true && msg != null && msg is ISupportAcknowledgement aam)
                             await aam.AcknowledgeAsync(false);

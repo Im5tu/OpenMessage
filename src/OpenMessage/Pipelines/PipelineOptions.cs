@@ -22,5 +22,15 @@ namespace OpenMessage.Pipelines
         ///     Automatically confirm the message when the message has this capability. Default: true
         /// </summary>
         public bool? AutoAcknowledge { get; set; }
+
+        /// <summary>
+        ///     Determines whether or not to use a bounded channel.
+        /// </summary>
+        public bool? UseBoundedChannel { get; set; }
+
+        /// <summary>
+        ///     The number of messages to allow in the bounded channel.
+        /// </summary>
+        public int? BoundedChannelLimit { get; set; }
     }
 }
