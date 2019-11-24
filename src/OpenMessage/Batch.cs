@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenMessage.Pipelines
+namespace OpenMessage
 {
     public class Batch<T> : ISupportAcknowledgement, IReadOnlyCollection<Message<T>>
     {
