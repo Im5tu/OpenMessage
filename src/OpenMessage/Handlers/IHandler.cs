@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,10 +16,5 @@ namespace OpenMessage.Handlers
         /// <param name="cancellationToken">The cancellation token used</param>
         /// <returns>A task that completes when the handle method has completed</returns>
         Task HandleAsync(Message<T> message, CancellationToken cancellationToken);
-    }
-
-    public interface IBatchHandler<T>
-    {
-        Task HandleAsync(IReadOnlyCollection<Message<T>> messages, CancellationToken cancellationToken);
     }
 }

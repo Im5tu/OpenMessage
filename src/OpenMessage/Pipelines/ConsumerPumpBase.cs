@@ -15,7 +15,7 @@ namespace OpenMessage.Pipelines
     ///     The base type for providing a consumer of the internal messaging channel
     /// </summary>
     /// <typeparam name="T">The type that is contained in the batch</typeparam>
-    internal abstract class ConsumerPumpBase<T> : BackgroundService
+    public abstract class ConsumerPumpBase<T> : BackgroundService
     {
         private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
 

@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.DependencyInjection
             messagingBuilder.Services.AddSingleton<IHandler<T>>(instance);
             return messagingBuilder;
         }
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, IBatchHandler<T> instance)
+        public static IMessagingBuilder ConfigureBatchHandler<T>(this IMessagingBuilder messagingBuilder, IBatchHandler<T> instance)
         {
             messagingBuilder.Services.AddSingleton<IBatchHandler<T>>(instance);
             return messagingBuilder;
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IMessagingBuilder ConfigureBatchHandler<T>(this IMessagingBuilder messagingBuilder, Action<IReadOnlyCollection<Message<T>>> action)
         {
-            return messagingBuilder.ConfigureHandler<T>(new ActionBatchHandler<T>(action));
+            return messagingBuilder.ConfigureBatchHandler<T>(new ActionBatchHandler<T>(action));
         }
 
         /// <summary>

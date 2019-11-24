@@ -13,7 +13,7 @@ namespace OpenMessage.Pipelines
     ///     A simplistic implementation of <see cref="IPipeline{T}" />
     /// </summary>
     /// <typeparam name="T">The type the pipeline consumes</typeparam>
-    internal class SimplePipeline<T> : IPipeline<T>
+    public class SimplePipeline<T> : IPipeline<T>
     {
         private readonly IServiceScopeFactory _services;
 
