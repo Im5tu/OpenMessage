@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace OpenMessage.Pipelines
 {
@@ -32,5 +32,7 @@ namespace OpenMessage.Pipelines
         ///     The number of messages to allow in the bounded channel.
         /// </summary>
         public int? BoundedChannelLimit { get; set; }
+
+        public int BatchSize { get; set; } = 1000;
     }
 }

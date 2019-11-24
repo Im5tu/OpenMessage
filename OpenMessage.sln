@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8751802-CCE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8E4FD3C-F93D-40B6-9330-9415FB35B3E2}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		build.ps1 = build.ps1
@@ -18,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 		global.json = global.json
 		readme.md = readme.md
-		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B4E58D4F-40CD-45CA-AC6F-1DF4D9CB9A49}"
@@ -30,9 +30,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage", "src\OpenMessage\OpenMessage.csproj", "{7D68A283-6D90-4A50-B015-D8C2BB5C7184}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B4CC2690-ADC2-4B78-A961-06C0D6CD948F}"
-ProjectSection(SolutionItems) = preProject
-	docker-compose.yml = docker-compose.yml
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Azure.ServiceBus", "src\OpenMessage.Azure.ServiceBus\OpenMessage.Azure.ServiceBus.csproj", "{46AD3311-B953-49F4-8B7B-9E9AE5E368F7}"
 EndProject
@@ -68,19 +68,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Serializer.Utf8
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Serializer.Wire", "src\OpenMessage.Serializer.Wire\OpenMessage.Serializer.Wire.csproj", "{69CDC76A-75D0-4B77-80D4-AD09D19AD2F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Samples.Kafka", "samples\OpenMessage.Samples.Kafka\OpenMessage.Samples.Kafka.csproj", "{058D8B78-1999-427E-A12E-D09785EDA977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Samples.Kafka", "samples\OpenMessage.Samples.Kafka\OpenMessage.Samples.Kafka.csproj", "{058D8B78-1999-427E-A12E-D09785EDA977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.EventStore", "src\OpenMessage.EventStore\OpenMessage.EventStore.csproj", "{6D2199AB-4445-413A-8FE9-0E1898BA39F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.EventStore", "src\OpenMessage.EventStore\OpenMessage.EventStore.csproj", "{6D2199AB-4445-413A-8FE9-0E1898BA39F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.MediatR", "src\OpenMessage.MediatR\OpenMessage.MediatR.csproj", "{21B732EF-AE9A-4156-B7C7-D5AF87753430}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.MediatR", "src\OpenMessage.MediatR\OpenMessage.MediatR.csproj", "{21B732EF-AE9A-4156-B7C7-D5AF87753430}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.AWS.SNS", "src\OpenMessage.AWS.SNS\OpenMessage.AWS.SNS.csproj", "{73607B4A-82A7-4E12-8488-C7E1A1B58EC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.AWS.SNS", "src\OpenMessage.AWS.SNS\OpenMessage.AWS.SNS.csproj", "{73607B4A-82A7-4E12-8488-C7E1A1B58EC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Redis", "src\OpenMessage.Redis\OpenMessage.Redis.csproj", "{0D0AD4AE-EA78-4342-8E78-E572EBC2DDC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Redis", "src\OpenMessage.Redis\OpenMessage.Redis.csproj", "{0D0AD4AE-EA78-4342-8E78-E572EBC2DDC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Samples.AWS", "samples\OpenMessage.Samples.AWS\OpenMessage.Samples.AWS.csproj", "{8F9B755C-8AD8-4B90-A2D9-8F870309CA6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Samples.AWS", "samples\OpenMessage.Samples.AWS\OpenMessage.Samples.AWS.csproj", "{8F9B755C-8AD8-4B90-A2D9-8F870309CA6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Samples.Setup", "samples\OpenMessage.Samples.Setup\OpenMessage.Samples.Setup.csproj", "{BF9B5246-3F07-4583-8793-7732F13CF5ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenMessage.Samples.Setup", "samples\OpenMessage.Samples.Setup\OpenMessage.Samples.Setup.csproj", "{BF9B5246-3F07-4583-8793-7732F13CF5ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Samples.Batch", "samples\OpenMessage.Samples.Batch\OpenMessage.Samples.Batch.csproj", "{EFA8C854-2113-44FF-97C9-38E9808F78DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenMessage.Memory", "src\OpenMessage.Memory\OpenMessage.Memory.csproj", "{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -188,6 +192,14 @@ Global
 		{BF9B5246-3F07-4583-8793-7732F13CF5ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF9B5246-3F07-4583-8793-7732F13CF5ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF9B5246-3F07-4583-8793-7732F13CF5ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFA8C854-2113-44FF-97C9-38E9808F78DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFA8C854-2113-44FF-97C9-38E9808F78DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFA8C854-2113-44FF-97C9-38E9808F78DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFA8C854-2113-44FF-97C9-38E9808F78DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +230,8 @@ Global
 		{0D0AD4AE-EA78-4342-8E78-E572EBC2DDC4} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
 		{8F9B755C-8AD8-4B90-A2D9-8F870309CA6B} = {B4CC2690-ADC2-4B78-A961-06C0D6CD948F}
 		{BF9B5246-3F07-4583-8793-7732F13CF5ED} = {B4CC2690-ADC2-4B78-A961-06C0D6CD948F}
+		{EFA8C854-2113-44FF-97C9-38E9808F78DD} = {B4CC2690-ADC2-4B78-A961-06C0D6CD948F}
+		{C96BA8D4-9F3E-4414-BF5A-2D724F336DD1} = {E8751802-CCE4-4C40-9241-E5E01DBEF627}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C6B88150-594B-4719-8B95-AF622870727B}

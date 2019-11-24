@@ -1,5 +1,6 @@
-﻿using System;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,8 +14,8 @@ namespace OpenMessage.Pipelines
     /// <summary>
     ///     The base type for providing a consumer of the internal messaging channel
     /// </summary>
-    /// <typeparam name="T">The type that is contained in the message</typeparam>
-    public abstract class ConsumerPumpBase<T> : BackgroundService
+    /// <typeparam name="T">The type that is contained in the batch</typeparam>
+    internal abstract class ConsumerPumpBase<T> : BackgroundService
     {
         private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
 
@@ -24,7 +25,7 @@ namespace OpenMessage.Pipelines
         protected ChannelReader<Message<T>> ChannelReader { get; }
 
         /// <summary>
-        ///     The pipeline that gets called for each message
+        ///     The pipeline that gets called for each batch
         /// </summary>
         protected IPipeline<T> Pipeline { get; }
 
@@ -61,6 +62,7 @@ namespace OpenMessage.Pipelines
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             Logger.LogInformation("Starting consumer pump: " + GetType().GetFriendlyName());
+
             return base.StartAsync(cancellationToken);
         }
 
@@ -71,24 +73,28 @@ namespace OpenMessage.Pipelines
             {
                 while (!cancellationToken.IsCancellationRequested && !ChannelReader.Completion.IsCompleted)
                 {
-                    Message<T> msg = null;
+                    Batch<T> batch = null;
                     try
                     {
-                        msg = await ChannelReader.ReadAsync(cancellationToken);
+                        var messages = await ReadBatchAsync(cancellationToken);
+                        batch = new Batch<T>(messages);
+
+                        if (cancellationToken.IsCancellationRequested) return;
+
                         using var timedCts = new CancellationTokenSource(Options.PipelineTimeout);
                         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timedCts.Token);
 
-                        _ = TryGetActivityId(msg, out var activityId);
+                        var activityId = TryGetActivityId(batch);
 
-                        await OnMessageConsumed(msg, Trace.WithActivity(ConsumeActivityName, activityId), cts.Token);
+                        await OnMessageConsumed(batch, Trace.WithActivity(ConsumeActivityName, activityId), cts.Token);
                     }
                     catch (Exception ex)
                     {
                         if (!cancellationToken.IsCancellationRequested)
                             Logger.LogError(ex, ex.Message);
 
-                        if (Options.AutoAcknowledge == true && msg != null && msg is ISupportAcknowledgement aam)
-                            await aam.AcknowledgeAsync(false);
+                        if (Options.AutoAcknowledge == true && batch != null)
+                            await batch.AcknowledgeAsync(false);
                     }
                 }
             }
@@ -98,14 +104,31 @@ namespace OpenMessage.Pipelines
             }
         }
 
+        private async Task<IEnumerable<Message<T>>> ReadBatchAsync(CancellationToken cancellationToken)
+        {
+            var batchWait = TimeSpan.FromMilliseconds(5);
+            var count = Options.BatchSize;
+
+            using var batchCancellationToken = new CancellationTokenSource(batchWait);
+            using var combined = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, batchCancellationToken.Token);
+
+            var messages = new List<Message<T>>(Options.BatchSize);
+            while (!combined.IsCancellationRequested && count-- > 0)
+            {
+                messages.Add(await ChannelReader.ReadAsync(cancellationToken));
+            }
+
+            return messages;
+        }
+
         /// <summary>
-        ///     Occurs when a message is consumed.
+        ///     Occurs when a batch is consumed.
         /// </summary>
-        /// <param name="message">The message consumed.</param>
+        /// <param name="message">The batch consumed.</param>
         /// <param name="cancellationToken">The cancellation token configured to timeout in the configured time.</param>
         /// <param name="tracer">The current activity tracer.</param>
         /// <returns>A task that completes when the handle method completes</returns>
-        protected abstract Task OnMessageConsumed(Message<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken);
+        protected abstract Task OnMessageConsumed(Batch<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken);
 
         /// <inheritDoc />
         public override Task StopAsync(CancellationToken cancellationToken)
@@ -114,35 +137,29 @@ namespace OpenMessage.Pipelines
             return base.StartAsync(cancellationToken);
         }
 
-        private static bool TryGetActivityId(Message<T> message, out string activityId)
+        private static string TryGetActivityId(Batch<T> batch)
         {
-            activityId = null;
+            var activityIds = batch.Select(TryGetActivityId).Where(x => x != null);
 
+            return string.Join("|", activityIds);
+        }
+
+        private static string TryGetActivityId(Message<T> message)
+        {
             switch (message)
             {
                 case ISupportProperties p:
                 {
-                    foreach (var prop in p.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
-                        {
-                            activityId = prop.Value;
-                            return true;
-                        }
-                    break;
+                    return p.Properties.FirstOrDefault(x => x.Key == KnownProperties.ActivityId).Value;
                 }
                 case ISupportProperties<byte[]> p2:
                 {
-                    foreach (var prop in p2.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
-                        {
-                            activityId = Encoding.UTF8.GetString(prop.Value);
-                            return true;
-                        }
-                    break;
+                    var bytes = p2.Properties.FirstOrDefault(x => x.Key == KnownProperties.ActivityId).Value;
+                    return bytes == null ? null : Encoding.UTF8.GetString(bytes);
                 }
             }
 
-            return false;
+            return null;
         }
     }
 }

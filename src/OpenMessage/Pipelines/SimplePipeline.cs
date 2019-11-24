@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +13,7 @@ namespace OpenMessage.Pipelines
     ///     A simplistic implementation of <see cref="IPipeline{T}" />
     /// </summary>
     /// <typeparam name="T">The type the pipeline consumes</typeparam>
-    public class SimplePipeline<T> : IPipeline<T>
+    internal class SimplePipeline<T> : IPipeline<T>
     {
         private readonly IServiceScopeFactory _services;
 
@@ -56,7 +56,7 @@ namespace OpenMessage.Pipelines
         }
 
         /// <inheritDoc />
-        public async Task HandleAsync(Message<T> message, CancellationToken cancellationToken)
+        public async Task HandleAsync(Batch<T> message, CancellationToken cancellationToken)
         {
             using var scope = _services.CreateScope();
 
@@ -64,18 +64,28 @@ namespace OpenMessage.Pipelines
         }
 
         /// <summary>
-        ///     Handles the specified message
+        ///     Handles the specified batch
         /// </summary>
         /// <param name="serviceScope">The scoped service provider</param>
-        /// <param name="message">The message to handle</param>
+        /// <param name="batch">The batch to handle</param>
         /// <param name="cancellationToken">The cancellation token to use for asynchronous operations</param>
-        /// <returns>A task that completes when the message has been handled</returns>
-        protected virtual async Task OnHandleAsync(IServiceProvider serviceScope, Message<T> message, CancellationToken cancellationToken)
+        /// <returns>A task that completes when the batch has been handled</returns>
+        protected virtual async Task OnHandleAsync(IServiceProvider serviceScope, Batch<T> batch, CancellationToken cancellationToken)
         {
             try
             {
                 foreach (var handler in serviceScope.GetRequiredService<IEnumerable<IHandler<T>>>())
-                    await handler.HandleAsync(message, cancellationToken);
+                {
+                    foreach (var message in batch)
+                    {
+                        await handler.HandleAsync(message, cancellationToken);
+                    }
+                }
+
+                foreach (var handler in serviceScope.GetRequiredService<IEnumerable<IBatchHandler<T>>>())
+                {
+                    await handler.HandleAsync(batch.Messages, cancellationToken);
+                }
             }
             catch (Exception e)
             {

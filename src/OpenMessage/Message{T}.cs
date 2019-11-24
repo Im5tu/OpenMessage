@@ -1,4 +1,4 @@
-﻿namespace OpenMessage
+namespace OpenMessage
 {
     /// <summary>
     ///     Represents a message from another system of a give type

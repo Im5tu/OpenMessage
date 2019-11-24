@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ namespace OpenMessage.Pipelines
         {
         }
 
-        protected override async Task OnMessageConsumed(Message<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken)
+        protected override async Task OnMessageConsumed(Batch<T> message, Trace.ActivityTracer tracer, CancellationToken cancellationToken)
         {
             using (tracer)
             {

@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenMessage.Pipelines
@@ -12,9 +12,9 @@ namespace OpenMessage.Pipelines
         /// <summary>
         ///     Handles the specified message
         /// </summary>
-        /// <param name="message">The message to handle</param>
+        /// <param name="batch">The batch of messages to handle</param>
         /// <param name="cancellationToken">The cancellation token to use for asynchronous operations</param>
         /// <returns>A task that completes when the message has been handled</returns>
-        Task HandleAsync(Message<T> message, CancellationToken cancellationToken);
+        Task HandleAsync(Batch<T> batch, CancellationToken cancellationToken);
     }
 }
