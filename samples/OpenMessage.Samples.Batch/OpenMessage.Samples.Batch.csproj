@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenMessage.Memory\OpenMessage.Memory.csproj" />
     <ProjectReference Include="..\OpenMessage.Samples.Core\OpenMessage.Samples.Core.csproj" />
   </ItemGroup>
 

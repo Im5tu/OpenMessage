@@ -3,8 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using OpenMessage.Memory;
 using OpenMessage.Pipelines;
 using OpenMessage.Samples.Core.Models;
 
@@ -36,7 +34,7 @@ namespace OpenMessage.Samples.Batch
 
                     host.Services.PostConfigure<PipelineOptions<SimpleModel>>(options =>
                     {
-                        options.BatchTimeout = TimeSpan.FromMilliseconds(50);
+                        options.BatchTimeout = TimeSpan.FromMilliseconds(30);
                         options.BatchSize = 500;
                     });
 

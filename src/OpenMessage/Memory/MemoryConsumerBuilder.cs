@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using OpenMessage.Configuration;
 
 namespace OpenMessage.Memory
@@ -11,7 +11,6 @@ namespace OpenMessage.Memory
 
         public override void Build()
         {
-            HostBuilder.Services.AddConsumerService<MemoryMessagePump<T>>(ConsumerId);
         }
     }
 }
