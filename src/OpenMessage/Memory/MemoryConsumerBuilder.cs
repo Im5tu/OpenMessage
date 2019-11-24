@@ -11,6 +11,7 @@ namespace OpenMessage.Memory
 
         public override void Build()
         {
+            HostBuilder.Services.TryAddConsumerService<T>();
         }
     }
 }

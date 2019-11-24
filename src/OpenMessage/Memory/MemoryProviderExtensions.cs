@@ -15,7 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IMemoryConsumerBuilder<T> ConfigureMemoryConsumer<T>(this IMessagingBuilder messagingBuilder)
         {
-            messagingBuilder.Services.TryAddConsumerService<T>();
             return new MemoryConsumerBuilder<T>(messagingBuilder);
         }
 
