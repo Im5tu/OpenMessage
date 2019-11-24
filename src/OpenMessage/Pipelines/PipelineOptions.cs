@@ -33,6 +33,14 @@ namespace OpenMessage.Pipelines
         /// </summary>
         public int? BoundedChannelLimit { get; set; }
 
-        public int BatchSize { get; set; } = 1000;
+        /// <summary>
+        ///     The size of each batch to process. Guaranteed to be equal to or less than this value.
+        /// </summary>
+        public int BatchSize { get; set; } = 1;
+
+        /// <summary>
+        ///     The maximum amount of time to retrieve <see cref="BatchSize"/> elements before processing the batch
+        /// </summary>
+        public TimeSpan BatchTimeout { get; set; } = TimeSpan.FromMilliseconds(10);
     }
 }

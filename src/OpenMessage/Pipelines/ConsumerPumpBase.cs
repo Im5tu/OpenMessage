@@ -106,12 +106,10 @@ namespace OpenMessage.Pipelines
 
         private async Task<IEnumerable<Message<T>>> ReadBatchAsync(CancellationToken cancellationToken)
         {
-            var batchWait = TimeSpan.FromMilliseconds(5);
-            var count = Options.BatchSize;
-
-            using var batchCancellationToken = new CancellationTokenSource(batchWait);
+            using var batchCancellationToken = new CancellationTokenSource(Options.BatchTimeout);
             using var combined = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, batchCancellationToken.Token);
 
+            var count = Options.BatchSize;
             var messages = new List<Message<T>>(Options.BatchSize);
             while (!combined.IsCancellationRequested && count-- > 0)
             {

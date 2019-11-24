@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using OpenMessage.Memory;
 using OpenMessage.Pipelines;
 using OpenMessage.Samples.Core.Models;
@@ -33,6 +33,13 @@ namespace OpenMessage.Samples.Batch
 
                     host.ConfigureMemoryConsumer<SimpleModel>().Build();
                     host.ConfigureMemoryDispatcher<SimpleModel>().Build();
+
+                    host.Services.PostConfigure<PipelineOptions<SimpleModel>>(options =>
+                    {
+                        options.BatchTimeout = TimeSpan.FromMilliseconds(50);
+                        options.BatchSize = 500;
+                    });
+
                 })
                 .Build()
                 .RunAsync();
