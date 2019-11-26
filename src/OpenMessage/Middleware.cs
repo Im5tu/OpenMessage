@@ -2,12 +2,66 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenMessage
 {
+    public class Batcher<T>
+    {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly int _batchSize = 100;
+        private readonly TimeSpan _batchTimeout = TimeSpan.FromMilliseconds(2000);
+        private readonly Channel<(T, TaskCompletionSource<bool>)> _channel = Channel.CreateUnbounded<(T, TaskCompletionSource<bool>)>();
+
+        public async Task Add(T t, Func<IReadOnlyCollection<T>, Task> action)
+        {
+            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await _channel.Writer.WriteAsync((t, taskCompletionSource));
+
+            if (await _semaphore.WaitAsync(0))
+            {
+                //We won the semaphore lottery. Lets process the batch
+                await ProcessBatch(action);
+
+                _semaphore.Release();
+            }
+
+            await taskCompletionSource.Task;
+        }
+
+        private async Task ProcessBatch(Func<IReadOnlyCollection<T>, Task> action)
+        {
+            using var cancellationToken = new CancellationTokenSource(_batchTimeout);
+
+            var count = _batchSize;
+            var messages = new List<T>(_batchSize);
+            var completionSources = new List<TaskCompletionSource<bool>>(_batchSize);
+
+            while (count > 0 && !cancellationToken.IsCancellationRequested)
+            {
+                if (_channel.Reader.TryRead(out var valueTuple))
+                {
+                    messages.Add(valueTuple.Item1);
+                    completionSources.Add(valueTuple.Item2);
+
+                    count--;
+                }
+            }
+
+
+            await action(messages);
+
+            foreach (var completionSource in completionSources)
+            {
+                completionSource.TrySetResult(true);
+            }
+        }
+    }
+
     public static class BatchMiddlewareBuilderExtensions
     {
         /// <summary>
@@ -179,7 +233,7 @@ namespace OpenMessage
         {
             MessageDelegate.Batch<T> batchApp = (messages, cancellationToken, context) =>
             {
-                context.ServiceProvider.GetRequiredService<ILogger<MessageDelegate.Single<T>>>().LogInformation($"Call the batch handlers {messages}");
+                context.ServiceProvider.GetRequiredService<ILogger<MessageDelegate.Single<T>>>().LogInformation($"Call the batch handlers * {messages.Count}");
 
                 return Task.CompletedTask;
             };
@@ -189,12 +243,18 @@ namespace OpenMessage
                 batchApp = middleware(batchApp);
             }
 
-            return _middlewareBuilder.Build((message, token, context) =>
+            //Batched messages shouldn't be cancel-able??
+            return _middlewareBuilder.Build(async (message, cancellationToken, context) =>
             {
-                //create a new scope
-                //create a new logging context
-                //combine messages
-                return batchApp(new[] {message}, token, context);
+                var batcher = context.ServiceProvider.GetRequiredService<Batcher<Message<T>>>();
+
+
+                await batcher.Add(message, async messages =>
+                {
+                    //start new scopes?
+                    await batchApp.Invoke(messages, new CancellationToken(), context);
+                });
+
             });
         }
     }

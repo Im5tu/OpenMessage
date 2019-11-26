@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +21,8 @@ namespace OpenMessage.Tests
             _testOutputHelper = testOutputHelper;
         }
 
+        private readonly Channel<int> _channel = Channel.CreateUnbounded<int>();
+
         [Fact]
         public async Task Test1()
         {
@@ -26,6 +30,7 @@ namespace OpenMessage.Tests
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();
+                    services.AddSingleton(typeof(Batcher<>));
                     services.AddSingleton<MyBatchMiddleware>();
                     services.AddSingleton<MyMiddleware>();
                 })
@@ -35,36 +40,37 @@ namespace OpenMessage.Tests
                 });
 
             var builder = new MiddlewareBuilder<string>()
-                .Use<MyMiddleware>()
-                .Use(async (message, next) =>
-                {
-                    _testOutputHelper.WriteLine("Before 1");
-                    await next();
-                    _testOutputHelper.WriteLine("After 1");
-                })
-                .Use(async (message, next) =>
-                {
-                    _testOutputHelper.WriteLine("Before 2");
-                    await next();
-                    _testOutputHelper.WriteLine("After 2");
-                })
+                //.Use<MyMiddleware>()
+                //.Use(async (message, next) =>
+                //{
+                //    _testOutputHelper.WriteLine("Before 1");
+                //    await next();
+                //    _testOutputHelper.WriteLine("After 1");
+                //})
+                //.Use(async (message, next) =>
+                //{
+                //    _testOutputHelper.WriteLine("Before 2");
+                //    await next();
+                //    _testOutputHelper.WriteLine("After 2");
+                //})
                 .Batch()
-                .Use<MyBatchMiddleware>()
-                .Use(async (messages, next) =>
-                {
-                    _testOutputHelper.WriteLine("Before Batch 1");
-                    await next();
-                    _testOutputHelper.WriteLine("After Batch 1");
-                })
+                //.Use<MyBatchMiddleware>()
+                //.Use(async (messages, next) =>
+                //{
+                //    _testOutputHelper.WriteLine("Before Batch 1");
+                //    await next();
+                //    _testOutputHelper.WriteLine("After Batch 1");
+                //})
                 ;
 
             var serviceProvider = host.Build().Services;
             var pipline = builder.Build();
 
-            await pipline.Invoke(new Message<string>(), CancellationToken.None, new MessageContext(serviceProvider));
-            //await pipline.Invoke(new Message<string>(), CancellationToken.None, new MessageContext(serviceProvider));
-            //await pipline.Invoke(new Message<string>(), CancellationToken.None, new MessageContext(serviceProvider));
-            //await pipline.Invoke(new Message<string>(), CancellationToken.None, new MessageContext(serviceProvider));
+            await Task.WhenAll(Enumerable.Range(0, 1000).Select(_ =>
+            {
+
+                return pipline.Invoke(new Message<string>(), CancellationToken.None, new MessageContext(serviceProvider));
+            }));
         }
 
         private class MyMiddleware : IMiddleware<string>
