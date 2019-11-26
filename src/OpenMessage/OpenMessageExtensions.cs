@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -116,6 +116,12 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
         }
+
+        public static IMiddlewareBuilder<T> ConfigureMiddleware<T>(this IMessagingBuilder messagingBuilder)
+        {
+            return new MiddlewareBuilder<T>();
+        }
+
 
         /// <summary>
         ///     Adds the specified pipeline

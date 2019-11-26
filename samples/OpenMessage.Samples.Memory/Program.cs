@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,9 +33,39 @@ namespace OpenMessage.Samples.Memory
                         if (counter % 1000 == 0)
                             Console.WriteLine("Counter: " + counter);
                     });
+
+                    host.ConfigureMiddleware<string>()
+                        .Use(async (message, cancellationToken, next) =>
+                        {
+                            await next(message);
+                        })
+                        .Use(async (message, next) =>
+                        {
+                            await next(message);
+                        })
+                        .Use(async (message, next) =>
+                        {
+                            await next();
+                        })
+                        .Use<MyMiddleware>()
+                        .UseBatch()
+                        .Use(async (messages, cancellationToken, next) =>
+                        {
+                            await next(messages);
+                        })
+                        .Use(async (messages, next) =>
+                        {
+                            await next(messages);
+                        })
+                        .Use(async (messages, next) =>
+                        {
+                            await next();
+                        })
+                        .Use<MyBatchedMiddleware>();
                 })
                 .Build()
                 .RunAsync();
         }
     }
+
 }
