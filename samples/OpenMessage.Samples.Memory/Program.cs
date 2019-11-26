@@ -34,34 +34,31 @@ namespace OpenMessage.Samples.Memory
                             Console.WriteLine("Counter: " + counter);
                     });
 
-                    host.ConfigureMiddleware<string>()
-                        .Use(async (message, cancellationToken, next) =>
-                        {
-                            await next(message);
-                        })
-                        .Use(async (message, next) =>
-                        {
-                            await next(message);
-                        })
+                    var builder = host.ConfigureMiddleware<string>()
                         .Use(async (message, next) =>
                         {
                             await next();
                         })
-                        .Use<MyMiddleware>()
-                        .UseBatch()
-                        .Use(async (messages, cancellationToken, next) =>
-                        {
-                            await next(messages);
-                        })
-                        .Use(async (messages, next) =>
-                        {
-                            await next(messages);
-                        })
-                        .Use(async (messages, next) =>
+                        .Use(async (message, next) =>
                         {
                             await next();
-                        })
-                        .Use<MyBatchedMiddleware>();
+                        });
+                    //.Use<MyMiddleware>()
+                    //.UseBatch()
+                    //.Use(async (messages, cancellationToken, next) =>
+                    //{
+                    //    await next(messages);
+                    //})
+                    //.Use(async (messages, next) =>
+                    //{
+                    //    await next(messages);
+                    //})
+                    //.Use(async (messages, next) =>
+                    //{
+                    //    await next();
+                    //})
+                    //.Use<MyBatchedMiddleware>();
+
                 })
                 .Build()
                 .RunAsync();
