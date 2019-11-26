@@ -30,7 +30,7 @@ namespace OpenMessage.Tests
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();
-                    services.AddSingleton(typeof(Batcher<>));
+                    services.AddSingleton(typeof(ShittyBatcher<>));
                     services.AddSingleton<MyBatchMiddleware>();
                     services.AddSingleton<MyMiddleware>();
                 })

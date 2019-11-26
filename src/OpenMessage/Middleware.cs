@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -9,56 +10,48 @@ using Microsoft.Extensions.Logging;
 
 namespace OpenMessage
 {
-    public class Batcher<T>
+    public class ShittyBatcher<T>
     {
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         private readonly int _batchSize = 100;
-        private readonly TimeSpan _batchTimeout = TimeSpan.FromMilliseconds(2000);
-        private readonly Channel<(T, TaskCompletionSource<bool>)> _channel = Channel.CreateUnbounded<(T, TaskCompletionSource<bool>)>();
+        private readonly TimeSpan _batchTimeout = TimeSpan.FromMilliseconds(500);
+        private IList<T> _list;
+        private TaskCompletionSource<bool> _batchFullSource;
+        private TaskCompletionSource<bool> _batchProcessedSource;
 
         public async Task Add(T t, Func<IReadOnlyCollection<T>, Task> action)
         {
-            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            await _channel.Writer.WriteAsync((t, taskCompletionSource));
-
-            if (await _semaphore.WaitAsync(0))
+            if (_list == null)
             {
-                //We won the semaphore lottery. Lets process the batch
-                await ProcessBatch(action);
-
-                _semaphore.Release();
+                _list = new List<T>();
+                _batchFullSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _batchProcessedSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
-            await taskCompletionSource.Task;
-        }
+            var list = _list;
+            var batchFullSource = _batchFullSource;
+            var batchProcessedSource = _batchProcessedSource;
 
-        private async Task ProcessBatch(Func<IReadOnlyCollection<T>, Task> action)
-        {
-            using var cancellationToken = new CancellationTokenSource(_batchTimeout);
+            list.Add(t);
 
-            var count = _batchSize;
-            var messages = new List<T>(_batchSize);
-            var completionSources = new List<TaskCompletionSource<bool>>(_batchSize);
-
-            while (count > 0 && !cancellationToken.IsCancellationRequested)
+            if (list.Count == 1)
             {
-                if (_channel.Reader.TryRead(out var valueTuple))
-                {
-                    messages.Add(valueTuple.Item1);
-                    completionSources.Add(valueTuple.Item2);
+                //first
+                await Task.WhenAny(Task.Delay(_batchTimeout), batchFullSource.Task);
 
-                    count--;
-                }
+                _list = null;
+                _batchFullSource = null;
+                _batchProcessedSource = null;
+
+                await action(new ReadOnlyCollection<T>(list));
+
+                batchProcessedSource.TrySetResult(true);
+            }
+            else if (list.Count >= _batchSize)
+            {
+                batchFullSource.TrySetResult(true);
             }
 
-
-            await action(messages);
-
-            foreach (var completionSource in completionSources)
-            {
-                completionSource.TrySetResult(true);
-            }
+            await batchProcessedSource.Task;
         }
     }
 
@@ -246,7 +239,7 @@ namespace OpenMessage
             //Batched messages shouldn't be cancel-able??
             return _middlewareBuilder.Build(async (message, cancellationToken, context) =>
             {
-                var batcher = context.ServiceProvider.GetRequiredService<Batcher<Message<T>>>();
+                var batcher = context.ServiceProvider.GetRequiredService<ShittyBatcher<Message<T>>>();
 
 
                 await batcher.Add(message, async messages =>
