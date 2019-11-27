@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OpenMessage.Pipelines;
+using OpenMessage.Pipelines.Builders;
+using OpenMessage.Pipelines.Middleware;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace OpenMessage.MediatR.Tests
+{
+    public class MediatRTests : IDisposable
+    {
+        private readonly ITestOutputHelper _testOutputHelper;
+        private readonly IList<string> _history = new List<string>();
+        private readonly IHostBuilder _hostBuilder;
+        private IHost _app;
+
+        public MediatRTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+            _hostBuilder = Host.CreateDefaultBuilder()
+                .ConfigureServices(services =>
+                {
+                    services
+                        .AddMediatR(typeof(MediatRTests).Assembly)
+                        .AddSingleton<IList<string>>(_ => _history);
+                })
+                .ConfigureMessaging(builder =>
+                {
+                    builder.AddMediatR();
+
+                    builder
+                        .ConfigureMemory<string>()
+                        .ConfigureOptions(options =>
+                        {
+                            options.DispatcherFireAndForget = false;
+                        })
+                        .Build();
+
+                    builder
+                        .ConfigurePipeline<string>(options =>
+                        {
+                            options.PipelineType = PipelineType.Serial;
+                        })
+                        .Use<AutoAcknowledgeMiddleware<string>>()
+                        .Use(async (message, next) =>
+                        {
+                            _history.Add("Middleware");
+                            await next();
+                            _history.Add("Middleware");
+                        })
+                        .Batch()
+                        .RunMediatR();
+                });
+        }
+
+        [Fact]
+        public async Task MediatRHandlersAreCalled()
+        {
+            _app = _hostBuilder.Build();
+
+            await _app.StartAsync();
+            await _app.Services.GetRequiredService<IDispatcher<string>>().DispatchAsync("");
+
+            var i = 0;
+            Assert.Equal("Middleware", _history.ElementAtOrDefault(i++));
+            Assert.Equal(nameof(BatchHandler), _history.ElementAtOrDefault(i++));
+            Assert.Equal(nameof(Handler), _history.ElementAtOrDefault(i++));
+            Assert.Equal("Middleware", _history.ElementAtOrDefault(i++));
+        }
+
+        private class Handler : INotificationHandler<MediatRMessage<string>>
+        {
+            private readonly IList<string> _history;
+
+            public Handler(IList<string> history)
+            {
+                _history = history;
+            }
+
+            public Task Handle(MediatRMessage<string> notification, CancellationToken cancellationToken)
+            {
+                _history.Add(nameof(Handler));
+
+                return Task.CompletedTask;
+            }
+        }
+
+        private class BatchHandler : INotificationHandler<MediatRBatch<string>>
+        {
+            private readonly IList<string> _history;
+
+            public BatchHandler(IList<string> history)
+            {
+                _history = history;
+            }
+
+            public Task Handle(MediatRBatch<string> notification, CancellationToken cancellationToken)
+            {
+                _history.Add(nameof(BatchHandler));
+
+                return Task.CompletedTask;
+            }
+        }
+
+        public void Dispose() => _app?.Dispose();
+    }
+}

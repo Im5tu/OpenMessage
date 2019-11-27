@@ -20,7 +20,7 @@ namespace OpenMessage.Memory
 
         public Task DispatchAsync(Message<T> entity, CancellationToken cancellationToken)
         {
-            if (!_options.Value.FireAndForget)
+            if (!_options.Value.DispatcherFireAndForget)
             {
                 entity = new AwaitableMessage<T>(entity);
             }
@@ -30,7 +30,7 @@ namespace OpenMessage.Memory
 
         public Task DispatchAsync(T entity, CancellationToken cancellationToken)
         {
-            var message = _options.Value.FireAndForget
+            var message = _options.Value.DispatcherFireAndForget
                 ? new Message<T> { Value = entity }
                 : new AwaitableMessage<T> { Value = entity };
 

@@ -27,7 +27,7 @@ namespace OpenMessage.Tests
                 {
                     builder
                         .ConfigureMemory<string>()
-                        .ConfigureOptions(options => options.FireAndForget = _fireAndForget)
+                        .ConfigureOptions(options => options.DispatcherFireAndForget = _fireAndForget)
                         .Build();
 
                     builder.ConfigurePipeline<string>(options =>

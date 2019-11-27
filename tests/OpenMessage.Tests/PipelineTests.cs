@@ -36,7 +36,7 @@ namespace OpenMessage.Tests
                         .ConfigureMemory<string>()
                         .ConfigureOptions(options =>
                         {
-                            options.FireAndForget = false;
+                            options.DispatcherFireAndForget = false;
                         })
                         .Build();
 

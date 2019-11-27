@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator = null) => ConfigurePipeline<T>(messagingBuilder, (_, options) => configurator(options));
 
-        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> configurator = null)
+        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> configurator)
         {
             if (configurator != null)
             {
