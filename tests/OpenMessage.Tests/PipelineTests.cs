@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace OpenMessage.Tests
 {
-    public class PipelineTests : IDisposable
+    public class PipelineTests : IDisposable, IAsyncLifetime
     {
         private readonly IHost _app;
         private readonly IList<string> _history = new List<string>();
@@ -34,16 +34,9 @@ namespace OpenMessage.Tests
                 {
                     builder
                         .ConfigureMemory<string>()
-                        .ConfigureOptions(options =>
-                        {
-                            options.DispatcherFireAndForget = false;
-                        })
                         .Build();
 
-                    builder.ConfigurePipeline<string>(options =>
-                        {
-                            options.PipelineType = PipelineType.Serial;
-                        })
+                    builder.ConfigurePipeline<string>()
                         .Use<AutoAcknowledgeMiddleware<string>>()
                         .Use<CustomMiddleware>()
                         .Use(async (message, next) =>
@@ -65,6 +58,10 @@ namespace OpenMessage.Tests
                             _history.Add("Run");
                             return Task.CompletedTask;
                         });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddAwaitableMemoryDispatcher<string>();
                 });
 
             _app = host.Build();
@@ -90,6 +87,8 @@ namespace OpenMessage.Tests
         }
 
         public void Dispose() => _app?.Dispose();
+        public Task InitializeAsync() => Task.CompletedTask;
+        public Task DisposeAsync() => _app?.StopAsync();
 
         private class CustomMiddleware : IMiddleware<string>
         {

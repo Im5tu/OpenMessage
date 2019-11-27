@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenMessage.Testing\OpenMessage.Testing.csproj" />
     <ProjectReference Include="..\..\src\OpenMessage\OpenMessage.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace OpenMessage.Memory
+namespace OpenMessage.Testing.Memory
 {
     /// <summary>
     /// A <see cref="Message{T}"/> that can be awaited as a <see cref="Task"/>. The task will complete when the message is acknowledged by the consumer.

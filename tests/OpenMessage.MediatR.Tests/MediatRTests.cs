@@ -14,16 +14,14 @@ using Xunit.Abstractions;
 
 namespace OpenMessage.MediatR.Tests
 {
-    public class MediatRTests : IDisposable
+    public class MediatRTests : IDisposable, IAsyncLifetime
     {
-        private readonly ITestOutputHelper _testOutputHelper;
         private readonly IList<string> _history = new List<string>();
         private readonly IHostBuilder _hostBuilder;
         private IHost _app;
 
         public MediatRTests(ITestOutputHelper testOutputHelper)
         {
-            _testOutputHelper = testOutputHelper;
             _hostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
@@ -37,10 +35,6 @@ namespace OpenMessage.MediatR.Tests
 
                     builder
                         .ConfigureMemory<string>()
-                        .ConfigureOptions(options =>
-                        {
-                            options.DispatcherFireAndForget = false;
-                        })
                         .Build();
 
                     builder
@@ -57,6 +51,10 @@ namespace OpenMessage.MediatR.Tests
                         })
                         .Batch()
                         .RunMediatR();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddAwaitableMemoryDispatcher<string>();
                 });
         }
 
@@ -110,5 +108,7 @@ namespace OpenMessage.MediatR.Tests
         }
 
         public void Dispose() => _app?.Dispose();
+        public Task InitializeAsync() => Task.CompletedTask;
+        public Task DisposeAsync() => _app?.StopAsync();
     }
 }
