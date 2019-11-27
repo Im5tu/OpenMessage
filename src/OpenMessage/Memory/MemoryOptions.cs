@@ -1,4 +1,5 @@
 using OpenMessage.Pipelines;
+using OpenMessage.Pipelines.Middleware;
 
 namespace OpenMessage.Memory
 {
@@ -9,7 +10,10 @@ namespace OpenMessage.Memory
     public class MemoryOptions<T>
     {
         /// <summary>
-        /// Defaults to true. When false, awaiting a <see cref="IDispatcher{T}"/> will wait for the message to be consumed by the consumer (note that <see cref="PipelineOptions{T}"/> PipelineType must also be set to <see cref="PipelineType.Serial"/>)
+        /// Defaults to true. When false, awaiting a <see cref="IDispatcher{T}"/> will wait for the message to be consumed by the consumer; note that
+        ///
+        /// - <see cref="PipelineOptions{T}"/> PipelineType must be set to <see cref="PipelineType.Serial"/>
+        /// - <see cref="AutoAcknowledgeMiddleware{T}"/> must be added to the pipeline
         /// </summary>
         public bool FireAndForget { get; set; } = true;
     }
