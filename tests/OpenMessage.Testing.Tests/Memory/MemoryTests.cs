@@ -16,14 +16,16 @@ namespace OpenMessage.Testing.Tests.Memory
 
         public MemoryTests()
         {
-            _hostBuilder = Host.CreateDefaultBuilder()
+            _hostBuilder = Host
+                .CreateDefaultBuilder()
                 .ConfigureMessaging(builder =>
                 {
                     builder
                         .ConfigureMemory<string>()
                         .Build();
 
-                    builder.ConfigurePipeline<string>()
+                    builder
+                        .ConfigurePipeline<string>()
                         .Use<AutoAcknowledgeMiddleware<string>>()
                         .Run(message =>
                         {
@@ -31,7 +33,6 @@ namespace OpenMessage.Testing.Tests.Memory
                             return Task.CompletedTask;
                         });
                 });
-
         }
 
         [Fact]
