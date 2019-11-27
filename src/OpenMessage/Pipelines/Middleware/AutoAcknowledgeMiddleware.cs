@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -31,11 +32,23 @@ namespace OpenMessage.Pipelines.Middleware
         /// <returns></returns>
         public async Task Invoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
-            await next(message, cancellationToken, messageContext);
-
-            if (message is ISupportAcknowledgement acknowledgement)
+            try
             {
-                await acknowledgement.AcknowledgeAsync();
+                await next(message, cancellationToken, messageContext);
+
+                if (message is ISupportAcknowledgement acknowledgement)
+                {
+                    await acknowledgement.AcknowledgeAsync(positivelyAcknowledge: true);
+                }
+            }
+            catch
+            {
+                if (message is ISupportAcknowledgement acknowledgement)
+                {
+                    await acknowledgement.AcknowledgeAsync(positivelyAcknowledge: false);
+                }
+
+                throw;
             }
         }
     }

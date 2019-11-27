@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,12 +18,9 @@ namespace OpenMessage.Pipelines.Pumps
     /// <typeparam name="T">The type that is contained in the message</typeparam>
     public class ConsumerPump<T> : BackgroundService
     {
-        private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
-        private readonly ParallelPipelineInitiator<T> _parallelPipelineInitiator;
-        private readonly SerialPipelineInitiator<T> _serialPipelineInitiator;
         private readonly ChannelReader<Message<T>> _channelReader;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly PipelineDelegate.SingleMiddleware<T> _pipeline;
-        private readonly IOptionsMonitor<PipelineOptions<T>> _optionsMonitor;
         private readonly ILogger<ConsumerPump<T>> _logger;
 
         /// <summary>
@@ -30,16 +28,12 @@ namespace OpenMessage.Pipelines.Pumps
         /// </summary>
         public ConsumerPump(ChannelReader<Message<T>> channelReader,
             IPipelineBuilder<T> pipelineBuilder,
-            IOptionsMonitor<PipelineOptions<T>> optionsMonitor,
-            ILogger<ConsumerPump<T>> logger,
-            ParallelPipelineInitiator<T> parallelPipelineInitiator,
-            SerialPipelineInitiator<T> serialPipelineInitiator)
+            IServiceScopeFactory serviceScopeFactory,
+            ILogger<ConsumerPump<T>> logger)
         {
-            _parallelPipelineInitiator = parallelPipelineInitiator;
-            _serialPipelineInitiator = serialPipelineInitiator;
             _channelReader = channelReader ?? throw new ArgumentNullException(nameof(channelReader));
+            _serviceScopeFactory = serviceScopeFactory;
             _pipeline = pipelineBuilder?.Build() ?? throw new ArgumentNullException(nameof(pipelineBuilder));
-            _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -57,20 +51,15 @@ namespace OpenMessage.Pipelines.Pumps
             {
                 while (!cancellationToken.IsCancellationRequested && !_channelReader.Completion.IsCompleted)
                 {
-                    Message<T> msg = null;
                     try
                     {
-                        msg = await _channelReader.ReadAsync(cancellationToken);
-                        using var timedCts = new CancellationTokenSource(_optionsMonitor.CurrentValue.PipelineTimeout);
-                        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timedCts.Token);
+                        var message = await _channelReader.ReadAsync(cancellationToken);
 
-                        _ = TryGetActivityId(msg, out var activityId);
+                        using (var scope = _serviceScopeFactory.CreateScope())
+                        {
+                            await _pipeline(message, cancellationToken, new MessageContext(scope.ServiceProvider));
+                        }
 
-                        var tracer = Trace.WithActivity(ConsumeActivityName, activityId);
-
-                        var initiator = GetPipelineInitiator();
-
-                        await initiator.Initiate(tracer, _pipeline, msg, cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -85,52 +74,11 @@ namespace OpenMessage.Pipelines.Pumps
             }
         }
 
-        private IPipelineInitiator<T> GetPipelineInitiator()
-        {
-            return _optionsMonitor.CurrentValue.PipelineType switch
-            {
-                PipelineType.Serial => (IPipelineInitiator<T> ) _serialPipelineInitiator,
-                PipelineType.Parallel => (IPipelineInitiator<T>) _parallelPipelineInitiator,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-
         /// <inheritDoc />
         public override Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping consumer pump: " + GetType().GetFriendlyName());
             return base.StopAsync(cancellationToken);
-        }
-
-        private static bool TryGetActivityId(Message<T> message, out string activityId)
-        {
-            activityId = null;
-
-            switch (message)
-            {
-                case ISupportProperties p:
-                {
-                    foreach (var prop in p.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
-                        {
-                            activityId = prop.Value;
-                            return true;
-                        }
-                    break;
-                }
-                case ISupportProperties<byte[]> p2:
-                {
-                    foreach (var prop in p2.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
-                        {
-                            activityId = Encoding.UTF8.GetString(prop.Value);
-                            return true;
-                        }
-                    break;
-                }
-            }
-
-            return false;
         }
     }
 }

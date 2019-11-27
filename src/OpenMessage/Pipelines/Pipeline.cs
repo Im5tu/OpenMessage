@@ -16,6 +16,9 @@ namespace OpenMessage.Pipelines
         public static IPipelineBuilder<T> CreateDefaultBuilder<T>()
         {
             return new PipelineBuilder<T>()
+                .Use<FireAndForgetMiddleware<T>>()
+                .Use<TraceMiddleware<T>>()
+                .Use<TimeoutMiddleware<T>>()
                 .Use<AutoAcknowledgeMiddleware<T>>();
         }
     }

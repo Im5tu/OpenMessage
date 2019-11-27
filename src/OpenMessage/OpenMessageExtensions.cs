@@ -47,6 +47,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddScoped(typeof(HandlerPipelineEndpoint<>));
                 services.AddScoped(typeof(BatchHandlerPipelineEndpoint<>));
                 services.AddScoped(typeof(AutoAcknowledgeMiddleware<>));
+                services.AddScoped(typeof(FireAndForgetMiddleware<>));
+                services.AddScoped(typeof(TimeoutMiddleware<>));
+                services.AddScoped(typeof(TraceMiddleware<>));
             });
         }
 
