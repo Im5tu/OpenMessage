@@ -25,8 +25,6 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class OpenMessageExtensions
     {
-        private static readonly HashSet<Type> RegisteredConsumers = new HashSet<Type>();
-
         /// <summary>
         ///     Adds OpenMessage
         /// </summary>
@@ -273,10 +271,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
             services.TryAddSingleton<IPipelineBuilder<T>>(_ => Pipeline.CreateDefaultBuilder<T>());
 
-            if (!RegisteredConsumers.Contains(typeof(T)))
+            if (!services.Any(x => x.ServiceType == typeof(IHostedService) && x.ImplementationType == typeof(ConsumerPump<T>)))
             {
                 services.AddSingleton<IHostedService, ConsumerPump<T>>();
-                RegisteredConsumers.Add(typeof(T));
             }
 
             return services;
