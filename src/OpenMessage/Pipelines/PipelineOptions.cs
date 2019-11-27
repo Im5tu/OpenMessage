@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace OpenMessage.Pipelines
 {
@@ -17,11 +17,6 @@ namespace OpenMessage.Pipelines
         ///     Determines the pipeline type to use. Default: Parallel.
         /// </summary>
         public PipelineType PipelineType { get; set; } = PipelineType.Parallel;
-
-        /// <summary>
-        ///     Automatically confirm the message when the message has this capability. Default: true
-        /// </summary>
-        public bool? AutoAcknowledge { get; set; }
 
         /// <summary>
         ///     Determines whether or not to use a bounded channel.
