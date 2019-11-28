@@ -14,20 +14,20 @@ using Xunit.Abstractions;
 
 namespace OpenMessage.Tests
 {
-    public class PipelineTests : IDisposable, IAsyncLifetime
+    public class BatchPipelineTests : IDisposable, IAsyncLifetime
     {
         private IHost _app;
         private readonly IList<string> _history = new List<string>();
-        private Func<Message<string>, Task> _run;
         private readonly IHostBuilder _host;
+        private Func<IReadOnlyCollection<Message<string>>, Task> _run;
 
-        public PipelineTests(ITestOutputHelper testOutputHelper)
+        public BatchPipelineTests(ITestOutputHelper testOutputHelper)
         {
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();
-                    services.AddSingleton<CustomMiddleware>();
+                    services.AddSingleton<CustomBatchMiddleware>();
                     services.AddSingleton(_history);
                 })
                 .ConfigureLogging(builder => builder.AddTestOutputHelper(testOutputHelper))
@@ -39,19 +39,21 @@ namespace OpenMessage.Tests
 
                     builder.ConfigurePipeline<string>()
                         .UseDefaultMiddleware()
-                        .Use<CustomMiddleware>()
-                        .Use(async (message, next) =>
+                        .Batch()
+                        .Use<CustomBatchMiddleware>()
+                        .Use(async (messages, next) =>
                         {
-                            _history.Add("Func");
+                            _history.Add("BatchFunc");
                             await next();
-                            _history.Add("Func");
+                            _history.Add("BatchFunc");
                         })
-                        .Run(async message =>
+                        .Run(async messages =>
                         {
                             _history.Add("Run");
+
                             if (_run != null)
                             {
-                                await _run(message);
+                                await _run(messages);
                             }
                         });
                 })
@@ -76,7 +78,7 @@ namespace OpenMessage.Tests
         }
 
         [Fact]
-        public async Task MiddlewareAndRunAreExecutedInTheCorrectOrder()
+        public async Task BatchMiddlewareAndRunAreExecutedInTheCorrectOrder()
         {
             _app = _host.Build();
 
@@ -85,11 +87,11 @@ namespace OpenMessage.Tests
 
             var i = 0;
 
-            Assert.Equal(nameof(CustomMiddleware), _history[i++]);
-            Assert.Equal("Func", _history[i++]);
+            Assert.Equal(nameof(CustomBatchMiddleware), _history[i++]);
+            Assert.Equal("BatchFunc", _history[i++]);
             Assert.Equal("Run", _history[i++]);
-            Assert.Equal("Func", _history[i++]);
-            Assert.Equal(nameof(CustomMiddleware), _history[i++]);
+            Assert.Equal("BatchFunc", _history[i++]);
+            Assert.Equal(nameof(CustomBatchMiddleware), _history[i++]);
         }
 
         public void Dispose() => _app?.Dispose();
@@ -108,29 +110,28 @@ namespace OpenMessage.Tests
 
                 return Task.CompletedTask;
             }
-
         }
 
-        private class CustomMiddleware : IMiddleware<string>
+        private class CustomBatchMiddleware : IBatchMiddleware<string>
         {
-            private readonly ILogger<CustomMiddleware> _logger;
+            private readonly ILogger<CustomBatchMiddleware> _logger;
             private readonly IList<string> _history;
 
-            public CustomMiddleware(ILogger<CustomMiddleware> logger, IList<string> history)
+            public CustomBatchMiddleware(ILogger<CustomBatchMiddleware> logger, IList<string> history)
             {
                 _logger = logger;
                 _history = history;
             }
 
-            public async Task Invoke(Message<string> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<string> next)
+            public async Task Invoke(IReadOnlyCollection<Message<string>> messages, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.BatchMiddleware<string> next)
             {
-                _logger.LogInformation($"Before {nameof(CustomMiddleware)}");
-                _history.Add(nameof(CustomMiddleware));
+                _logger.LogInformation($"Before {nameof(CustomBatchMiddleware)}");
+                _history.Add(nameof(CustomBatchMiddleware));
 
-                await next(message, cancellationToken, messageContext);
+                await next(messages, cancellationToken, messageContext);
 
-                _history.Add(nameof(CustomMiddleware));
-                _logger.LogInformation($"After {nameof(CustomMiddleware)}");
+                _history.Add(nameof(CustomBatchMiddleware));
+                _logger.LogInformation($"After {nameof(CustomBatchMiddleware)}");
             }
         }
     }
