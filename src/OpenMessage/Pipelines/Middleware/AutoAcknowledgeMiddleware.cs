@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.Pipelines.Middleware
 {
@@ -10,17 +9,6 @@ namespace OpenMessage.Pipelines.Middleware
     /// <typeparam name="T"></typeparam>
     public class AutoAcknowledgeMiddleware<T> : IMiddleware<T>
     {
-        private readonly ILogger<AutoAcknowledgeMiddleware<T>> _logger;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logger"></param>
-        public AutoAcknowledgeMiddleware(ILogger<AutoAcknowledgeMiddleware<T>> logger)
-        {
-            _logger = logger;
-        }
-
         /// <summary>
         /// 
         /// </summary>

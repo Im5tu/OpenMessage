@@ -4,10 +4,15 @@ using System.Threading.Tasks;
 
 namespace OpenMessage.Pipelines.Middleware
 {
+    /// <summary>
+    /// Adds an activity trace and starts a logger scope
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class TraceMiddleware<T> : IMiddleware<T>
     {
         private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
 
+        /// <inheritdoc />
         public async Task Invoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
             _ = TryGetActivityId(message, out var activityId);

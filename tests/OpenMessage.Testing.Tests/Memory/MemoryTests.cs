@@ -26,7 +26,7 @@ namespace OpenMessage.Testing.Tests.Memory
 
                     builder
                         .ConfigurePipeline<string>()
-                        .Use<AutoAcknowledgeMiddleware<string>>()
+                        .UseDefaultMiddleware()
                         .Run(message =>
                         {
                             _finished = true;

@@ -37,7 +37,7 @@ namespace OpenMessage.Tests
                         .Build();
 
                     builder.ConfigurePipeline<string>()
-                        .Use<AutoAcknowledgeMiddleware<string>>()
+                        .UseDefaultMiddleware()
                         .Use<CustomMiddleware>()
                         .Use(async (message, next) =>
                         {

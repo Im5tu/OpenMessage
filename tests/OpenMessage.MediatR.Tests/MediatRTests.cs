@@ -38,11 +38,8 @@ namespace OpenMessage.MediatR.Tests
                         .Build();
 
                     builder
-                        .ConfigurePipeline<string>(options =>
-                        {
-                            options.PipelineType = PipelineType.Serial;
-                        })
-                        .Use<AutoAcknowledgeMiddleware<string>>()
+                        .ConfigurePipeline<string>()
+                        .UseDefaultMiddleware()
                         .Use(async (message, next) =>
                         {
                             _history.Add("Middleware");

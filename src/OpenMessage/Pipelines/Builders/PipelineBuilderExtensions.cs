@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenMessage.Pipelines.Endpoints;
+using OpenMessage.Pipelines.Middleware;
 
 namespace OpenMessage.Pipelines.Builders
 {
@@ -11,6 +12,22 @@ namespace OpenMessage.Pipelines.Builders
     public static class PipelineBuilderExtensions
     {
         #region Use
+
+        /// <summary>
+        /// Adds <see cref="TraceMiddleware{T}"/>, <see cref="LoggerScopeMiddleware{T}"/>, <see cref="ServiceScopeMiddleware{T}"/>, <see cref="TimeoutMiddleware{T}"/>, <see cref="AutoAcknowledgeMiddleware{T}"/> to the pipeline
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IPipelineBuilder<T> UseDefaultMiddleware<T>(this IPipelineBuilder<T> builder)
+        {
+            return builder
+                .Use<TraceMiddleware<T>>()
+                .Use<LoggerScopeMiddleware<T>>()
+                .Use<ServiceScopeMiddleware<T>>()
+                .Use<TimeoutMiddleware<T>>()
+                .Use<AutoAcknowledgeMiddleware<T>>();
+        }
 
         /// <summary>
         /// Adds a middleware step into the pipeline

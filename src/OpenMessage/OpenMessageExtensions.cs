@@ -40,14 +40,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.TryAddSingleton<ISerializer, DefaultSerializer>();
                 services.TryAddSingleton<IDeserializer, DefaultDeserializer>();
                 services.AddSingleton(typeof(ShittyBatcher<>));
-                services.AddSingleton(typeof(SerialPipelineInitiator<>));
-                services.AddSingleton(typeof(ParallelPipelineInitiator<>));
+                services.AddSingleton(typeof(AutoAcknowledgeMiddleware<>));
+                services.AddSingleton(typeof(ServiceScopeMiddleware<>));
+                services.AddSingleton(typeof(TimeoutMiddleware<>));
+                services.AddSingleton(typeof(TraceMiddleware<>));
+                services.AddSingleton(typeof(LoggerScopeMiddleware<>));
                 services.AddScoped(typeof(HandlerPipelineEndpoint<>));
                 services.AddScoped(typeof(BatchHandlerPipelineEndpoint<>));
-                services.AddScoped(typeof(AutoAcknowledgeMiddleware<>));
-                services.AddScoped(typeof(FireAndForgetMiddleware<>));
-                services.AddScoped(typeof(TimeoutMiddleware<>));
-                services.AddScoped(typeof(TraceMiddleware<>));
             });
         }
 
@@ -142,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
         }
 
-        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator = null) => ConfigurePipeline<T>(messagingBuilder, (_, options) => configurator(options));
+        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator = null) => ConfigurePipeline<T>(messagingBuilder, (_, options) => configurator?.Invoke(options));
 
         public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> configurator)
         {
@@ -269,7 +268,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddChannel(channelCreator);
             services.TryAddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
-            services.TryAddSingleton<IPipelineBuilder<T>>(_ => Pipeline.CreateDefaultBuilder<T>());
+            services.TryAddSingleton<IPipelineBuilder<T>>(_ => new PipelineBuilder<T>().UseDefaultMiddleware());
 
             if (!services.Any(x => x.ServiceType == typeof(IHostedService) && x.ImplementationType == typeof(ConsumerPump<T>)))
             {
