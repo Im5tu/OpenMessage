@@ -14,8 +14,19 @@ namespace OpenMessage.Pipelines.Builders
     /// <typeparam name="T"></typeparam>
     internal class PipelineBuilder<T> : IPipelineBuilder<T>
     {
+        private readonly IMessagingBuilder _builder;
         private readonly IList<Func<PipelineDelegate.SingleMiddleware<T>, PipelineDelegate.SingleMiddleware<T>>> _middleware = new List<Func<PipelineDelegate.SingleMiddleware<T>, PipelineDelegate.SingleMiddleware<T>>>();
-        private BatchPipelineBuilder<T> _batchPipelineBuilder;
+
+        public PipelineBuilder()
+        {
+
+        }
+
+        public PipelineBuilder(IMessagingBuilder builder)
+        {
+            _builder = builder;
+            _builder.Services.AddSingleton<IPipelineBuilder<T>>(this);
+        }
 
         public IPipelineBuilder<T> Use(Func<PipelineDelegate.SingleMiddleware<T>, PipelineDelegate.SingleMiddleware<T>> middleware)
         {
@@ -63,18 +74,17 @@ namespace OpenMessage.Pipelines.Builders
 
         public IBatchPipelineBuilder<T> Batch()
         {
-            return _batchPipelineBuilder = new BatchPipelineBuilder<T>();
+            if(_builder == null) throw new Exception($"Batched pipelines can only be created when configured via an {nameof(IMessagingBuilder)}");
+
+            Run<BatchPipelineEndpoint<T>>();
+            return new BatchPipelineBuilder<T>(_builder);
         }
 
         public PipelineDelegate.SingleMiddleware<T> Build()
         {
-            var app = _batchPipelineBuilder?.Build();
+            Run<HandlerPipelineEndpoint<T>>();
 
-            if (app == null)
-            {
-                Run<HandlerPipelineEndpoint<T>>();
-                app = (message, cancellationToken, context) => Task.CompletedTask;
-            }
+            PipelineDelegate.SingleMiddleware<T> app = (message, cancellationToken, context) => Task.CompletedTask;
 
             foreach (var middleware in _middleware.Reverse())
             {

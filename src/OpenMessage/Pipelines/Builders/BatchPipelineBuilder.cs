@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using OpenMessage.Pipelines.Endpoints;
 using OpenMessage.Pipelines.Middleware;
 
@@ -17,7 +15,14 @@ namespace OpenMessage.Pipelines.Builders
     internal class BatchPipelineBuilder<T> : IBatchPipelineBuilder<T>
     {
         private readonly IList<Func<PipelineDelegate.BatchMiddleware<T>, PipelineDelegate.BatchMiddleware<T>>> _middleware = new List<Func<PipelineDelegate.BatchMiddleware<T>, PipelineDelegate.BatchMiddleware<T>>>();
-        
+        private readonly IMessagingBuilder _builder;
+
+        public BatchPipelineBuilder(IMessagingBuilder builder)
+        {
+            _builder = builder;
+            _builder.Services.AddSingleton<IBatchPipelineBuilder<T>>(this);
+        }
+
         public IBatchPipelineBuilder<T> Use(Func<PipelineDelegate.BatchMiddleware<T>, PipelineDelegate.BatchMiddleware<T>> middleware)
         {
             _middleware.Add(middleware);
@@ -62,7 +67,7 @@ namespace OpenMessage.Pipelines.Builders
             });
         }
 
-        public PipelineDelegate.SingleMiddleware<T> Build()
+        public PipelineDelegate.BatchMiddleware<T> Build()
         {
             Run<BatchHandlerPipelineEndpoint<T>>();
 
@@ -73,25 +78,7 @@ namespace OpenMessage.Pipelines.Builders
                 batchApp = middleware(batchApp);
             }
 
-            //Create a special piece of endpoint that funnels single message into a batch
-            return async (message, cancellationToken, context) =>
-            {
-                var batcher = context.ServiceProvider.GetRequiredService<ShittyBatcher<Message<T>>>();
-
-                await batcher.Add(message, async messages =>
-                {
-                    //Is this the right place to do this?
-                    var logger = context.ServiceProvider.GetRequiredService<ILogger<BatchPipelineBuilder<T>>>();
-                    var serviceScopeFactory = context.ServiceProvider.GetRequiredService<IServiceScopeFactory>();
-
-                    using(var scope = serviceScopeFactory.CreateScope())
-                    using (logger.BeginScope($"Batch - {messages.Count} Items"))
-                    {
-                        await batchApp.Invoke(messages, new CancellationToken(), new MessageContext(scope.ServiceProvider));
-
-                    }
-                });
-            };
+            return batchApp;
         }
     }
 }

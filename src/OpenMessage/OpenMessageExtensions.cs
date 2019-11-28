@@ -39,12 +39,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSerialization();
                 services.TryAddSingleton<ISerializer, DefaultSerializer>();
                 services.TryAddSingleton<IDeserializer, DefaultDeserializer>();
-                services.AddSingleton(typeof(ShittyBatcher<>));
                 services.AddSingleton(typeof(AutoAcknowledgeMiddleware<>));
                 services.AddSingleton(typeof(ServiceScopeMiddleware<>));
                 services.AddSingleton(typeof(TimeoutMiddleware<>));
                 services.AddSingleton(typeof(TraceMiddleware<>));
                 services.AddSingleton(typeof(LoggerScopeMiddleware<>));
+                services.AddSingleton(typeof(BatchPipelineEndpoint<>));
                 services.AddScoped(typeof(HandlerPipelineEndpoint<>));
                 services.AddScoped(typeof(BatchHandlerPipelineEndpoint<>));
             });
@@ -150,12 +150,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 messagingBuilder.Services.Configure<PipelineOptions<T>>(options => { configurator(messagingBuilder.Context, options); });
             }
 
-            var pipelineBuilder = new PipelineBuilder<T>();
-
-            messagingBuilder.Services.AddSingleton<IPipelineBuilder<T>>(pipelineBuilder);
             messagingBuilder.Services.AddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
 
-            return pipelineBuilder;
+            return new PipelineBuilder<T>(messagingBuilder);
         }
 
         /// <summary>

@@ -19,6 +19,16 @@ namespace OpenMessage.Pipelines
         public PipelineType PipelineType { get; set; } = PipelineType.Parallel;
 
         /// <summary>
+        ///     The maximum size of each batch 
+        /// </summary>
+        public int BatchSize { get; set; } = 100;
+
+        /// <summary>
+        ///     The timeout before an undersized (less than <see cref="BatchSize"/>) batch is created.
+        /// </summary>
+        public TimeSpan BatchTimeout { get; set; } = TimeSpan.FromMilliseconds(100);
+
+        /// <summary>
         ///     Determines whether or not to use a bounded channel.
         /// </summary>
         public bool? UseBoundedChannel { get; set; }

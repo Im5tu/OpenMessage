@@ -40,6 +40,6 @@ namespace OpenMessage.Pipelines.Builders
         /// Builds the pipeline
         /// </summary>
         /// <returns></returns>
-        PipelineDelegate.SingleMiddleware<T> Build();
+        PipelineDelegate.BatchMiddleware<T> Build();
     }
 }

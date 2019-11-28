@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenMessage.Pipelines.Builders;
-using OpenMessage.Pipelines.Middleware;
 
 namespace OpenMessage.Pipelines.Pumps
 {
@@ -18,9 +17,9 @@ namespace OpenMessage.Pipelines.Pumps
     {
         private readonly ChannelReader<Message<T>> _channelReader;
         private readonly IServiceProvider _serviceProvider;
-        private readonly PipelineDelegate.SingleMiddleware<T> _pipeline;
         private readonly ILogger<ConsumerPump<T>> _logger;
         private readonly IOptionsMonitor<PipelineOptions<T>> _options;
+        private IPipelineBuilder<T> _pipelineBuilder;
 
         /// <summary>
         ///     ctor
@@ -33,7 +32,7 @@ namespace OpenMessage.Pipelines.Pumps
         {
             _channelReader = channelReader ?? throw new ArgumentNullException(nameof(channelReader));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _pipeline = pipelineBuilder?.Build() ?? throw new ArgumentNullException(nameof(pipelineBuilder));
+            _pipelineBuilder = pipelineBuilder ?? throw new ArgumentNullException(nameof(pipelineBuilder));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
@@ -50,6 +49,8 @@ namespace OpenMessage.Pipelines.Pumps
         {
             try
             {
+                var pipeline = _pipelineBuilder.Build();
+
                 while (!cancellationToken.IsCancellationRequested && !_channelReader.Completion.IsCompleted)
                 {
                     try
@@ -58,7 +59,7 @@ namespace OpenMessage.Pipelines.Pumps
 
                         if (_options.CurrentValue.PipelineType == PipelineType.Serial)
                         {
-                            await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
+                            await pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
                         }
                         else
                         {
@@ -66,7 +67,7 @@ namespace OpenMessage.Pipelines.Pumps
                             {
                                 try
                                 {
-                                    await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
+                                    await pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
                                 }
                                 catch (Exception e)
                                 {
