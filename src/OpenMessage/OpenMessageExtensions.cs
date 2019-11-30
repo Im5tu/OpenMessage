@@ -203,7 +203,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="T">The type that the handler handles</typeparam>
         public static void TryConfigureDefaultPipeline<T>(this IMessagingBuilder messagingBuilder)
         {
-            messagingBuilder.Services.TryAddSingleton(new PipelineBuilder<T>(messagingBuilder).UseDefaultMiddleware());
+            if (messagingBuilder.Services.Any(x => x.ServiceType == typeof(IPipelineBuilder<T>)))
+                return;
+
+            messagingBuilder.Services.TryAddSingleton<IPipelineBuilder<T>>(new PipelineBuilder<T>(messagingBuilder).UseDefaultMiddleware());
         }
 
         /// <summary>
