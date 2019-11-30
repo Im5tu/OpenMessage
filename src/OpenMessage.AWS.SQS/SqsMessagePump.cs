@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Logging;
-using OpenMessage.Pipelines;
+using OpenMessage.Pipelines.Pumps;
 
 namespace OpenMessage.AWS.SQS
 {

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using OpenMessage.Pipelines;
+using OpenMessage.Pipelines.Pumps;
 
 namespace OpenMessage.Apache.Kafka.HostedServices
 {

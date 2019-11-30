@@ -1,20 +1,21 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenMessage.Handlers
 {
     /// <summary>
-    ///     Defines a handler for a message
+    ///     Defines a handler for a batch of messages
     /// </summary>
     /// <typeparam name="T">The type contained in a message</typeparam>
-    public interface IHandler<T>
+    public interface IBatchHandler<T>
     {
         /// <summary>
-        ///     Handles the specified message
+        ///     Handles the batch of messages
         /// </summary>
-        /// <param name="message">The message to handle</param>
+        /// <param name="messages">Messages to be handled</param>
         /// <param name="cancellationToken">The cancellation token used</param>
         /// <returns>A task that completes when the handle method has completed</returns>
-        Task HandleAsync(Message<T> message, CancellationToken cancellationToken);
+        Task HandleAsync(IReadOnlyCollection<Message<T>> messages, CancellationToken cancellationToken);
     }
 }

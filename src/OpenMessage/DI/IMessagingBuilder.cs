@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -16,5 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         ///     The service collection of the application being constructed
         /// </summary>
         IServiceCollection Services { get; }
+
+
     }
 }

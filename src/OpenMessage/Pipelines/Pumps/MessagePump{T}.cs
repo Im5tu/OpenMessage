@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace OpenMessage.Pipelines
+namespace OpenMessage.Pipelines.Pumps
 {
     /// <summary>
     ///     Defines the basis of a message pump
@@ -26,7 +26,7 @@ namespace OpenMessage.Pipelines
         /// <summary>
         ///     ctor
         /// </summary>
-        public MessagePump(ChannelWriter<Message<T>> channelWriter,
+        protected MessagePump(ChannelWriter<Message<T>> channelWriter,
             ILogger logger)
         {
             ChannelWriter = channelWriter ?? throw new ArgumentNullException(nameof(channelWriter));

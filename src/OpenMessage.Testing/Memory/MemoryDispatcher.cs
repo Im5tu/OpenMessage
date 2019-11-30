@@ -4,13 +4,13 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using OpenMessage.Extensions;
 
-namespace OpenMessage.Memory
+namespace OpenMessage.Testing.Memory
 {
-    internal sealed class MemoryDispatcher<T> : IDispatcher<T>
+    internal sealed class AwaitableMemoryDispatcher<T> : IDispatcher<T>
     {
         private readonly ChannelWriter<Message<T>> _channelWriter;
 
-        public MemoryDispatcher(ChannelWriter<Message<T>> channelWriter)
+        public AwaitableMemoryDispatcher(ChannelWriter<Message<T>> channelWriter)
         {
             _channelWriter = channelWriter ?? throw new ArgumentNullException(nameof(channelWriter));
         }
@@ -23,12 +23,18 @@ namespace OpenMessage.Memory
             if (!await _channelWriter.WaitToWriteAsync(cancellationToken))
                 Throw.Exception("Cannot write to channel");
 
-            await _channelWriter.WriteAsync(entity, cancellationToken);
+            var awaitableMessage = new AwaitableMessage<T>(entity);
+
+            await _channelWriter.WriteAsync(awaitableMessage, cancellationToken);
+
+            await Task.Delay(1000);
+
+            await awaitableMessage;
         }
 
         public Task DispatchAsync(T entity, CancellationToken cancellationToken)
         {
-            return DispatchAsync(new Message<T>{ Value = entity }, cancellationToken);
+            return DispatchAsync(new Message<T>{Value = entity }, cancellationToken);
         }
     }
 }

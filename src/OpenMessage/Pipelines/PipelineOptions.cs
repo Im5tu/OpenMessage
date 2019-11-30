@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace OpenMessage.Pipelines
 {
@@ -19,9 +19,14 @@ namespace OpenMessage.Pipelines
         public PipelineType PipelineType { get; set; } = PipelineType.Parallel;
 
         /// <summary>
-        ///     Automatically confirm the message when the message has this capability. Default: true
+        ///     The maximum size of each batch 
         /// </summary>
-        public bool? AutoAcknowledge { get; set; }
+        public int BatchSize { get; set; } = 100;
+
+        /// <summary>
+        ///     The timeout before an undersized (less than <see cref="BatchSize"/>) batch is created.
+        /// </summary>
+        public TimeSpan BatchTimeout { get; set; } = TimeSpan.FromMilliseconds(100);
 
         /// <summary>
         ///     Determines whether or not to use a bounded channel.

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using OpenMessage.Samples.Core.Models;
 
 namespace OpenMessage.Samples.Memory
@@ -24,7 +22,7 @@ namespace OpenMessage.Samples.Memory
                 .ConfigureMessaging(host =>
                 {
                     // Adds a memory based consumer and dispatcher
-                    host.ConfigureMemory<SimpleModel>();
+                    host.ConfigureMemory<SimpleModel>().Build();
 
                     // Adds a handler that writes to console every 1000 messages
                     host.ConfigureHandler<SimpleModel>(msg =>
@@ -38,4 +36,5 @@ namespace OpenMessage.Samples.Memory
                 .RunAsync();
         }
     }
+
 }
