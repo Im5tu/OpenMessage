@@ -164,24 +164,29 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IMessagingBuilder ConfigureAllHandlers(this IMessagingBuilder messagingBuilder, params Assembly[] assembliesToScan)
         {
             if (assembliesToScan?.Length == 0)
-            {
-                assembliesToScan = new [] {Assembly.GetEntryAssembly()};
-            }
+                assembliesToScan = new[] {Assembly.GetEntryAssembly()};
 
-            var ht = typeof(IHandler<>);
+            var handlerTypes = new[] {typeof(IHandler<>), typeof(IBatchHandler<>)};
+
             IEnumerable<Type> HandlerInterfaceFilter(TypeInfo ti)
-                => ti.ImplementedInterfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == ht);
+            {
+                return ti.ImplementedInterfaces.Where(x => x.IsGenericType && handlerTypes.Contains(x.GetGenericTypeDefinition()));
+            }
 
             foreach (var assembly in assembliesToScan)
             {
-                var types = assembly.GetTypes().Where(x => !x.IsAbstract && !x.IsInterface && HandlerInterfaceFilter(x.GetTypeInfo()).Any());
+                var types = assembly.GetTypes()
+                                    .Where(x => !x.IsAbstract &&
+                                                !x.IsInterface &&
+                                                HandlerInterfaceFilter(x.GetTypeInfo())
+                                                    .Any());
+
                 foreach (var handlerType in types)
                 {
                     var implementedHandlers = HandlerInterfaceFilter(handlerType.GetTypeInfo());
+
                     foreach (var implementedHandler in implementedHandlers)
-                    {
                         messagingBuilder.Services.AddScoped(implementedHandler, handlerType);
-                    }
                 }
             }
 
