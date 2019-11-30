@@ -4,19 +4,17 @@ using System.Threading.Tasks;
 namespace OpenMessage.Pipelines.Middleware
 {
     /// <summary>
-    /// Middleware contract for a pipeline
+    ///     Middleware contract for a pipeline
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public interface IMiddleware<T>
     {
         /// <summary>
-        /// 
+        ///     Invokes the middleware
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="cancellationToken"></param>
-        /// <param name="messageContext"></param>
-        /// <param name="next"></param>
-        /// <returns></returns>
+        /// <param name="message">The message to handle</param>
+        /// <param name="cancellationToken">The current cancellation token</param>
+        /// <param name="messageContext">The context of the message</param>
+        /// <param name="next">The next middleware to run</param>
         Task Invoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next);
     }
 }

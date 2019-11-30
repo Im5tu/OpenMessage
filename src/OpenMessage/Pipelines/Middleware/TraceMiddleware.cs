@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 namespace OpenMessage.Pipelines.Middleware
 {
     /// <summary>
-    /// Adds an activity trace and starts a logger scope
+    ///     Adds an activity trace and starts a logger scope
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class TraceMiddleware<T> : IMiddleware<T>
+    public class TraceMiddleware<T> : Middleware<T>
     {
         private static readonly string ConsumeActivityName = "OpenMessage.Consumer.Process";
 
-        /// <inheritdoc />
-        public async Task Invoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
+        /// <inheritDoc />
+        protected override async Task OnInvoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
             _ = TryGetActivityId(message, out var activityId);
+
             using (Trace.WithActivity(ConsumeActivityName, activityId))
             {
                 await next(message, cancellationToken, messageContext);
@@ -34,8 +34,10 @@ namespace OpenMessage.Pipelines.Middleware
                         if (prop.Key == KnownProperties.ActivityId)
                         {
                             activityId = prop.Value;
+
                             return true;
                         }
+
                     break;
                 }
                 case ISupportProperties<byte[]> p2:
@@ -44,8 +46,10 @@ namespace OpenMessage.Pipelines.Middleware
                         if (prop.Key == KnownProperties.ActivityId)
                         {
                             activityId = Encoding.UTF8.GetString(prop.Value);
+
                             return true;
                         }
+
                     break;
                 }
             }

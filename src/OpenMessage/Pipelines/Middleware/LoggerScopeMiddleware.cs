@@ -1,34 +1,30 @@
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.Pipelines.Middleware
 {
     /// <summary>
-    /// Starts a new logger scope using the <see cref="ISupportIdentification"/> if it exists
+    ///     Starts a new logger scope using the <see cref="ISupportIdentification" /> if it exists
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class LoggerScopeMiddleware<T> : IMiddleware<T>
+    public class LoggerScopeMiddleware<T> : Middleware<T>
     {
+        private static readonly string ScopePrefix = "MessageId";
         private readonly ILogger<LoggerScopeMiddleware<T>> _logger;
 
         /// <inheritdoc />
-        public LoggerScopeMiddleware(ILogger<LoggerScopeMiddleware<T>> logger)
-        {
-            _logger = logger;
-        }
+        public LoggerScopeMiddleware(ILogger<LoggerScopeMiddleware<T>> logger) => _logger = logger;
 
-        /// <inheritdoc />
-        public async Task Invoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
+        /// <inheritDoc />
+        protected override async Task OnInvoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
-            var scopeName = "OpenMessagePipeline";
+            IDisposable scope = null;
 
             if (message is ISupportIdentification identifier)
-            {
-                scopeName = $"{scopeName}:{identifier}";
-            }
+                scope = _logger.BeginScope($"{ScopePrefix}{identifier.Id}");
 
-            using (_logger.BeginScope(scopeName))
+            using (scope)
             {
                 await next(message, cancellationToken, messageContext);
             }
