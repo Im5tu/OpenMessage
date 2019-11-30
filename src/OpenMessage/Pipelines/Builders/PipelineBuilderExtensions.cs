@@ -1,41 +1,31 @@
+using Microsoft.Extensions.DependencyInjection;
+using OpenMessage.Pipelines.Endpoints;
+using OpenMessage.Pipelines.Middleware;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenMessage.Pipelines.Endpoints;
-using OpenMessage.Pipelines.Middleware;
 
 namespace OpenMessage.Pipelines.Builders
 {
     /// <summary>
-    /// Helpers for configuring a <see cref="PipelineBuilder{T}"/>
+    ///     Helpers for configuring a <see cref="PipelineBuilder{T}" />
     /// </summary>
     public static class PipelineBuilderExtensions
     {
         #region Use
 
         /// <summary>
-        /// Adds <see cref="TraceMiddleware{T}"/>, <see cref="LoggerScopeMiddleware{T}"/>, <see cref="ServiceScopeMiddleware{T}"/>, <see cref="TimeoutMiddleware{T}"/>, <see cref="AutoAcknowledgeMiddleware{T}"/> to the pipeline
+        ///     Adds <see cref="TraceMiddleware{T}" />, <see cref="LoggerScopeMiddleware{T}" />, <see cref="ServiceScopeMiddleware{T}" />, <see cref="TimeoutMiddleware{T}" />, <see cref="AutoAcknowledgeMiddleware{T}" /> to the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public static IPipelineBuilder<T> UseDefaultMiddleware<T>(this IPipelineBuilder<T> builder)
-        {
-            return builder
-                .Use<TraceMiddleware<T>>()
-                .Use<LoggerScopeMiddleware<T>>()
-                .Use<ServiceScopeMiddleware<T>>()
-                .Use<TimeoutMiddleware<T>>()
-                .Use<AutoAcknowledgeMiddleware<T>>();
-        }
+        public static IPipelineBuilder<T> UseDefaultMiddleware<T>(this IPipelineBuilder<T> builder) => builder.UseTracing()
+                                                                                                              .UseLoggingScope()
+                                                                                                              .UseServiceScope()
+                                                                                                              .UseTimeout()
+                                                                                                              .UseAutoAcknowledge();
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, MessageContext, Func<Message<T>, CancellationToken, MessageContext, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -48,12 +38,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, MessageContext, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -66,12 +52,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, Func<Message<T>, CancellationToken, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -84,12 +66,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -102,12 +80,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, Func<Message<T>, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -120,12 +94,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IPipelineBuilder<T> Use<T>(this IPipelineBuilder<T> builder, Func<Message<T>, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -142,11 +112,8 @@ namespace OpenMessage.Pipelines.Builders
         #region Run
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, MessageContext, Task> action)
         {
             builder.Run(() =>
@@ -156,11 +123,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IPipelineBuilder<T> builder, Func<Message<T>, CancellationToken, Task> action)
         {
             builder.Run(() =>
@@ -170,11 +134,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="HandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IPipelineBuilder<T> builder, Func<Message<T>, Task> action)
         {
             builder.Run(() =>

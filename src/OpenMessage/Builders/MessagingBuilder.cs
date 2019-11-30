@@ -1,8 +1,8 @@
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
-namespace OpenMessage.DI
+namespace OpenMessage.Builders
 {
     /// <summary>
     ///     Helps construct the OpenMessage framework and serves as the base for helpful extension methods

@@ -1,11 +1,12 @@
-using System;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenMessage.Pipelines.Builders;
+using OpenMessage.Pipelines.Middleware;
+using System;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace OpenMessage.Pipelines.Pumps
 {
@@ -16,32 +17,37 @@ namespace OpenMessage.Pipelines.Pumps
     public class ConsumerPump<T> : BackgroundService
     {
         private readonly ChannelReader<Message<T>> _channelReader;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ConsumerPump<T>> _logger;
         private readonly IOptionsMonitor<PipelineOptions<T>> _options;
-        private IPipelineBuilder<T> _pipelineBuilder;
+        private readonly IServiceProvider _serviceProvider;
+        private PipelineDelegate.SingleMiddleware<T> _pipeline;
 
         /// <summary>
         ///     ctor
         /// </summary>
-        public ConsumerPump(ChannelReader<Message<T>> channelReader,
-            IPipelineBuilder<T> pipelineBuilder,
-            IServiceProvider serviceProvider,
-            ILogger<ConsumerPump<T>> logger,
-            IOptionsMonitor<PipelineOptions<T>> options)
+        public ConsumerPump(ChannelReader<Message<T>> channelReader, IPipelineBuilder<T> pipelineBuilder, IServiceProvider serviceProvider, ILogger<ConsumerPump<T>> logger, IOptionsMonitor<PipelineOptions<T>> options)
         {
             _channelReader = channelReader ?? throw new ArgumentNullException(nameof(channelReader));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _pipelineBuilder = pipelineBuilder ?? throw new ArgumentNullException(nameof(pipelineBuilder));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _pipeline = (pipelineBuilder ?? throw new ArgumentNullException(nameof(pipelineBuilder))).Build();
         }
 
         /// <inheritDoc />
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting consumer pump: " + GetType().GetFriendlyName());
+            _logger.LogInformation($"Starting consumer pump: {GetType().GetFriendlyName()}");
+
             return base.StartAsync(cancellationToken);
+        }
+
+        /// <inheritDoc />
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"Stopping consumer pump: {GetType().GetFriendlyName()}");
+
+            return base.StopAsync(cancellationToken);
         }
 
         /// <inheritDoc />
@@ -49,51 +55,37 @@ namespace OpenMessage.Pipelines.Pumps
         {
             try
             {
-                var pipeline = _pipelineBuilder.Build();
-
                 while (!cancellationToken.IsCancellationRequested && !_channelReader.Completion.IsCompleted)
-                {
                     try
                     {
                         var message = await _channelReader.ReadAsync(cancellationToken);
 
+                        // TODO :: We don't need to check this every time, we just change the implementation when the options changes and use a field to represent the option we want to use.
                         if (_options.CurrentValue.PipelineType == PipelineType.Serial)
-                        {
-                            await pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
-                        }
+                            await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
                         else
-                        {
                             _ = Task.Run(async () =>
                             {
                                 try
                                 {
-                                    await pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
+                                    await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
                                 }
                                 catch (Exception e)
                                 {
                                     _logger.LogError(e, e.Message);
                                 }
                             }, cancellationToken);
-                        }
                     }
                     catch (Exception ex)
                     {
                         if (!cancellationToken.IsCancellationRequested)
                             _logger.LogError(ex, ex.Message);
                     }
-                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
             }
-        }
-
-        /// <inheritDoc />
-        public override Task StopAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Stopping consumer pump: " + GetType().GetFriendlyName());
-            return base.StopAsync(cancellationToken);
         }
     }
 }

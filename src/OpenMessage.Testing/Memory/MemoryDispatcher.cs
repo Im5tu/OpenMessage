@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using OpenMessage.Extensions;
 
 namespace OpenMessage.Testing.Memory
 {
@@ -10,14 +9,13 @@ namespace OpenMessage.Testing.Memory
     {
         private readonly ChannelWriter<Message<T>> _channelWriter;
 
-        public AwaitableMemoryDispatcher(ChannelWriter<Message<T>> channelWriter)
-        {
-            _channelWriter = channelWriter ?? throw new ArgumentNullException(nameof(channelWriter));
-        }
+        public AwaitableMemoryDispatcher(ChannelWriter<Message<T>> channelWriter) => _channelWriter = channelWriter ?? throw new ArgumentNullException(nameof(channelWriter));
 
         public async Task DispatchAsync(Message<T> entity, CancellationToken cancellationToken)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!await _channelWriter.WaitToWriteAsync(cancellationToken))
@@ -32,9 +30,9 @@ namespace OpenMessage.Testing.Memory
             await awaitableMessage;
         }
 
-        public Task DispatchAsync(T entity, CancellationToken cancellationToken)
+        public Task DispatchAsync(T entity, CancellationToken cancellationToken) => DispatchAsync(new Message<T>
         {
-            return DispatchAsync(new Message<T>{Value = entity }, cancellationToken);
-        }
+            Value = entity
+        }, cancellationToken);
     }
 }

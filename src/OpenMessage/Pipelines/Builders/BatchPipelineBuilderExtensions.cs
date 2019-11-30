@@ -1,25 +1,21 @@
+using OpenMessage.Pipelines.Endpoints;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenMessage.Pipelines.Endpoints;
 
 namespace OpenMessage.Pipelines.Builders
 {
     /// <summary>
-    /// Helpers for configuring a <see cref="BatchPipelineBuilder{T}"/>
+    ///     Helpers for configuring a <see cref="BatchPipelineBuilder{T}" />
     /// </summary>
     public static class BatchPipelineBuilderExtensions
     {
         #region Use
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, MessageContext, Func<IReadOnlyCollection<Message<T>>, CancellationToken, MessageContext, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -32,12 +28,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, MessageContext, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -50,12 +42,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, Func<IReadOnlyCollection<Message<T>>, CancellationToken, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -68,12 +56,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -86,12 +70,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, Func<IReadOnlyCollection<Message<T>>, Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -104,12 +84,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Adds a middleware step into the pipeline
+        ///     Adds a middleware step into the pipeline
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="middleware"></param>
-        /// <returns></returns>
         public static IBatchPipelineBuilder<T> Use<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, Func<Task>, Task> middleware)
         {
             return builder.Use(next =>
@@ -126,11 +102,8 @@ namespace OpenMessage.Pipelines.Builders
         #region Run
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, MessageContext, Task> action)
         {
             builder.Run(() =>
@@ -140,11 +113,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, CancellationToken, Task> action)
         {
             builder.Run(() =>
@@ -154,11 +124,8 @@ namespace OpenMessage.Pipelines.Builders
         }
 
         /// <summary>
-        /// Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}"/>
+        ///     Ends the pipeline by executing the provided endpoint. Defaults to <see cref="BatchHandlerPipelineEndpoint{T}" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="builder"></param>
-        /// <param name="action"></param>
         public static void Run<T>(this IBatchPipelineBuilder<T> builder, Func<IReadOnlyCollection<Message<T>>, Task> action)
         {
             builder.Run(() =>

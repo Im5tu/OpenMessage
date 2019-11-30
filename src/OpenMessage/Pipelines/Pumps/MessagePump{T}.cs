@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.Pipelines.Pumps
 {
@@ -26,8 +26,7 @@ namespace OpenMessage.Pipelines.Pumps
         /// <summary>
         ///     ctor
         /// </summary>
-        protected MessagePump(ChannelWriter<Message<T>> channelWriter,
-            ILogger logger)
+        protected MessagePump(ChannelWriter<Message<T>> channelWriter, ILogger logger)
         {
             ChannelWriter = channelWriter ?? throw new ArgumentNullException(nameof(channelWriter));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -36,18 +35,20 @@ namespace OpenMessage.Pipelines.Pumps
         /// <inheritDoc />
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Starting message pump: " + GetType().GetFriendlyName());
+            Logger.LogInformation($"Starting message pump: {GetType().GetFriendlyName()}");
+
             return base.StartAsync(cancellationToken);
         }
 
         /// <inheritDoc />
-        protected abstract override Task ExecuteAsync(CancellationToken cancellationToken);
-
-        /// <inheritDoc />
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            Logger.LogInformation("Stopping message pump: " + GetType().GetFriendlyName());
+            Logger.LogInformation($"Stopping message pump: {GetType().GetFriendlyName()}");
+
             return base.StopAsync(cancellationToken);
         }
+
+        /// <inheritDoc />
+        protected abstract override Task ExecuteAsync(CancellationToken cancellationToken);
     }
 }

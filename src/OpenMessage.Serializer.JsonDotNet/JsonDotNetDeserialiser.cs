@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
-using OpenMessage.Extensions;
+﻿using Newtonsoft.Json;
 using OpenMessage.Serialisation;
+using System.Collections.Generic;
+using System.Text;
 
 namespace OpenMessage.Serializer.JsonDotNet
 {
@@ -12,13 +11,17 @@ namespace OpenMessage.Serializer.JsonDotNet
 
         public T From<T>(string data)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
+
             return JsonConvert.DeserializeObject<T>(data);
         }
 
         public T From<T>(byte[] data)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
+
             return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(data));
         }
     }

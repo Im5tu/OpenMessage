@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace OpenMessage.Apache.Kafka.Configuration
 {
@@ -22,9 +22,7 @@ namespace OpenMessage.Apache.Kafka.Configuration
                 if (!options.KafkaConfiguration.ContainsKey(setting.Key))
                     options.KafkaConfiguration[setting.Key] = setting.Value;
 
-            if (options.KafkaConfiguration.TryGetValue("enable.auto.commit", out var str)
-                && bool.TryParse(str, out var autoCommitEnabled)
-                && autoCommitEnabled)
+            if (options.KafkaConfiguration.TryGetValue("enable.auto.commit", out var str) && bool.TryParse(str, out var autoCommitEnabled) && autoCommitEnabled)
                 // Disables automatically storing of the offset of last message provided to application
                 options.KafkaConfiguration["enable.auto.offset.store"] = "false";
         }

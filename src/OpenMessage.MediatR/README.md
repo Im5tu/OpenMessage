@@ -14,8 +14,6 @@ Host.CreateDefaultBuilder()
     })
     .ConfigureMessaging(builder =>
     {
-        builder.AddMediatR();
-
         builder
             .ConfigurePipeline<T>()
             .RunMediatR();

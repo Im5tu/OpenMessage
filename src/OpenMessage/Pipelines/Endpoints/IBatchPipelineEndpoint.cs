@@ -5,18 +5,13 @@ using System.Threading.Tasks;
 namespace OpenMessage.Pipelines.Endpoints
 {
     /// <summary>
-    /// Ends the batch pipeline
+    ///     Ends the batch pipeline
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public interface IBatchPipelineEndpoint<T>
     {
         /// <summary>
-        /// 
+        ///     Process a collection of messages
         /// </summary>
-        /// <param name="messages"></param>
-        /// <param name="cancellationToken"></param>
-        /// <param name="messageContext"></param>
-        /// <returns></returns>
         Task Invoke(IReadOnlyCollection<Message<T>> messages, CancellationToken cancellationToken, MessageContext messageContext);
     }
 }

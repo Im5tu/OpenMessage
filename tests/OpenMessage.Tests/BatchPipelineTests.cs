@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,6 +5,10 @@ using OpenMessage.Pipelines;
 using OpenMessage.Pipelines.Builders;
 using OpenMessage.Pipelines.Middleware;
 using OpenMessage.Tests.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,65 +16,49 @@ namespace OpenMessage.Tests
 {
     public class BatchPipelineTests : IDisposable, IAsyncLifetime
     {
-        private IHost _app;
         private readonly IList<string> _history = new List<string>();
         private readonly IHostBuilder _host;
+
+        private IHost _app;
         private Func<IReadOnlyCollection<Message<string>>, Task> _run;
 
         public BatchPipelineTests(ITestOutputHelper testOutputHelper)
         {
             _host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddLogging();
-                    services.AddSingleton<CustomBatchMiddleware>();
-                    services.AddSingleton(_history);
-                })
-                .ConfigureLogging(builder => builder.AddTestOutputHelper(testOutputHelper))
-                .ConfigureMessaging(builder =>
-                {
-                    builder
-                        .ConfigureMemory<string>()
-                        .Build();
-
-                    builder.ConfigurePipeline<string>()
-                        .UseDefaultMiddleware()
-                        .Batch()
-                        .Use<CustomBatchMiddleware>()
-                        .Use(async (messages, next) =>
+                        .ConfigureServices(services =>
                         {
-                            _history.Add("BatchFunc");
-                            await next();
-                            _history.Add("BatchFunc");
+                            services.AddLogging();
+                            services.AddSingleton<CustomBatchMiddleware>();
+                            services.AddSingleton(_history);
                         })
-                        .Run(async messages =>
+                        .ConfigureLogging(builder => builder.AddTestOutputHelper(testOutputHelper))
+                        .ConfigureMessaging(builder =>
                         {
-                            _history.Add("Run");
+                            builder.ConfigureMemory<string>()
+                                   .Build();
 
-                            if (_run != null)
-                            {
-                                await _run(messages);
-                            }
+                            builder.ConfigurePipeline<string>()
+                                   .UseDefaultMiddleware()
+                                   .Batch()
+                                   .Use<CustomBatchMiddleware>()
+                                   .Use(async (messages, next) =>
+                                   {
+                                       _history.Add("BatchFunc");
+                                       await next();
+                                       _history.Add("BatchFunc");
+                                   })
+                                   .Run(async messages =>
+                                   {
+                                       _history.Add("Run");
+
+                                       if (_run is {})
+                                           await _run(messages);
+                                   });
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddAwaitableMemoryDispatcher<string>();
                         });
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddAwaitableMemoryDispatcher<string>();
-                });
-        }
-
-        [Fact]
-        public async Task WhenAnExceptionIsThrown_ThenTheMessageIsNotPositivelyAcknowledged()
-        {
-            _app = _host.Build();
-            _run = messages => throw new Exception();
-
-            var message = new CustomMessage();
-
-            await _app.StartAsync();
-            await _app.Services.GetRequiredService<IDispatcher<string>>().DispatchAsync(message);
-
-            Assert.Equal(AcknowledgementState.NegativelyAcknowledged, message.AcknowledgementState);
         }
 
         [Fact]
@@ -83,7 +67,9 @@ namespace OpenMessage.Tests
             _app = _host.Build();
 
             await _app.StartAsync();
-            await _app.Services.GetRequiredService<IDispatcher<string>>().DispatchAsync("");
+
+            await _app.Services.GetRequiredService<IDispatcher<string>>()
+                      .DispatchAsync("");
 
             var i = 0;
 
@@ -94,9 +80,30 @@ namespace OpenMessage.Tests
             Assert.Equal(nameof(CustomBatchMiddleware), _history[i++]);
         }
 
-        public void Dispose() => _app?.Dispose();
-        public Task InitializeAsync() => Task.CompletedTask;
+        public void Dispose()
+        {
+            _app?.Dispose();
+        }
+
         public Task DisposeAsync() => _app?.StopAsync();
+
+        public Task InitializeAsync() => Task.CompletedTask;
+
+        [Fact]
+        public async Task WhenAnExceptionIsThrown_ThenTheMessageIsNotPositivelyAcknowledged()
+        {
+            _app = _host.Build();
+            _run = messages => throw new Exception();
+
+            var message = new CustomMessage();
+
+            await _app.StartAsync();
+
+            await _app.Services.GetRequiredService<IDispatcher<string>>()
+                      .DispatchAsync(message);
+
+            Assert.Equal(AcknowledgementState.NegativelyAcknowledged, message.AcknowledgementState);
+        }
 
         private class CustomMessage : Message<string>, ISupportAcknowledgement
         {
@@ -104,9 +111,7 @@ namespace OpenMessage.Tests
 
             public Task AcknowledgeAsync(bool positivelyAcknowledge = true)
             {
-                AcknowledgementState = positivelyAcknowledge
-                    ? AcknowledgementState.Acknowledged
-                    : AcknowledgementState.NegativelyAcknowledged;
+                AcknowledgementState = positivelyAcknowledge ? AcknowledgementState.Acknowledged : AcknowledgementState.NegativelyAcknowledged;
 
                 return Task.CompletedTask;
             }
@@ -114,8 +119,8 @@ namespace OpenMessage.Tests
 
         private class CustomBatchMiddleware : IBatchMiddleware<string>
         {
-            private readonly ILogger<CustomBatchMiddleware> _logger;
             private readonly IList<string> _history;
+            private readonly ILogger<CustomBatchMiddleware> _logger;
 
             public CustomBatchMiddleware(ILogger<CustomBatchMiddleware> logger, IList<string> history)
             {

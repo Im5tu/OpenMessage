@@ -9,6 +9,7 @@ namespace OpenMessage.Tests.Helpers
         public static ILoggingBuilder AddTestOutputHelper(this ILoggingBuilder builder, ITestOutputHelper testOutputHelper)
         {
             builder.Services.AddSingleton<ILoggerProvider>(new TestOutputHelperLoggerProvider(testOutputHelper));
+
             return builder;
         }
     }

@@ -13,10 +13,7 @@ namespace OpenMessage
         /// <param name="dispatcher">The dispatcher in use</param>
         /// <param name="entity">The entity to dispatch</param>
         /// <returns>A task that completes when the message has been acknowledged by the receiver</returns>
-        public static Task DispatchAsync<T>(this IDispatcher<T> dispatcher, T entity)
-        {
-            return dispatcher.DispatchAsync(entity, default);
-        }
+        public static Task DispatchAsync<T>(this IDispatcher<T> dispatcher, T entity) => dispatcher.DispatchAsync(entity, default);
 
         /// <summary>
         ///     Dispatches the specified entity
@@ -24,9 +21,6 @@ namespace OpenMessage
         /// <param name="dispatcher">The dispatcher in use</param>
         /// <param name="message">The message to dispatch</param>
         /// <returns>A task that completes when the message has been acknowledged by the receiver</returns>
-        public static Task DispatchAsync<T>(this IDispatcher<T> dispatcher, Message<T> message)
-        {
-            return dispatcher.DispatchAsync(message, default);
-        }
+        public static Task DispatchAsync<T>(this IDispatcher<T> dispatcher, Message<T> message) => dispatcher.DispatchAsync(message, default);
     }
 }

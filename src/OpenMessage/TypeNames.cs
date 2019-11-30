@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using OpenMessage.Extensions;
 
 namespace OpenMessage
 {
@@ -11,7 +10,8 @@ namespace OpenMessage
 
         public static string GetFriendlyName(this Type type)
         {
-            type.Must(nameof(type)).NotBeNull();
+            if (type is null)
+                Throw.ArgumentNullException(nameof(type));
 
             return _friendlyNames.GetOrAdd(type, key =>
             {

@@ -1,82 +1,37 @@
-﻿using System;
+﻿using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OpenMessage.Apache.Kafka.Configuration;
+using OpenMessage.Apache.Kafka.OffsetTracking;
+using OpenMessage.Serialisation;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Confluent.Kafka;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using OpenMessage.Apache.Kafka.Configuration;
-using OpenMessage.Apache.Kafka.OffsetTracking;
-using OpenMessage.Serialisation;
 
 namespace OpenMessage.Apache.Kafka
 {
     internal sealed class KafkaConsumer<TKey, TValue> : KafkaClient, IKafkaConsumer<TKey, TValue>
     {
         private static readonly string TimestampFormat = "o";
+        private readonly Action<KafkaMessage<TKey, TValue>> _acknowledgementAction;
+        private readonly IDeserializationProvider _deserializationProvider;
 
         private readonly OffsetTracker _offsetTracker = new OffsetTracker();
-        private readonly IDeserializationProvider _deserializationProvider;
         private readonly IOptionsMonitor<KafkaOptions> _options;
-        private readonly Action<KafkaMessage<TKey, TValue>> _acknowledgementAction;
         private IConsumer<byte[], byte[]> _consumer;
-        private Task _trackAcknowledgedTask;
         private string _topicName;
+        private Task _trackAcknowledgedTask;
 
-        public KafkaConsumer(ILogger<KafkaConsumer<TKey, TValue>> logger,
-            IDeserializationProvider deserializationProvider,
-            IOptionsMonitor<KafkaOptions> options)
+        public KafkaConsumer(ILogger<KafkaConsumer<TKey, TValue>> logger, IDeserializationProvider deserializationProvider, IOptionsMonitor<KafkaOptions> options)
             : base(logger)
         {
             _deserializationProvider = deserializationProvider ?? throw new ArgumentNullException(nameof(deserializationProvider));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _acknowledgementAction = msg => _offsetTracker.AckOffset(msg.Partition, msg.Offset);
-        }
-
-        public void Start(string consumerId)
-        {
-            var options = _options.Get(consumerId);
-            var offsetTrackerInterval = options.KafkaConfiguration.TryGetValue("auto.commit.interval.ms", out var val) && double.TryParse(val, out var ms)
-                ? TimeSpan.FromMilliseconds(ms)
-                : TimeSpan.FromSeconds(1);
-            _topicName = options.TopicName;
-            _consumer = new ConsumerBuilder<byte[], byte[]>(options.KafkaConfiguration)
-                .SetErrorHandler(Kafka_OnError)
-                .SetLogHandler(Kafka_OnLog)
-                .SetOffsetsCommittedHandler(OnOffsetsCommitted)
-                .SetPartitionsAssignedHandler(OnPartitionsAssigned)
-                .SetPartitionsRevokedHandler(OnPartitionsRevoked)
-                .SetStatisticsHandler(Kafka_OnStatistics)
-                .Build();
-            _consumer.Subscribe(_topicName);
-
-            _trackAcknowledgedTask = Task.Run(async () =>
-            {
-                var loggerEnabled = Logger.IsEnabled(LogLevel.Information);
-                while (_consumer != null)
-                {
-                    try
-                    {
-                        foreach (var offset in _offsetTracker.GetAcknowledgedOffsets())
-                        {
-                            if (loggerEnabled)
-                                Logger.LogInformation($"Committing '{_topicName}' on partition '{offset.Partition}' to offset '{offset.Offset}'");
-
-                            _consumer.StoreOffset(new TopicPartitionOffset(new TopicPartition(_topicName, new Partition(offset.Partition)), new Offset(offset.Offset + 1)));
-                            _offsetTracker.PruneCommitted(offset);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, ex.Message);
-                    }
-
-                    await Task.Delay(offsetTrackerInterval);
-                }
-            });
         }
 
         public Task<KafkaMessage<TKey, TValue>> ConsumeAsync(CancellationToken cancellationToken)
@@ -86,16 +41,16 @@ namespace OpenMessage.Apache.Kafka
                 try
                 {
                     var message = _consumer.Consume(cancellationToken);
-                    if (message == null || message.IsPartitionEOF)
+
+                    if (message is null || message.IsPartitionEOF)
                     {
-                        Logger.LogInformation(message == null
-                            ? "No message received from consumer."
-                            : $"End of partition reached. Topic: {message.Topic} Partition: {message.Partition} Offset: {message.Offset}");
+                        Logger.LogInformation(message is null ? "No message received from consumer." : $"End of partition reached. Topic: {message.Topic} Partition: {message.Partition} Offset: {message.Offset}");
 
                         return null;
                     }
 
                     var messageProperties = ParseMessageHeaders(message, out var contentType);
+
                     if (string.IsNullOrWhiteSpace(contentType))
                         contentType = ContentTypes.Json;
 
@@ -118,6 +73,48 @@ namespace OpenMessage.Apache.Kafka
             });
         }
 
+        public void Start(string consumerId)
+        {
+            var options = _options.Get(consumerId);
+            var offsetTrackerInterval = options.KafkaConfiguration.TryGetValue("auto.commit.interval.ms", out var val) && double.TryParse(val, out var ms) ? TimeSpan.FromMilliseconds(ms) : TimeSpan.FromSeconds(1);
+            _topicName = options.TopicName;
+
+            _consumer = new ConsumerBuilder<byte[], byte[]>(options.KafkaConfiguration).SetErrorHandler(Kafka_OnError)
+                                                                                       .SetLogHandler(Kafka_OnLog)
+                                                                                       .SetOffsetsCommittedHandler(OnOffsetsCommitted)
+                                                                                       .SetPartitionsAssignedHandler(OnPartitionsAssigned)
+                                                                                       .SetPartitionsRevokedHandler(OnPartitionsRevoked)
+                                                                                       .SetStatisticsHandler(Kafka_OnStatistics)
+                                                                                       .Build();
+            _consumer.Subscribe(_topicName);
+
+            _trackAcknowledgedTask = Task.Run(async () =>
+            {
+                var loggerEnabled = Logger.IsEnabled(LogLevel.Information);
+
+                while (_consumer is {})
+                {
+                    try
+                    {
+                        foreach (var offset in _offsetTracker.GetAcknowledgedOffsets())
+                        {
+                            if (loggerEnabled)
+                                Logger.LogInformation($"Committing '{_topicName}' on partition '{offset.Partition}' to offset '{offset.Offset}'");
+
+                            _consumer.StoreOffset(new TopicPartitionOffset(new TopicPartition(_topicName, new Partition(offset.Partition)), new Offset(offset.Offset + 1)));
+                            _offsetTracker.PruneCommitted(offset);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, ex.Message);
+                    }
+
+                    await Task.Delay(offsetTrackerInterval);
+                }
+            });
+        }
+
         public void Stop()
         {
             _consumer.Unsubscribe();
@@ -128,7 +125,7 @@ namespace OpenMessage.Apache.Kafka
         {
             contentType = ContentTypes.Json;
 
-            if (message.Headers == null)
+            if (message.Headers is null)
                 return Enumerable.Empty<KeyValuePair<string, string>>();
 
             var headers = new List<KeyValuePair<string, string>>(message.Headers.Count + 3)
@@ -143,6 +140,7 @@ namespace OpenMessage.Apache.Kafka
             {
                 var value = Encoding.UTF8.GetString(header.GetValueBytes());
                 headers.Add(new KeyValuePair<string, string>(header.Key, value));
+
                 if (header.Key == KnownProperties.ContentType)
                     contentType = value;
             }
@@ -154,31 +152,28 @@ namespace OpenMessage.Apache.Kafka
 
         private void OnOffsetsCommitted(IConsumer<byte[], byte[]> consumer, CommittedOffsets e)
         {
-            if (!Logger.IsEnabled(LogLevel.Trace) || e?.Offsets == null)
+            if (!Logger.IsEnabled(LogLevel.Trace) || e?.Offsets is null)
                 return;
 
             foreach (var offset in e.Offsets)
-                Logger.LogTrace(
-                    $"Offset Committed On Topic {offset.Topic}. Partition: {offset.Partition.Value} Offset: {offset.Offset}");
+                Logger.LogTrace($"Offset Committed On Topic {offset.Topic}. Partition: {offset.Partition.Value} Offset: {offset.Offset}");
         }
 
         private void OnPartitionsRevoked(IConsumer<byte[], byte[]> consumer, List<TopicPartitionOffset> topicPartitions)
         {
-            if (topicPartitions == null || !Logger.IsEnabled(LogLevel.Information))
+            if (topicPartitions is null || !Logger.IsEnabled(LogLevel.Information))
                 return;
 
-            var topics = string.Join(" | ",
-                topicPartitions.Select(x => $"Topic: {x.Topic} Partition: {x.Partition.Value}"));
+            var topics = string.Join(" | ", topicPartitions.Select(x => $"Topic: {x.Topic} Partition: {x.Partition.Value}"));
             Logger.LogInformation($"Rebalancing: {topics}");
         }
 
         private void OnPartitionsAssigned(IConsumer<byte[], byte[]> consumer, List<TopicPartition> topicPartitions)
         {
-            if (topicPartitions == null || !Logger.IsEnabled(LogLevel.Information))
+            if (topicPartitions is null || !Logger.IsEnabled(LogLevel.Information))
                 return;
 
-            var topics = string.Join(" | ",
-                topicPartitions.Select(x => $"Topic: {x.Topic} Partition: {x.Partition.Value}"));
+            var topics = string.Join(" | ", topicPartitions.Select(x => $"Topic: {x.Topic} Partition: {x.Partition.Value}"));
             Logger.LogInformation($"Assigning: {topics}");
         }
 

@@ -9,7 +9,9 @@ namespace OpenMessage.Apache.Kafka.Configuration
             base.PostConfigure(name, options);
 
             if (string.IsNullOrWhiteSpace(options.TopicName))
-                options.TopicName = TypeCache<T>.FriendlyName.ToLowerInvariant().Replace("<", "_").Replace(">", "_");
+                options.TopicName = TypeCache<T>.FriendlyName.ToLowerInvariant()
+                                                .Replace("<", "_")
+                                                .Replace(">", "_");
         }
     }
 }

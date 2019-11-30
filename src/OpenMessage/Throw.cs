@@ -2,7 +2,7 @@
 
 #nullable enable
 
-namespace OpenMessage.Extensions
+namespace OpenMessage
 {
     /// <summary>
     ///     Helpers for throwing an exception to aid in the ability for smaller methods to inline
@@ -56,7 +56,7 @@ namespace OpenMessage.Extensions
         /// <exception cref="System.Exception">The exception with a specified message, if applicable</exception>
         public static void Exception(string? message = null)
         {
-            if (message == null)
+            if (message is null)
                 throw new Exception();
 
             throw new Exception(message);

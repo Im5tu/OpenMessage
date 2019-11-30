@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using OpenMessage.Extensions;
 
 namespace OpenMessage.Serialisation
 {
@@ -9,14 +8,16 @@ namespace OpenMessage.Serialisation
 
         public byte[] AsBytes<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNullOrDefault();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return JsonSerializer.SerializeToUtf8Bytes(entity);
         }
 
         public string AsString<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNullOrDefault();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return JsonSerializer.Serialize(entity);
         }

@@ -1,19 +1,19 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OpenMessage.Configuration
+namespace OpenMessage.Builders
 {
     /// <summary>
-    /// Defines a common base for a builder.
+    ///     Defines a common base for a builder.
     /// </summary>
     public interface IBuilder
     {
         /// <summary>
-        /// The underlying host builder.
+        ///     The underlying host builder.
         /// </summary>
         IMessagingBuilder HostBuilder { get; }
 
         /// <summary>
-        /// Build.
+        ///     Build.
         /// </summary>
         void Build();
     }

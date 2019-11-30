@@ -1,14 +1,12 @@
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OpenMessage.Pipelines.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OpenMessage.Pipelines;
-using OpenMessage.Pipelines.Builders;
-using OpenMessage.Pipelines.Middleware;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,37 +21,41 @@ namespace OpenMessage.MediatR.Tests
         public MediatRTests(ITestOutputHelper testOutputHelper)
         {
             _hostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureServices(services =>
-                {
-                    services
-                        .AddMediatR(typeof(MediatRTests).Assembly)
-                        .AddSingleton<IList<string>>(_ => _history);
-                })
-                .ConfigureMessaging(builder =>
-                {
-                    builder.AddMediatR();
+                               .ConfigureServices(services =>
+                               {
+                                   services.AddMediatR(typeof(MediatRTests).Assembly)
+                                           .AddSingleton(_ => _history);
+                               })
+                               .ConfigureMessaging(builder =>
+                               {
+                                   builder.ConfigureMemory<string>()
+                                          .Build();
 
-                    builder
-                        .ConfigureMemory<string>()
-                        .Build();
-
-                    builder
-                        .ConfigurePipeline<string>()
-                        .UseDefaultMiddleware()
-                        .Use(async (message, next) =>
-                        {
-                            _history.Add("Middleware");
-                            await next();
-                            _history.Add("Middleware");
-                        })
-                        .Batch()
-                        .RunMediatR();
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddAwaitableMemoryDispatcher<string>();
-                });
+                                   builder.ConfigurePipeline<string>()
+                                          .UseDefaultMiddleware()
+                                          .Use(async (message, next) =>
+                                          {
+                                              _history.Add("Middleware");
+                                              await next();
+                                              _history.Add("Middleware");
+                                          })
+                                          .Batch()
+                                          .RunMediatR();
+                               })
+                               .ConfigureServices(services =>
+                               {
+                                   services.AddAwaitableMemoryDispatcher<string>();
+                               });
         }
+
+        public void Dispose()
+        {
+            _app?.Dispose();
+        }
+
+        public Task DisposeAsync() => _app?.StopAsync();
+
+        public Task InitializeAsync() => Task.CompletedTask;
 
         [Fact]
         public async Task MediatRHandlersAreCalled()
@@ -61,7 +63,9 @@ namespace OpenMessage.MediatR.Tests
             _app = _hostBuilder.Build();
 
             await _app.StartAsync();
-            await _app.Services.GetRequiredService<IDispatcher<string>>().DispatchAsync("");
+
+            await _app.Services.GetRequiredService<IDispatcher<string>>()
+                      .DispatchAsync("");
 
             var i = 0;
             Assert.Equal("Middleware", _history.ElementAtOrDefault(i++));
@@ -74,10 +78,7 @@ namespace OpenMessage.MediatR.Tests
         {
             private readonly IList<string> _history;
 
-            public Handler(IList<string> history)
-            {
-                _history = history;
-            }
+            public Handler(IList<string> history) => _history = history;
 
             public Task Handle(MediatRMessage<string> notification, CancellationToken cancellationToken)
             {
@@ -91,10 +92,7 @@ namespace OpenMessage.MediatR.Tests
         {
             private readonly IList<string> _history;
 
-            public BatchHandler(IList<string> history)
-            {
-                _history = history;
-            }
+            public BatchHandler(IList<string> history) => _history = history;
 
             public Task Handle(MediatRBatch<string> notification, CancellationToken cancellationToken)
             {
@@ -103,9 +101,5 @@ namespace OpenMessage.MediatR.Tests
                 return Task.CompletedTask;
             }
         }
-
-        public void Dispose() => _app?.Dispose();
-        public Task InitializeAsync() => Task.CompletedTask;
-        public Task DisposeAsync() => _app?.StopAsync();
     }
 }

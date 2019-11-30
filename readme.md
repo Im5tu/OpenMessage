@@ -90,6 +90,7 @@ Here is a list of the available providers:
 - [ ] Azure Service Bus
 - [ ] Eventstore
 - [x] InMemory 
+- [x] MediatR
 - [ ] NATS
 - [ ] RabbitMq
 

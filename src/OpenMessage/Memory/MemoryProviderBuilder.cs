@@ -1,45 +1,31 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Channels;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace OpenMessage.Memory
 {
-    internal class MemoryProviderBuilder<T> : IMemoryProviderBuilder<T>
+    internal sealed class MemoryProviderBuilder<T> : IMemoryProviderBuilder<T>
     {
         private Func<IServiceProvider, Channel<Message<T>>> _channelCreator;
-        private Action<MemoryOptions<T>> _options;
-        private readonly IMessagingBuilder _hostBuilder;
 
-        public MemoryProviderBuilder(IMessagingBuilder builder)
-        {
-            _hostBuilder = builder;
-        }
+        public IMessagingBuilder HostBuilder { get; }
 
-        public IMemoryProviderBuilder<T> ConfigureOptions(Action<MemoryOptions<T>> options)
+        public MemoryProviderBuilder(IMessagingBuilder builder) => HostBuilder = builder;
+
+        public void Build()
         {
-            _options = options;
-            return this;
+            HostBuilder.Services.TryAddChannel(_channelCreator)
+                       .TryAddConsumerService(_channelCreator)
+                       .AddSingleton<IDispatcher<T>, MemoryDispatcher<T>>();
+
+            HostBuilder.TryConfigureDefaultPipeline<T>();
         }
 
         public IMemoryProviderBuilder<T> ConfigureChannel(Func<IServiceProvider, Channel<Message<T>>> channelCreator)
         {
             _channelCreator = channelCreator;
+
             return this;
-        }
-
-        public void Build()
-        {
-            _hostBuilder
-                .Services
-                .TryAddChannel(_channelCreator)
-                .TryAddConsumerService(_channelCreator)
-                .AddSingleton<IDispatcher<T>, MemoryDispatcher<T>>()
-                .AddOptions<MemoryOptions<T>>();
-
-            if (_options != null)
-            {
-                _hostBuilder.Services.PostConfigure(_options);
-            }
         }
     }
 }

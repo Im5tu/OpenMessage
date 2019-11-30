@@ -1,12 +1,12 @@
 namespace OpenMessage
 {
     /// <summary>
-    /// A list of common content types
+    ///     A list of common content types
     /// </summary>
     public static class ContentTypes
     {
         /// <summary>
-        /// application/json
+        ///     application/json
         /// </summary>
         public static readonly string Json = "application/json";
     }

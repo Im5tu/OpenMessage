@@ -1,5 +1,5 @@
-using System;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace OpenMessage.Pipelines
 {

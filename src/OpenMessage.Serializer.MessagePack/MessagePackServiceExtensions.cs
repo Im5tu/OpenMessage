@@ -14,9 +14,22 @@ namespace OpenMessage.Serializer.MessagePack
         /// </summary>
         /// <param name="messagingBuilder">The host to configure</param>
         /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureMessagePack(this IMessagingBuilder messagingBuilder)
+        public static IMessagingBuilder ConfigureMessagePack(this IMessagingBuilder messagingBuilder) => messagingBuilder.ConfigureMessagePackDeserializer()
+                                                                                                                         .ConfigureMessagePackSerializer();
+
+        /// <summary>
+        ///     Adds the MessagePack deserializer
+        /// </summary>
+        /// <param name="messagingBuilder">The host to configure</param>
+        /// <returns>The modified builder</returns>
+        public static IMessagingBuilder ConfigureMessagePackDeserializer(this IMessagingBuilder messagingBuilder)
         {
-            return messagingBuilder.ConfigureMessagePackDeserializer().ConfigureMessagePackSerializer();
+            messagingBuilder.Services.TryAddSingleton<MessagePackSerializer>();
+
+            messagingBuilder.Services.AddSerialization()
+                            .AddSingleton<IDeserializer>(sp => sp.GetRequiredService<MessagePackSerializer>());
+
+            return messagingBuilder;
         }
 
         /// <summary>
@@ -27,19 +40,10 @@ namespace OpenMessage.Serializer.MessagePack
         public static IMessagingBuilder ConfigureMessagePackSerializer(this IMessagingBuilder messagingBuilder)
         {
             messagingBuilder.Services.TryAddSingleton<MessagePackSerializer>();
-            messagingBuilder.Services.AddSerialization().AddSingleton<ISerializer>(sp => sp.GetRequiredService<MessagePackSerializer>());
-            return messagingBuilder;
-        }
 
-        /// <summary>
-        ///     Adds the MessagePack deserializer
-        /// </summary>
-        /// <param name="messagingBuilder">The host to configure</param>
-        /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureMessagePackDeserializer(this IMessagingBuilder messagingBuilder)
-        {
-            messagingBuilder.Services.TryAddSingleton<MessagePackSerializer>();
-            messagingBuilder.Services.AddSerialization().AddSingleton<IDeserializer>(sp => sp.GetRequiredService<MessagePackSerializer>());
+            messagingBuilder.Services.AddSerialization()
+                            .AddSingleton<ISerializer>(sp => sp.GetRequiredService<MessagePackSerializer>());
+
             return messagingBuilder;
         }
     }

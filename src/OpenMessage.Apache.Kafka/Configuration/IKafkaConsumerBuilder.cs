@@ -1,14 +1,12 @@
-﻿using System;
-using Microsoft.Extensions.Hosting;
-using OpenMessage.Apache.Kafka.Configuration;
+﻿using Microsoft.Extensions.Hosting;
+using OpenMessage.Builders;
+using System;
 
-namespace OpenMessage.Apache.Kafka
+namespace OpenMessage.Apache.Kafka.Configuration
 {
-    /// <summary>
-    /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public interface IKafkaConsumerBuilder<TKey, TValue>
+    public interface IKafkaConsumerBuilder<TKey, TValue> : IBuilder
     {
         /// <summary>
         ///     Configures the consumer with the specified options
@@ -30,10 +28,5 @@ namespace OpenMessage.Apache.Kafka
         /// <param name="topicName">The name of the topic to consume from</param>
         /// <returns>The modified consumer builder</returns>
         IKafkaConsumerBuilder<TKey, TValue> FromTopic(string topicName);
-
-        /// <summary>
-        ///     Builds the consumer
-        /// </summary>
-        void Build();
     }
 }

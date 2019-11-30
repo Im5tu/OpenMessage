@@ -21,8 +21,6 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <!-- Default to allowing source link -->
     <EnableSourceLink Condition="$(EnableSourceLink) == ''">true</EnableSourceLink>
-
-
     <IsCoreProject>false</IsCoreProject>
     <IsSerializer>false</IsSerializer>
     <IsCoreProject Condition="$(MSBuildProjectName) == 'OpenMessage'">true</IsCoreProject>
