@@ -25,8 +25,6 @@ namespace OpenMessage.Testing.Memory
 
             await _channelWriter.WriteAsync(awaitableMessage, cancellationToken);
 
-            await Task.Delay(1000);
-
             await awaitableMessage;
         }
 
