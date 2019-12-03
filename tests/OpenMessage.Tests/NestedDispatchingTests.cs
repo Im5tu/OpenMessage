@@ -11,14 +11,14 @@ using Xunit.Abstractions;
 
 namespace OpenMessage.Tests
 {
-    public class NestedPipelineTests : IDisposable, IAsyncLifetime
+    public class NestedDispatchingTests : IDisposable, IAsyncLifetime
     {
         private readonly IList<string> _history = new List<string>();
         private readonly IHostBuilder _host;
 
         private IHost _app;
 
-        public NestedPipelineTests(ITestOutputHelper testOutputHelper)
+        public NestedDispatchingTests(ITestOutputHelper testOutputHelper)
         {
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
