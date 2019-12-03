@@ -1,3 +1,9 @@
+using Amazon;
+using Amazon.SQS;
+using Amazon.SQS.Model;
+using Microsoft.Extensions.Options;
+using OpenMessage.AWS.SQS.Configuration;
+using OpenMessage.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,22 +11,16 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Amazon;
-using Amazon.SQS;
-using Amazon.SQS.Model;
-using Microsoft.Extensions.Options;
-using OpenMessage.AWS.SQS.Configuration;
-using OpenMessage.Serialisation;
 
 namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsDispatcher<T> : IDispatcher<T>
     {
         private static readonly string AttributeType = "String";
-        private readonly ISerializer _serializer;
         private readonly AmazonSQSClient _client;
-        private readonly string _queueUrl;
         private readonly MessageAttributeValue _contentType;
+        private readonly string _queueUrl;
+        private readonly ISerializer _serializer;
         private readonly MessageAttributeValue _valueTypeName;
 
         public SqsDispatcher(IOptions<SQSDispatcherOptions<T>> options, ISerializer serializer)
@@ -40,12 +40,24 @@ namespace OpenMessage.AWS.SQS
             config.AwsDispatcherConfiguration?.Invoke(sqsConfig);
 
             _client = new AmazonSQSClient(sqsConfig);
-            _contentType = new MessageAttributeValue {DataType = AttributeType, StringValue = _serializer.ContentType};
-            _valueTypeName = new MessageAttributeValue {DataType = AttributeType, StringValue = typeof(T).AssemblyQualifiedName};
+
+            _contentType = new MessageAttributeValue
+            {
+                DataType = AttributeType,
+                StringValue = _serializer.ContentType
+            };
+
+            _valueTypeName = new MessageAttributeValue
+            {
+                DataType = AttributeType,
+                StringValue = typeof(T).AssemblyQualifiedName
+            };
         }
 
-        public Task DispatchAsync(T entity, CancellationToken cancellationToken)
-            => DispatchAsync(new Message<T> {Value = entity}, cancellationToken);
+        public Task DispatchAsync(T entity, CancellationToken cancellationToken) => DispatchAsync(new Message<T>
+        {
+            Value = entity
+        }, cancellationToken);
 
         public async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
@@ -57,13 +69,9 @@ namespace OpenMessage.AWS.SQS
             };
 
             var response = await _client.SendMessageAsync(request, cancellationToken);
+
             if (response.HttpStatusCode != HttpStatusCode.OK)
                 ThrowExceptionFromHttpResponse(response);
-        }
-
-        private void ThrowExceptionFromHttpResponse(SendMessageResponse response)
-        {
-            throw new Exception($"Failed to send the message to SQS. Type: '{TypeCache<T>.FriendlyName}' Queue Url: '{_queueUrl ?? "<NULL>"}' Status Code: '{response.HttpStatusCode}'.");
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)
@@ -74,32 +82,56 @@ namespace OpenMessage.AWS.SQS
                 [KnownProperties.ValueTypeName] = _valueTypeName
             };
 
-            if (Activity.Current != null)
-                result[KnownProperties.ActivityId] = new MessageAttributeValue {DataType = AttributeType, StringValue = Activity.Current.Id};
+            if (Activity.Current is {})
+                result[KnownProperties.ActivityId] = new MessageAttributeValue
+                {
+                    DataType = AttributeType,
+                    StringValue = Activity.Current.Id
+                };
 
             switch (message)
             {
                 case ISupportProperties p:
                 {
                     foreach (var prop in p.Properties)
-                        result[prop.Key] = new MessageAttributeValue {DataType = AttributeType, StringValue = prop.Value};
+                        result[prop.Key] = new MessageAttributeValue
+                        {
+                            DataType = AttributeType,
+                            StringValue = prop.Value
+                        };
+
                     break;
                 }
                 case ISupportProperties<byte[]> p2:
                 {
                     foreach (var prop in p2.Properties)
-                        result[prop.Key] = new MessageAttributeValue {DataType = AttributeType, StringValue = Encoding.UTF8.GetString(prop.Value)};
+                        result[prop.Key] = new MessageAttributeValue
+                        {
+                            DataType = AttributeType,
+                            StringValue = Encoding.UTF8.GetString(prop.Value)
+                        };
+
                     break;
                 }
                 case ISupportProperties<byte[], byte[]> p3:
                 {
                     foreach (var prop in p3.Properties)
-                        result[Encoding.UTF8.GetString(prop.Key)] = new MessageAttributeValue {DataType = AttributeType, StringValue = Encoding.UTF8.GetString(prop.Value)};
+                        result[Encoding.UTF8.GetString(prop.Key)] = new MessageAttributeValue
+                        {
+                            DataType = AttributeType,
+                            StringValue = Encoding.UTF8.GetString(prop.Value)
+                        };
+
                     break;
                 }
             }
 
             return result;
+        }
+
+        private void ThrowExceptionFromHttpResponse(SendMessageResponse response)
+        {
+            throw new Exception($"Failed to send the message to SQS. Type: '{TypeCache<T>.FriendlyName}' Queue Url: '{_queueUrl ?? "<NULL>"}' Status Code: '{response.HttpStatusCode}'.");
         }
     }
 }

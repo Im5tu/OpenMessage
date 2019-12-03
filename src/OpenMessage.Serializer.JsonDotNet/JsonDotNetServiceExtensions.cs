@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace OpenMessage.Serializer.JsonDotNet
 {
@@ -15,9 +15,11 @@ namespace OpenMessage.Serializer.JsonDotNet
         /// <returns>The modified service collection</returns>
         public static void ConfigureJsonDotNet(this IMessagingBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (builder is null)
+                throw new ArgumentNullException(nameof(builder));
 
-            builder.ConfigureJsonDotNetDeserializer().ConfigureJsonDotNetSerializer();
+            builder.ConfigureJsonDotNetDeserializer()
+                   .ConfigureJsonDotNetSerializer();
         }
 
         /// <summary>
@@ -27,9 +29,12 @@ namespace OpenMessage.Serializer.JsonDotNet
         /// <returns>The modified service collection</returns>
         public static IMessagingBuilder ConfigureJsonDotNetDeserializer(this IMessagingBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (builder is null)
+                throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSerialization().AddDeserializer<JsonDotNetDeserializer>();
+            builder.Services.AddSerialization()
+                   .AddDeserializer<JsonDotNetDeserializer>();
+
             return builder;
         }
 
@@ -40,9 +45,12 @@ namespace OpenMessage.Serializer.JsonDotNet
         /// <returns>The modified service collection</returns>
         public static IMessagingBuilder ConfigureJsonDotNetSerializer(this IMessagingBuilder builder)
         {
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (builder is null)
+                throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSerialization().AddSerializer<JsonDotNetSerializer>();
+            builder.Services.AddSerialization()
+                   .AddSerializer<JsonDotNetSerializer>();
+
             return builder;
         }
     }

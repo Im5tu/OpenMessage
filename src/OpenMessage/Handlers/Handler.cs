@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using OpenMessage.Extensions;
 
 namespace OpenMessage.Handlers
 {
@@ -21,21 +20,16 @@ namespace OpenMessage.Handlers
         ///     ctor
         /// </summary>
         /// <param name="logger">The logger to use</param>
-        protected Handler(ILogger logger)
-        {
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        protected Handler(ILogger logger) => Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        /// <summary>
-        ///     Handles the specified message
-        /// </summary>
-        /// <param name="message">The message to handle</param>
-        /// <param name="cancellationToken">The cancellation token used</param>
-        /// <returns>A task that completes when the handle method has completed</returns>
+        /// <inheritdoc />
         public Task HandleAsync(Message<T> message, CancellationToken cancellationToken)
         {
-            message.Must(nameof(message)).NotBeNull();
+            if (message is null)
+                Throw.ArgumentNullException(nameof(message));
+
             cancellationToken.ThrowIfCancellationRequested();
+
             return OnHandleAsync(message, cancellationToken);
         }
 

@@ -1,8 +1,8 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenMessage.Configuration;
+using OpenMessage.Builders;
+using System;
 
 namespace OpenMessage.AWS.SNS.Configuration
 {
@@ -10,9 +10,8 @@ namespace OpenMessage.AWS.SNS.Configuration
     {
         private Action<HostBuilderContext, SNSOptions<T>> _configuration;
 
-        public SnsDispatcherBuilder(IMessagingBuilder hostBuilder) : base(hostBuilder)
-        {
-        }
+        public SnsDispatcherBuilder(IMessagingBuilder hostBuilder)
+            : base(hostBuilder) { }
 
         public override void Build()
         {
@@ -28,12 +27,14 @@ namespace OpenMessage.AWS.SNS.Configuration
         public ISnsDispatcherBuilder<T> FromConfiguration(Action<HostBuilderContext, SNSOptions<T>> configuration)
         {
             _configuration = configuration;
+
             return this;
         }
 
         public ISnsDispatcherBuilder<T> FromConfiguration(string configurationSection)
         {
             _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
+
             return this;
         }
     }

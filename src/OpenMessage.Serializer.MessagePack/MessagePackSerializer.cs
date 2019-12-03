@@ -1,7 +1,6 @@
-﻿using System;
+﻿using OpenMessage.Serialisation;
+using System;
 using System.Collections.Generic;
-using OpenMessage.Extensions;
-using OpenMessage.Serialisation;
 using serialiser = MessagePack.MessagePackSerializer;
 
 namespace OpenMessage.Serializer.MessagePack
@@ -11,32 +10,37 @@ namespace OpenMessage.Serializer.MessagePack
         private static readonly string _contentType = "binary/messagepack";
 
         public string ContentType { get; } = _contentType;
+
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
-
-        public string AsString<T>(T entity)
-        {
-            entity.Must(nameof(entity)).NotBeNull();
-
-            return Convert.ToBase64String(AsBytes(entity));
-        }
 
         public byte[] AsBytes<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return serialiser.Serialize(entity);
         }
 
+        public string AsString<T>(T entity)
+        {
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
+            return Convert.ToBase64String(AsBytes(entity));
+        }
+
         public T From<T>(string data)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
             return From<T>(Convert.FromBase64String(data));
         }
 
         public T From<T>(byte[] data)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             return serialiser.Deserialize<T>(data);
         }

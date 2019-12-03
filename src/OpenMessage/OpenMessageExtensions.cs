@@ -1,18 +1,22 @@
-﻿using System;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using OpenMessage;
+using OpenMessage.Builders;
+using OpenMessage.Handlers;
+using OpenMessage.Pipelines;
+using OpenMessage.Pipelines.Builders;
+using OpenMessage.Pipelines.Endpoints;
+using OpenMessage.Pipelines.Middleware;
+using OpenMessage.Pipelines.Pumps;
+using OpenMessage.Serialisation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using OpenMessage;
-using OpenMessage.DI;
-using OpenMessage.Handlers;
-using OpenMessage.Pipelines;
-using OpenMessage.Serialisation;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -21,8 +25,6 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class OpenMessageExtensions
     {
-        private static readonly HashSet<Type> RegisteredConsumers = new HashSet<Type>();
-
         /// <summary>
         ///     Adds OpenMessage
         /// </summary>
@@ -37,8 +39,80 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSerialization();
                 services.TryAddSingleton<ISerializer, DefaultSerializer>();
                 services.TryAddSingleton<IDeserializer, DefaultDeserializer>();
+                services.AddSingleton(typeof(BatchPipelineEndpoint<>));
+                services.AddScoped(typeof(HandlerPipelineEndpoint<>));
+                services.AddScoped(typeof(BatchHandlerPipelineEndpoint<>));
             });
         }
+
+        #region Middleware Extensions
+
+        /// <summary>
+        ///     Automatically acknowledges a message
+        /// </summary>
+        /// <param name="pipelineBuilder">The pipeline to add to</param>
+        /// <typeparam name="T">The underlying message type of the pipeline</typeparam>
+        /// <returns>The pipeline builder</returns>
+        public static IPipelineBuilder<T> UseAutoAcknowledge<T>(this IPipelineBuilder<T> pipelineBuilder)
+        {
+            pipelineBuilder.Services.TryAddSingleton<AutoAcknowledgeMiddleware<T>>();
+
+            return pipelineBuilder.Use<AutoAcknowledgeMiddleware<T>>();
+        }
+
+        /// <summary>
+        ///     Creates a new service scope for each pipeline
+        /// </summary>
+        /// <param name="pipelineBuilder">The pipeline to add to</param>
+        /// <typeparam name="T">The underlying message type of the pipeline</typeparam>
+        /// <returns>The pipeline builder</returns>
+        public static IPipelineBuilder<T> UseServiceScope<T>(this IPipelineBuilder<T> pipelineBuilder)
+        {
+            pipelineBuilder.Services.TryAddSingleton<ServiceScopeMiddleware<T>>();
+
+            return pipelineBuilder.Use<ServiceScopeMiddleware<T>>();
+        }
+
+        /// <summary>
+        ///     Automatically times out a message after a specified duration.
+        /// </summary>
+        /// <param name="pipelineBuilder">The pipeline to add to</param>
+        /// <typeparam name="T">The underlying message type of the pipeline</typeparam>
+        /// <returns>The pipeline builder</returns>
+        public static IPipelineBuilder<T> UseTimeout<T>(this IPipelineBuilder<T> pipelineBuilder)
+        {
+            pipelineBuilder.Services.TryAddSingleton<TimeoutMiddleware<T>>();
+
+            return pipelineBuilder.Use<TimeoutMiddleware<T>>();
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="System.Diagnostics.Activity" /> for message
+        /// </summary>
+        /// <param name="pipelineBuilder">The pipeline to add to</param>
+        /// <typeparam name="T">The underlying message type of the pipeline</typeparam>
+        /// <returns>The pipeline builder</returns>
+        public static IPipelineBuilder<T> UseTracing<T>(this IPipelineBuilder<T> pipelineBuilder)
+        {
+            pipelineBuilder.Services.TryAddSingleton<TraceMiddleware<T>>();
+
+            return pipelineBuilder.Use<TraceMiddleware<T>>();
+        }
+
+        /// <summary>
+        ///     Creates a new log scope when the message supports identification
+        /// </summary>
+        /// <param name="pipelineBuilder">The pipeline to add to</param>
+        /// <typeparam name="T">The underlying message type of the pipeline</typeparam>
+        /// <returns>The pipeline builder</returns>
+        public static IPipelineBuilder<T> UseLoggingScope<T>(this IPipelineBuilder<T> pipelineBuilder)
+        {
+            pipelineBuilder.Services.TryAddSingleton<LoggerScopeMiddleware<T>>();
+
+            return pipelineBuilder.Use<LoggerScopeMiddleware<T>>();
+        }
+
+        #endregion
 
         #region IMessagingBuilder
 
@@ -53,6 +127,22 @@ namespace Microsoft.Extensions.DependencyInjection
             where THandler : class, IHandler<T>
         {
             messagingBuilder.Services.AddScoped<IHandler<T>, THandler>();
+
+            return messagingBuilder;
+        }
+
+        /// <summary>
+        ///     Adds the specified batch handler
+        /// </summary>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <typeparam name="TBatchHandler">The type of the batch handler to add</typeparam>
+        /// <param name="messagingBuilder">The OpenMessageBuilder</param>
+        /// <returns>The OpenMessageBuilder</returns>
+        public static IMessagingBuilder ConfigureBatchHandler<T, TBatchHandler>(this IMessagingBuilder messagingBuilder)
+            where TBatchHandler : class, IBatchHandler<T>
+        {
+            messagingBuilder.Services.AddScoped<IBatchHandler<T>, TBatchHandler>();
+
             return messagingBuilder;
         }
 
@@ -65,116 +155,87 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The OpenMessageBuilder</returns>
         public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, IHandler<T> instance)
         {
-            messagingBuilder.Services.AddSingleton<IHandler<T>>(instance);
-            return messagingBuilder;
-        }
-
-        /// <summary>
-        ///     Adds the specified handler
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="action">The implementation of the handler</param>
-        /// <typeparam name="T">The type that the handler handles</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>, CancellationToken> action)
-        {
-            return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
-        }
-
-        /// <summary>
-        ///     Adds the specified handler
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="action">The implementation of the handler</param>
-        /// <typeparam name="T">The type that the handler handles</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>> action)
-        {
-            return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
-        }
-
-        /// <summary>
-        ///     Adds the specified handler
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="action">The implementation of the handler</param>
-        /// <typeparam name="T">The type that the handler handles</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, CancellationToken, Task> action)
-        {
-            return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
-        }
-
-        /// <summary>
-        ///     Adds the specified handler
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="action">The implementation of the handler</param>
-        /// <typeparam name="T">The type that the handler handles</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, Task> action)
-        {
-            return messagingBuilder.ConfigureHandler<T>(new ActionHandler<T>(action));
-        }
-
-        /// <summary>
-        ///     Adds the specified pipeline
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="pipelineOptions">Pre-configure the pipeline options</param>
-        /// <typeparam name="T">The type the pipeline handles</typeparam>
-        /// <typeparam name="TPipeline">The pipeline to use</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigurePipeline<T, TPipeline>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> pipelineOptions = null)
-            where TPipeline : class, IPipeline<T>
-        {
-            messagingBuilder.Services.TryAddPipeline<T, TPipeline>();
-            return messagingBuilder.ConfigurePipelineOptions(pipelineOptions);
-        }
-
-        /// <summary>
-        ///     Adds the specified pipeline
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="pipelineOptions">Pre-configure the pipeline options</param>
-        /// <typeparam name="T">The type the pipeline handles</typeparam>
-        /// <typeparam name="TPipeline">The pipeline to use</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigurePipeline<T, TPipeline>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> pipelineOptions = null)
-            where TPipeline : class, IPipeline<T>
-        {
-            messagingBuilder.Services.TryAddPipeline<T, TPipeline>();
-            return messagingBuilder.ConfigurePipelineOptions(pipelineOptions);
-        }
-
-        /// <summary>
-        ///     Configures options for the specified pipeline
-        /// </summary>
-        /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="configurator">The configuration to apply</param>
-        /// <typeparam name="T">The type for the message pipeline, eg: MyEvent</typeparam>
-        /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigurePipelineOptions<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator)
-        {
-            if (configurator != null)
-                messagingBuilder.Services.Configure<PipelineOptions<T>>(configurator);
+            messagingBuilder.Services.AddSingleton(instance);
 
             return messagingBuilder;
         }
 
         /// <summary>
-        ///     Configures options for the specified pipeline
+        ///     Adds the specified handler
         /// </summary>
         /// <param name="messagingBuilder">The OpenMessage builder</param>
-        /// <param name="configurator">The configuration to apply</param>
-        /// <typeparam name="T">The type for the message pipeline, eg: MyEvent</typeparam>
+        /// <param name="action">The implementation of the handler</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigurePipelineOptions<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> configurator)
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>, CancellationToken> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+
+        /// <summary>
+        ///     Adds the specified handler
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="action">The implementation of the handler</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <returns>The OpenMessageBuilder</returns>
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+
+        /// <summary>
+        ///     Adds the specified handler
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="action">The implementation of the handler</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <returns>The OpenMessageBuilder</returns>
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, CancellationToken, Task> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+
+        /// <summary>
+        ///     Adds the specified handler
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="action">The implementation of the handler</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <returns>The OpenMessageBuilder</returns>
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, Task> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+
+        /// <summary>
+        ///     Configures a default pipeline
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        public static void TryConfigureDefaultPipeline<T>(this IMessagingBuilder messagingBuilder)
         {
-            if (configurator != null)
+            if (messagingBuilder.Services.Any(x => x.ServiceType == typeof(IPipelineBuilder<T>)))
+                return;
+
+            messagingBuilder.Services.TryAddSingleton<IPipelineBuilder<T>>(new PipelineBuilder<T>(messagingBuilder).UseDefaultMiddleware());
+        }
+
+        /// <summary>
+        ///     Configures the pipeline for a specified type.
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="configurator">The configuration to use</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <returns>The OpenMessage builder</returns>
+        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator = null)
+        {
+            return ConfigurePipeline<T>(messagingBuilder, (_, options) => configurator?.Invoke(options));
+        }
+
+        /// <summary>
+        ///     Configures the pipeline for a specified type.
+        /// </summary>
+        /// <param name="messagingBuilder">The OpenMessage builder</param>
+        /// <param name="configurator">The configuration to use</param>
+        /// <typeparam name="T">The type that the handler handles</typeparam>
+        /// <returns>The OpenMessage builder</returns>
+        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, PipelineOptions<T>> configurator)
+        {
+            if (configurator is {})
                 messagingBuilder.Services.Configure<PipelineOptions<T>>(options => { configurator(messagingBuilder.Context, options); });
 
-            return messagingBuilder;
+            messagingBuilder.Services.AddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
+
+            return new PipelineBuilder<T>(messagingBuilder);
         }
 
         /// <summary>
@@ -186,24 +247,29 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IMessagingBuilder ConfigureAllHandlers(this IMessagingBuilder messagingBuilder, params Assembly[] assembliesToScan)
         {
             if (assembliesToScan?.Length == 0)
-            {
-                assembliesToScan = new [] {Assembly.GetEntryAssembly()};
-            }
+                assembliesToScan = new[] {Assembly.GetEntryAssembly()};
 
-            var ht = typeof(IHandler<>);
+            var handlerTypes = new[] {typeof(IHandler<>), typeof(IBatchHandler<>)};
+
             IEnumerable<Type> HandlerInterfaceFilter(TypeInfo ti)
-                => ti.ImplementedInterfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == ht);
+            {
+                return ti.ImplementedInterfaces.Where(x => x.IsGenericType && handlerTypes.Contains(x.GetGenericTypeDefinition()));
+            }
 
             foreach (var assembly in assembliesToScan)
             {
-                var types = assembly.GetTypes().Where(x => !x.IsAbstract && !x.IsInterface && HandlerInterfaceFilter(x.GetTypeInfo()).Any());
+                var types = assembly.GetTypes()
+                                    .Where(x => !x.IsAbstract &&
+                                                !x.IsInterface &&
+                                                HandlerInterfaceFilter(x.GetTypeInfo())
+                                                    .Any());
+
                 foreach (var handlerType in types)
                 {
                     var implementedHandlers = HandlerInterfaceFilter(handlerType.GetTypeInfo());
+
                     foreach (var implementedHandler in implementedHandlers)
-                    {
                         messagingBuilder.Services.AddScoped(implementedHandler, handlerType);
-                    }
                 }
             }
 
@@ -222,6 +288,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddSerialization(this IServiceCollection services)
         {
             services.TryAddSingleton<IDeserializationProvider, DeserializationProvider>();
+
             return services;
         }
 
@@ -233,9 +300,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified service collection</returns>
         public static IServiceCollection AddSerializer<T>(this IServiceCollection services)
             where T : class, ISerializer
-        {
-            return services.AddSingleton<ISerializer, T>();
-        }
+            => services.AddSingleton<ISerializer, T>();
 
         /// <summary>
         ///     Adds the specified deserializer
@@ -245,9 +310,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified service collection</returns>
         public static IServiceCollection AddDeserializer<T>(this IServiceCollection services)
             where T : class, IDeserializer
-        {
-            return services.AddSingleton<IDeserializer, T>();
-        }
+            => services.AddSingleton<IDeserializer, T>();
 
         /// <summary>
         ///     Adds the background channel if it has not already been added
@@ -258,36 +321,31 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified service collection</returns>
         public static IServiceCollection TryAddChannel<T>(this IServiceCollection services, Func<IServiceProvider, Channel<T>> channelCreator = null)
         {
-            if (channelCreator == null)
+            if (channelCreator is null)
                 services.TryAddSingleton(sp =>
                 {
-                    var pipelineOptions = sp.GetRequiredService<IOptionsMonitor<PipelineOptions<T>>>().CurrentValue;
+                    var pipelineOptions = sp.GetRequiredService<IOptionsMonitor<PipelineOptions<T>>>()
+                                            .CurrentValue;
 
-                    return pipelineOptions.UseBoundedChannel.GetValueOrDefault(true)
-                        ? Channel.CreateBounded<T>(new BoundedChannelOptions(pipelineOptions.BoundedChannelLimit.GetValueOrDefault(Environment.ProcessorCount * 10)) {SingleReader = true, SingleWriter = false})
-                        : Channel.CreateUnbounded<T>(new UnboundedChannelOptions {SingleReader = true, SingleWriter = false});
+                    return pipelineOptions.UseBoundedChannel.GetValueOrDefault(true) ? Channel.CreateBounded<T>(new BoundedChannelOptions(pipelineOptions.BoundedChannelLimit.GetValueOrDefault(Environment.ProcessorCount * 10))
+                    {
+                        SingleReader = true,
+                        SingleWriter = false
+                    }) : Channel.CreateUnbounded<T>(new UnboundedChannelOptions
+                    {
+                        SingleReader = true,
+                        SingleWriter = false
+                    });
                 });
             else
                 services.TryAddSingleton(channelCreator);
 
-            services.TryAddSingleton(sp => sp.GetRequiredService<Channel<T>>().Reader);
-            services.TryAddSingleton(sp => sp.GetRequiredService<Channel<T>>().Writer);
+            services.TryAddSingleton(sp => sp.GetRequiredService<Channel<T>>()
+                                             .Reader);
 
-            return services;
-        }
+            services.TryAddSingleton(sp => sp.GetRequiredService<Channel<T>>()
+                                             .Writer);
 
-        /// <summary>
-        ///     Tries to add the specified pipeline
-        /// </summary>
-        /// <param name="services">The service collection to modify</param>
-        /// <typeparam name="T">The type the pipeline handles</typeparam>
-        /// <typeparam name="TPipeline">The type of pipeline</typeparam>
-        /// <returns>The modified service collection</returns>
-        public static IServiceCollection TryAddPipeline<T, TPipeline>(this IServiceCollection services)
-            where TPipeline : class, IPipeline<T>
-        {
-            services.TryAddSingleton<IPipeline<T>, TPipeline>();
-            services.TryAddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
             return services;
         }
 
@@ -300,22 +358,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified service collection</returns>
         public static IServiceCollection TryAddConsumerService<T>(this IServiceCollection services, Func<IServiceProvider, Channel<Message<T>>> channelCreator = null)
         {
-            services.TryAddChannel(channelCreator).TryAddPipeline<T, SimplePipeline<T>>();
+            services.TryAddChannel(channelCreator);
+            services.TryAddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();
 
-            if (!RegisteredConsumers.Contains(typeof(T)))
-            {
-                services.AddSingleton(typeof(IHostedService), sp =>
-                {
-                    var pipelineType = sp.GetRequiredService<IOptionsMonitor<PipelineOptions<T>>>().CurrentValue.PipelineType;
-                    return pipelineType switch
-                    {
-                        PipelineType.Serial => (object) ActivatorUtilities.CreateInstance<SerialConsumerPump<T>>(sp),
-                        PipelineType.Parallel => ActivatorUtilities.CreateInstance<ParallelConsumerPump<T>>(sp),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                });
-                RegisteredConsumers.Add(typeof(T));
-            }
+            if (!services.Any(x => x.ServiceType == typeof(IHostedService) && x.ImplementationType == typeof(ConsumerPump<T>)))
+                services.AddSingleton<IHostedService, ConsumerPump<T>>();
 
             return services;
         }
@@ -332,6 +379,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return services.AddSingleton<IHostedService>(sp => ActivatorUtilities.CreateInstance<T>(sp, consumerId));
         }
+
         #endregion
     }
 }

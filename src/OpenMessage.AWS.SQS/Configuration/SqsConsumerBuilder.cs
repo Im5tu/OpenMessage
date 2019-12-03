@@ -1,9 +1,9 @@
-using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using OpenMessage.Configuration;
+using OpenMessage.Builders;
+using System;
 
 namespace OpenMessage.AWS.SQS.Configuration
 {
@@ -13,8 +13,16 @@ namespace OpenMessage.AWS.SQS.Configuration
         private int _consumerCount = 1;
 
         public SqsConsumerBuilder(IMessagingBuilder hostBuilder)
-            : base(hostBuilder)
+            : base(hostBuilder) { }
+
+        public override void Build()
         {
+            HostBuilder.Services.TryAddConsumerService<T>();
+            HostBuilder.TryConfigureDefaultPipeline<T>();
+            ConfigureOptions(_configuration);
+
+            for (var i = 0; i < _consumerCount; i++)
+                CreateConsumer();
         }
 
         public ISqsConsumerBuilder<T> FromConfiguration(Action<SQSConsumerOptions> configuration)
@@ -25,6 +33,14 @@ namespace OpenMessage.AWS.SQS.Configuration
         public ISqsConsumerBuilder<T> FromConfiguration(Action<HostBuilderContext, SQSConsumerOptions> configuration)
         {
             _configuration = configuration;
+
+            return this;
+        }
+
+        public ISqsConsumerBuilder<T> FromConfiguration(string configurationSection)
+        {
+            _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
+
             return this;
         }
 
@@ -34,21 +50,8 @@ namespace OpenMessage.AWS.SQS.Configuration
                 throw new ArgumentOutOfRangeException("Consumer count must be between 1 & 50.");
 
             _consumerCount = count;
+
             return this;
-        }
-
-        public ISqsConsumerBuilder<T> FromConfiguration(string configurationSection)
-        {
-            _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
-            return this;
-        }
-
-        public override void Build()
-        {
-            ConfigureOptions(_configuration);
-
-            for (var i = 0; i < _consumerCount; i++)
-                CreateConsumer();
         }
 
         private void CreateConsumer()

@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using OpenMessage.Serialisation;
+using ServiceStack.Text;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using OpenMessage.Extensions;
-using OpenMessage.Serialisation;
-using ServiceStack.Text;
 
 namespace OpenMessage.Serializer.ServiceStackJson
 {
@@ -12,34 +11,40 @@ namespace OpenMessage.Serializer.ServiceStackJson
         private static readonly string _contentType = "application/json";
 
         public string ContentType { get; } = _contentType;
+
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
-
-        public string AsString<T>(T entity)
-        {
-            entity.Must(nameof(entity)).NotBeNull();
-
-            return JsonSerializer.SerializeToString(entity);
-        }
 
         public byte[] AsBytes<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return Encoding.UTF8.GetBytes(JsonSerializer.SerializeToString(entity));
         }
 
+        public string AsString<T>(T entity)
+        {
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
+            return JsonSerializer.SerializeToString(entity);
+        }
+
         public T From<T>(string data)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
             return JsonSerializer.DeserializeFromString<T>(data);
         }
 
         public T From<T>(byte[] data)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             using var ms = new MemoryStream(data);
+
             return JsonSerializer.DeserializeFromStream<T>(ms);
         }
     }

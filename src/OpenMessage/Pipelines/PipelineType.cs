@@ -1,4 +1,4 @@
-﻿namespace OpenMessage.Pipelines
+namespace OpenMessage.Pipelines
 {
     /// <summary>
     ///     The type of the pipeline
@@ -6,7 +6,7 @@
     public enum PipelineType
     {
         /// <summary>
-        ///     Each message in the pipeline is handled sequentially
+        ///     Each message in the pipeline is handled sequentially. Batching will produces batches of 1.
         /// </summary>
         Serial,
 

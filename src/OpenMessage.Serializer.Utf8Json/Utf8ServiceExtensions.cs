@@ -14,9 +14,22 @@ namespace OpenMessage.Serializer.Utf8Json
         /// </summary>
         /// <param name="messagingBuilder">The host to configure</param>
         /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureUtf8Json(this IMessagingBuilder messagingBuilder)
+        public static IMessagingBuilder ConfigureUtf8Json(this IMessagingBuilder messagingBuilder) => messagingBuilder.ConfigureUtf8JsonDeserializer()
+                                                                                                                      .ConfigureUtf8JsonSerializer();
+
+        /// <summary>
+        ///     Adds the Utf8Json deserializer
+        /// </summary>
+        /// <param name="messagingBuilder">The host to configure</param>
+        /// <returns>The modified builder</returns>
+        public static IMessagingBuilder ConfigureUtf8JsonDeserializer(this IMessagingBuilder messagingBuilder)
         {
-            return messagingBuilder.ConfigureUtf8JsonDeserializer().ConfigureUtf8JsonSerializer();
+            messagingBuilder.Services.TryAddSingleton<Utf8Serializer>();
+
+            messagingBuilder.Services.AddSerialization()
+                            .AddSingleton<IDeserializer>(sp => sp.GetRequiredService<Utf8Serializer>());
+
+            return messagingBuilder;
         }
 
         /// <summary>
@@ -27,19 +40,10 @@ namespace OpenMessage.Serializer.Utf8Json
         public static IMessagingBuilder ConfigureUtf8JsonSerializer(this IMessagingBuilder messagingBuilder)
         {
             messagingBuilder.Services.TryAddSingleton<Utf8Serializer>();
-            messagingBuilder.Services.AddSerialization().AddSingleton<ISerializer>(sp => sp.GetRequiredService<Utf8Serializer>());
-            return messagingBuilder;
-        }
 
-        /// <summary>
-        ///     Adds the Utf8Json deserializer
-        /// </summary>
-        /// <param name="messagingBuilder">The host to configure</param>
-        /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureUtf8JsonDeserializer(this IMessagingBuilder messagingBuilder)
-        {
-            messagingBuilder.Services.TryAddSingleton<Utf8Serializer>();
-            messagingBuilder.Services.AddSerialization().AddSingleton<IDeserializer>(sp => sp.GetRequiredService<Utf8Serializer>());
+            messagingBuilder.Services.AddSerialization()
+                            .AddSingleton<ISerializer>(sp => sp.GetRequiredService<Utf8Serializer>());
+
             return messagingBuilder;
         }
     }

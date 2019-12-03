@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using OpenMessage.Extensions;
 
 namespace OpenMessage.Serialisation
 {
@@ -11,7 +10,8 @@ namespace OpenMessage.Serialisation
 
         public DeserializationProvider(IEnumerable<IDeserializer> deserializers)
         {
-            deserializers.Must(nameof(deserializers)).NotBeNull();
+            if (deserializers is null)
+                Throw.ArgumentNullException(nameof(deserializers));
 
             foreach (var deserializer in deserializers)
             foreach (var contentType in deserializer.SupportedContentTypes)
@@ -21,25 +21,34 @@ namespace OpenMessage.Serialisation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T From<T>(string data, string contentType)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
-            contentType.Must(nameof(contentType)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return GetDeserializer(contentType).From<T>(data);
+            if (string.IsNullOrWhiteSpace(contentType))
+                Throw.ArgumentException(nameof(contentType), "Cannot be null, empty or whitespace");
+
+            return GetDeserializer(contentType)
+                .From<T>(data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T From<T>(byte[] data, string contentType)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
-            contentType.Must(nameof(contentType)).NotBeNullOrWhiteSpace();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return GetDeserializer(contentType).From<T>(data);
+            if (string.IsNullOrWhiteSpace(contentType))
+                Throw.ArgumentException(nameof(contentType), "Cannot be null, empty or whitespace");
+
+            return GetDeserializer(contentType)
+                .From<T>(data);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IDeserializer GetDeserializer(string contentType)
         {
-            if (!_deserializers.TryGetValue(contentType, out var deserializer)) Throw.Exception($"No deserializer registered for content type: {deserializer}. Registered types: {string.Join(", ", _deserializers.Keys)}");
+            if (!_deserializers.TryGetValue(contentType, out var deserializer))
+                Throw.Exception($"No deserializer registered for content type: {deserializer}. Registered types: {string.Join(", ", _deserializers.Keys)}");
 
             return deserializer;
         }

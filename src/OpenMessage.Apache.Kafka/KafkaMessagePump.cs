@@ -1,21 +1,18 @@
-﻿using System;
+using Microsoft.Extensions.Logging;
+using OpenMessage.Pipelines.Pumps;
+using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using OpenMessage.Pipelines;
 
 namespace OpenMessage.Apache.Kafka.HostedServices
 {
     internal sealed class KafkaMessagePump<TKey, TValue> : MessagePump<TValue>
     {
-        private readonly IKafkaConsumer<TKey, TValue> _kafkaConsumer;
         private readonly string _consumerId;
+        private readonly IKafkaConsumer<TKey, TValue> _kafkaConsumer;
 
-        public KafkaMessagePump(ChannelWriter<Message<TValue>> channelWriter,
-            ILogger<KafkaMessagePump<TKey, TValue>> logger,
-            IKafkaConsumer<TKey, TValue> kafkaConsumer,
-            string consumerId)
+        public KafkaMessagePump(ChannelWriter<Message<TValue>> channelWriter, ILogger<KafkaMessagePump<TKey, TValue>> logger, IKafkaConsumer<TKey, TValue> kafkaConsumer, string consumerId)
             : base(channelWriter, logger)
         {
             _kafkaConsumer = kafkaConsumer ?? throw new ArgumentNullException(nameof(kafkaConsumer));
@@ -28,13 +25,20 @@ namespace OpenMessage.Apache.Kafka.HostedServices
             await base.StartAsync(cancellationToken);
         }
 
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await base.StopAsync(cancellationToken);
+            _kafkaConsumer.Stop();
+        }
+
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
                 try
                 {
                     var kafkaMessage = await _kafkaConsumer.ConsumeAsync(cancellationToken);
-                    if (kafkaMessage != null)
+
+                    if (kafkaMessage is {})
                         await ChannelWriter.WriteAsync(kafkaMessage, cancellationToken);
                 }
                 catch (Exception ex)
@@ -42,12 +46,6 @@ namespace OpenMessage.Apache.Kafka.HostedServices
                     if (!cancellationToken.IsCancellationRequested)
                         Logger.LogError(ex, ex.Message);
                 }
-        }
-
-        public override async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await base.StopAsync(cancellationToken);
-            _kafkaConsumer.Stop();
         }
     }
 }

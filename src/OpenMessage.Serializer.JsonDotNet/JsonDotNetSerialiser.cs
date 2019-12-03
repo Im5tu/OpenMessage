@@ -1,7 +1,5 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Newtonsoft.Json;
-using OpenMessage.Extensions;
 using OpenMessage.Serialisation;
 
 namespace OpenMessage.Serializer.JsonDotNet
@@ -12,13 +10,17 @@ namespace OpenMessage.Serializer.JsonDotNet
 
         public byte[] AsBytes<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
             return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(entity));
         }
 
         public string AsString<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
             return JsonConvert.SerializeObject(entity);
         }
     }

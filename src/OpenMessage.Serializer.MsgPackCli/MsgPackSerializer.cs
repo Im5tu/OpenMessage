@@ -1,9 +1,8 @@
-﻿using System;
+﻿using MsgPack.Serialization;
+using OpenMessage.Serialisation;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using MsgPack.Serialization;
-using OpenMessage.Extensions;
-using OpenMessage.Serialisation;
 
 namespace OpenMessage.Serializer.MsgPackCli
 {
@@ -13,34 +12,41 @@ namespace OpenMessage.Serializer.MsgPackCli
         private readonly ConcurrentDictionary<Type, MessagePackSerializer> _serialisers = new ConcurrentDictionary<Type, MessagePackSerializer>();
 
         public string ContentType { get; } = _contentType;
+
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
+
+        public byte[] AsBytes<T>(T entity)
+        {
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
+            return _serialisers.GetOrAdd(typeof(T), key => MessagePackSerializer.Get(key))
+                               .PackSingleObject(entity);
+        }
 
         public string AsString<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return Convert.ToBase64String(AsBytes(entity));
         }
 
-        public byte[] AsBytes<T>(T entity)
-        {
-            entity.Must(nameof(entity)).NotBeNull();
-
-            return _serialisers.GetOrAdd(typeof(T), key => MessagePackSerializer.Get(key)).PackSingleObject(entity);
-        }
-
         public T From<T>(string data)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
             return From<T>(Convert.FromBase64String(data));
         }
 
         public T From<T>(byte[] data)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return (T) _serialisers.GetOrAdd(typeof(T), key => MessagePackSerializer.Get(key)).UnpackSingleObject(data);
+            return (T) _serialisers.GetOrAdd(typeof(T), key => MessagePackSerializer.Get(key))
+                                   .UnpackSingleObject(data);
         }
     }
 }

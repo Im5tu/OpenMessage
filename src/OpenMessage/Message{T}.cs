@@ -16,9 +16,6 @@
         /// </summary>
         /// <param name="message">The message to convert</param>
         /// <returns>Default if the message is null, otherwise the Value</returns>
-        public static implicit operator T(Message<T> message)
-        {
-            return message == null ? default : message.Value;
-        }
+        public static implicit operator T(Message<T> message) => message is null ? default : message.Value;
     }
 }

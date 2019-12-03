@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenMessage;
 using OpenMessage.Apache.Kafka;
 using OpenMessage.Apache.Kafka.Configuration;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,10 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="messagingBuilder">The host builder</param>
         /// <typeparam name="T">The type to consume</typeparam>
         /// <returns>The modified builder</returns>
-        public static IKafkaConsumerBuilder<string, T> ConfigureKafkaConsumer<T>(this IMessagingBuilder messagingBuilder)
-        {
-            return messagingBuilder.ConfigureKafkaConsumer<string, T>();
-        }
+        public static IKafkaConsumerBuilder<string, T> ConfigureKafkaConsumer<T>(this IMessagingBuilder messagingBuilder) => messagingBuilder.ConfigureKafkaConsumer<string, T>();
 
         /// <summary>
         ///     Adds a kafka consumer
@@ -31,11 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TKey">The type of the key</typeparam>
         /// <typeparam name="TValue">The type of the message</typeparam>
         /// <returns>The modified builder</returns>
-        public static IKafkaConsumerBuilder<TKey, TValue> ConfigureKafkaConsumer<TKey, TValue>(this IMessagingBuilder messagingBuilder)
-        {
-            messagingBuilder.Services.TryAddConsumerService<TValue>().TryAddSingleton<IPostConfigureOptions<KafkaOptions>, KafkaOptionsPostConfigurationProvider>();
-            return new KafkaConsumerBuilder<TKey, TValue>(messagingBuilder);
-        }
+        public static IKafkaConsumerBuilder<TKey, TValue> ConfigureKafkaConsumer<TKey, TValue>(this IMessagingBuilder messagingBuilder) => new KafkaConsumerBuilder<TKey, TValue>(messagingBuilder);
 
         /// <summary>
         ///     Adds a kafka dispatcher
@@ -46,10 +39,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified builder</returns>
         public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<KafkaOptions<T>> options = null)
         {
-            if (options != null)
+            if (options is {})
                 messagingBuilder.Services.Configure(options);
 
-            messagingBuilder.Services.AddSingleton<IDispatcher<T>, KafkaDispatcher<T>>().TryAddSingleton<IPostConfigureOptions<KafkaOptions<T>>, KafkaOptionsPostConfigurationProvider<T>>();
+            messagingBuilder.Services.AddSingleton<IDispatcher<T>, KafkaDispatcher<T>>()
+                            .TryAddSingleton<IPostConfigureOptions<KafkaOptions<T>>, KafkaOptionsPostConfigurationProvider<T>>();
 
             return messagingBuilder;
         }
@@ -63,10 +57,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The modified builder</returns>
         public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, KafkaOptions<T>> options = null)
         {
-            if (options != null)
+            if (options is {})
                 messagingBuilder.Services.Configure<KafkaOptions<T>>(o => options(messagingBuilder.Context, o));
 
-            messagingBuilder.Services.AddSingleton<IDispatcher<T>, KafkaDispatcher<T>>().TryAddSingleton<IPostConfigureOptions<KafkaOptions<T>>, KafkaOptionsPostConfigurationProvider<T>>();
+            messagingBuilder.Services.AddSingleton<IDispatcher<T>, KafkaDispatcher<T>>()
+                            .TryAddSingleton<IPostConfigureOptions<KafkaOptions<T>>, KafkaOptionsPostConfigurationProvider<T>>();
 
             return messagingBuilder;
         }

@@ -1,5 +1,5 @@
-﻿using System;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace OpenMessage.Pipelines
 {
@@ -9,9 +9,6 @@ namespace OpenMessage.Pipelines
         {
             if (options.PipelineTimeout == default)
                 options.PipelineTimeout = TimeSpan.FromSeconds(5);
-
-            if (!options.AutoAcknowledge.HasValue)
-                options.AutoAcknowledge = true;
         }
     }
 }

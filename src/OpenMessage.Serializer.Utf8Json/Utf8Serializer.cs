@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using OpenMessage.Extensions;
-using OpenMessage.Serialisation;
+﻿using OpenMessage.Serialisation;
+using System.Collections.Generic;
 using Utf8Json;
 
 namespace OpenMessage.Serializer.Utf8Json
@@ -12,30 +11,34 @@ namespace OpenMessage.Serializer.Utf8Json
         public string ContentType { get; } = _contentType;
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
 
-        public string AsString<T>(T entity)
-        {
-            entity.Must(nameof(entity)).NotBeNull();
-
-            return JsonSerializer.ToJsonString(entity);
-        }
-
         public byte[] AsBytes<T>(T entity)
         {
-            entity.Must(nameof(entity)).NotBeNull();
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
             return JsonSerializer.Serialize(entity);
         }
 
+        public string AsString<T>(T entity)
+        {
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
+
+            return JsonSerializer.ToJsonString(entity);
+        }
+
         public T From<T>(string data)
         {
-            data.Must(nameof(data)).NotBeNullOrWhiteSpace();
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
             return JsonSerializer.Deserialize<T>(data);
         }
 
         public T From<T>(byte[] data)
         {
-            data.Must(nameof(data)).NotBeNullOrEmpty();
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             return JsonSerializer.Deserialize<T>(data);
         }
