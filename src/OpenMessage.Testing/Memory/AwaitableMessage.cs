@@ -23,8 +23,6 @@ namespace OpenMessage.Testing.Memory
 
         public async Task AcknowledgeAsync(bool positivelyAcknowledge = true)
         {
-            _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);
-
             if (positivelyAcknowledge)
                 AcknowledgementState = AcknowledgementState.Acknowledged;
             else
@@ -32,6 +30,8 @@ namespace OpenMessage.Testing.Memory
 
             if (_message is ISupportAcknowledgement ack)
                 await ack.AcknowledgeAsync(positivelyAcknowledge);
+
+            _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);
         }
 
         public TaskAwaiter<bool> GetAwaiter() => _messageConsumedTaskCompletionSource.Task.GetAwaiter();
