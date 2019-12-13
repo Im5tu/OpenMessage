@@ -30,16 +30,20 @@ namespace OpenMessage.Pipelines.Builders
                         var currentBatch = batch.Flush();
 
                         if (currentBatch.Count > 0)
-                            try
+                            _ = Task.Factory.StartNew(async () =>
                             {
-                                await OnBatchAsync(currentBatch);
-                                batch.BatchProcessedTaskCompletionSource.SetResult(true);
-                            }
-                            catch (Exception ex)
-                            {
-                                // Leave the logging of the exception to the consumer
-                                batch.BatchProcessedTaskCompletionSource.SetException(ex);
-                            }
+                                //"Fire and forget"; lets not block up the batcher while waiting for it to process
+                                try
+                                {
+                                    await OnBatchAsync(currentBatch);
+                                    batch.BatchProcessedTaskCompletionSource.SetResult(true);
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Leave the logging of the exception to the consumer
+                                    batch.BatchProcessedTaskCompletionSource.SetException(ex);
+                                }
+                            });
                     }
 
                     //Wait for a timeout, or the next batch to complete
