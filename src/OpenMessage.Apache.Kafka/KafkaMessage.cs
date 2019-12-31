@@ -10,7 +10,7 @@ namespace OpenMessage.Apache.Kafka
         private readonly Action<KafkaMessage<TKey, TValue>> _postiveAcknowledgeAction;
         private AcknowledgementState _acknowledgementState = AcknowledgementState.NotAcknowledged;
 #if NETCOREAPP3_1
-        private readonly OpenMessageEventSource.ValueStopwatch? _stopwatch;
+        private OpenMessageEventSource.ValueStopwatch? _stopwatch;
 #endif
 
         /// <inheritdoc />
@@ -58,7 +58,10 @@ namespace OpenMessage.Apache.Kafka
             {
 #if NETCOREAPP3_1
                 if (_stopwatch.HasValue)
+                {
                     OpenMessageEventSource.Instance.ProcessMessageStop(_stopwatch.Value);
+                    _stopwatch = null;
+                }
 #endif
             }
         }

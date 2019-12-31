@@ -13,10 +13,10 @@ namespace OpenMessage
         internal static readonly OpenMessageEventSource Instance = new OpenMessageEventSource();
 
         private long _inflightMessages = 0;
-        private long _messages = 0;
-        private PollingCounter _inflightMessagesCounter;
+        private long _processedCount = 0;
+        private IncrementingPollingCounter _inflightMessagesCounter;
         private EventCounter _messageDurationCounter;
-        private IncrementingPollingCounter _messagesPerSecondCounter;
+        private IncrementingPollingCounter _processedCountCounter;
 
         private OpenMessageEventSource() { }
 
@@ -39,7 +39,7 @@ namespace OpenMessage
         private void MessageStart()
         {
             Interlocked.Increment(ref _inflightMessages);
-            Interlocked.Increment(ref _messages);
+            Interlocked.Increment(ref _processedCount);
         }
 
         [NonEvent]
@@ -63,7 +63,7 @@ namespace OpenMessage
             {
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
-                _inflightMessagesCounter ??= new PollingCounter("inflight-messages", this, () => _inflightMessages)
+                _inflightMessagesCounter ??= new IncrementingPollingCounter("inflight-messages", this, () => _inflightMessages)
                 {
                     DisplayName = "Inflight Messages",
                     DisplayUnits = "Messages"
@@ -73,9 +73,9 @@ namespace OpenMessage
                     DisplayName = "Average Message Duration",
                     DisplayUnits = "ms"
                 };
-                _messagesPerSecondCounter ??= new IncrementingPollingCounter("messages-per-second", this, () => _messages)
+                _processedCountCounter ??= new IncrementingPollingCounter("processed-count", this, () => _processedCount)
                 {
-                    DisplayName = "Messages Per Second",
+                    DisplayName = "Messages Processed",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
             }

@@ -8,7 +8,7 @@ namespace OpenMessage.AWS.SQS
     {
         private readonly Func<SqsMessage<T>, Task> _acknowledgementAction;
 #if NETCOREAPP3_1
-        private readonly OpenMessageEventSource.ValueStopwatch? _stopwatch;
+        private OpenMessageEventSource.ValueStopwatch? _stopwatch;
 #endif
 
         public AcknowledgementState AcknowledgementState { get; private set; }
@@ -42,7 +42,10 @@ namespace OpenMessage.AWS.SQS
             {
 #if NETCOREAPP3_1
                 if (_stopwatch.HasValue)
+                {
                     OpenMessageEventSource.Instance.ProcessMessageStop(_stopwatch.Value);
+                    _stopwatch = null;
+                }
 #endif
             }
         }
