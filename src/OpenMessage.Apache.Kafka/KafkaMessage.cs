@@ -30,7 +30,7 @@ namespace OpenMessage.Apache.Kafka
         }
 
         /// <inheritdoc />
-        Task ISupportAcknowledgement.AcknowledgeAsync(bool positivelyAcknowledge)
+        Task ISupportAcknowledgement.AcknowledgeAsync(bool positivelyAcknowledge, Exception exception)
         {
             if (_acknowledgementState != AcknowledgementState.NotAcknowledged)
                 return Task.CompletedTask;

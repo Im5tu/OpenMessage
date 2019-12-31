@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace OpenMessage
 {
@@ -16,7 +17,8 @@ namespace OpenMessage
         ///     Acknowledges the message back to the message source.
         /// </summary>
         /// <param name="positivelyAcknowledge">Indicates whether or not to positively acknowledge the message, or negatively acknowledge</param>
+        /// <param name="exception">The exception that caused the acknowledgement</param>
         /// <returns>A task that completes when the message source has completed the acknowledgement</returns>
-        Task AcknowledgeAsync(bool positivelyAcknowledge = true);
+        Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null);
     }
 }

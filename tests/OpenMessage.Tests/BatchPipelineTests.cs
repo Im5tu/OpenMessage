@@ -109,7 +109,7 @@ namespace OpenMessage.Tests
         {
             public AcknowledgementState AcknowledgementState { get; private set; }
 
-            public Task AcknowledgeAsync(bool positivelyAcknowledge = true)
+            public Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null)
             {
                 AcknowledgementState = positivelyAcknowledge ? AcknowledgementState.Acknowledged : AcknowledgementState.NegativelyAcknowledged;
 

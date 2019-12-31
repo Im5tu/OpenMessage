@@ -13,7 +13,7 @@ namespace OpenMessage.AWS.SQS
         internal string ReceiptHandle { get; set; }
         internal string QueueUrl { get; set; }
 
-        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true)
+        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null)
         {
             if (!positivelyAcknowledge)
             {

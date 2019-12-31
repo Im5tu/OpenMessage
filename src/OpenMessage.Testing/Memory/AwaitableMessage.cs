@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -21,7 +22,7 @@ namespace OpenMessage.Testing.Memory
             Value = message.Value;
         }
 
-        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true)
+        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null)
         {
             if (positivelyAcknowledge)
                 AcknowledgementState = AcknowledgementState.Acknowledged;
@@ -31,7 +32,10 @@ namespace OpenMessage.Testing.Memory
             if (_message is ISupportAcknowledgement ack)
                 await ack.AcknowledgeAsync(positivelyAcknowledge);
 
-            _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);
+            if (exception == null)
+                _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);
+            else
+                _messageConsumedTaskCompletionSource.TrySetException(exception);
         }
 
         public TaskAwaiter<bool> GetAwaiter() => _messageConsumedTaskCompletionSource.Task.GetAwaiter();
