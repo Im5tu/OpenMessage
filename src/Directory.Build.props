@@ -2,7 +2,7 @@
   <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')"/>
 
   <PropertyGroup>
-    <ProjectTargetFrameworks>net461;netstandard2.0</ProjectTargetFrameworks>
+    <ProjectTargetFrameworks>net461;netstandard2.0;netcoreapp3.1</ProjectTargetFrameworks>
     <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup Condition="Exists('icon.png')">

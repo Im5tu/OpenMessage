@@ -16,6 +16,7 @@ namespace OpenMessage.Samples.Kafka
             await Host.CreateDefaultBuilder()
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
+                                                             .AddSampleCore()
                                                              .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>

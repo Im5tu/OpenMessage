@@ -9,6 +9,9 @@ namespace OpenMessage.Apache.Kafka
     {
         private readonly Action<KafkaMessage<TKey, TValue>> _postiveAcknowledgeAction;
         private AcknowledgementState _acknowledgementState = AcknowledgementState.NotAcknowledged;
+#if NETCOREAPP3_1
+        private readonly OpenMessageEventSource.ValueStopwatch? _stopwatch;
+#endif
 
         /// <inheritdoc />
         public TKey Id { get; internal set; }
@@ -27,25 +30,37 @@ namespace OpenMessage.Apache.Kafka
             Partition = partition;
             Offset = offset;
             _postiveAcknowledgeAction = postiveAcknowledgeAction ?? throw new ArgumentNullException(nameof(postiveAcknowledgeAction));
+#if NETCOREAPP3_1
+            _stopwatch = OpenMessageEventSource.Instance.ProcessMessageStart();
+#endif
         }
 
         /// <inheritdoc />
         Task ISupportAcknowledgement.AcknowledgeAsync(bool positivelyAcknowledge, Exception exception)
         {
-            if (_acknowledgementState != AcknowledgementState.NotAcknowledged)
+            try
+            {
+                if (_acknowledgementState != AcknowledgementState.NotAcknowledged)
+                    return Task.CompletedTask;
+
+                if (positivelyAcknowledge)
+                {
+                    _postiveAcknowledgeAction?.Invoke(this);
+                    _acknowledgementState = AcknowledgementState.Acknowledged;
+                }
+                else
+                {
+                    _acknowledgementState = AcknowledgementState.NegativelyAcknowledged;
+                }
                 return Task.CompletedTask;
-
-            if (positivelyAcknowledge)
-            {
-                _postiveAcknowledgeAction?.Invoke(this);
-                _acknowledgementState = AcknowledgementState.Acknowledged;
             }
-            else
+            finally
             {
-                _acknowledgementState = AcknowledgementState.NegativelyAcknowledged;
+#if NETCOREAPP3_1
+                if (_stopwatch.HasValue)
+                    OpenMessageEventSource.Instance.ProcessMessageStop(_stopwatch.Value);
+#endif
             }
-
-            return Task.CompletedTask;
         }
     }
 }

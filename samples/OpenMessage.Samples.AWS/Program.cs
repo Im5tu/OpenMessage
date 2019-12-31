@@ -23,7 +23,8 @@ namespace OpenMessage.Samples.AWS
             await Host.CreateDefaultBuilder()
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
-                                                             .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
+                                                             .AddSampleCore()
+                                                             .AddProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>
                       {
