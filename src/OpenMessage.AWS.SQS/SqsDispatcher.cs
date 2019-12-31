@@ -11,10 +11,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.AWS.SQS
 {
-    internal sealed class SqsDispatcher<T> : IDispatcher<T>
+    internal sealed class SqsDispatcher<T> : DispatcherBase<T>
     {
         private static readonly string AttributeType = "String";
         private readonly AmazonSQSClient _client;
@@ -23,7 +24,8 @@ namespace OpenMessage.AWS.SQS
         private readonly ISerializer _serializer;
         private readonly MessageAttributeValue _valueTypeName;
 
-        public SqsDispatcher(IOptions<SQSDispatcherOptions<T>> options, ISerializer serializer)
+        public SqsDispatcher(IOptions<SQSDispatcherOptions<T>> options, ISerializer serializer, ILogger<SqsDispatcher<T>> logger)
+            : base(logger)
         {
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             var config = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -54,12 +56,7 @@ namespace OpenMessage.AWS.SQS
             };
         }
 
-        public Task DispatchAsync(T entity, CancellationToken cancellationToken) => DispatchAsync(new Message<T>
-        {
-            Value = entity
-        }, cancellationToken);
-
-        public async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
+        public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
             var request = new SendMessageRequest
             {

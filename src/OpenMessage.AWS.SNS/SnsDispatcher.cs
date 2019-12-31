@@ -11,10 +11,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.AWS.SNS
 {
-    internal sealed class SnsDispatcher<T> : IDispatcher<T>
+    internal sealed class SnsDispatcher<T> : DispatcherBase<T>
     {
         private static readonly string AttributeType = "String";
         private readonly AmazonSimpleNotificationServiceClient _client;
@@ -23,7 +24,8 @@ namespace OpenMessage.AWS.SNS
         private readonly string _topicArn;
         private readonly MessageAttributeValue _valueTypeName;
 
-        public SnsDispatcher(IOptions<SNSOptions<T>> options, ISerializer serializer)
+        public SnsDispatcher(IOptions<SNSOptions<T>> options, ISerializer serializer, ILogger<SnsDispatcher<T>> logger)
+            : base(logger)
         {
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             var config = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -53,13 +55,10 @@ namespace OpenMessage.AWS.SNS
             _topicArn = config.TopicArn;
         }
 
-        public Task DispatchAsync(T entity, CancellationToken cancellationToken) => DispatchAsync(new Message<T>
+        public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
-            Value = entity
-        }, cancellationToken);
-
-        public async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
-        {
+            LogDispatch(message);
+            
             var request = new PublishRequest
             {
                 MessageAttributes = GetMessageProperties(message),
