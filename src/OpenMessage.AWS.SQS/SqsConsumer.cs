@@ -1,4 +1,4 @@
-﻿using Amazon;
+using Amazon;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
@@ -38,7 +38,9 @@ namespace OpenMessage.AWS.SQS
             {
                 QueueUrl = _currentConsumerOptions.QueueUrl,
                 MaxNumberOfMessages = _currentConsumerOptions.MaxNumberOfMessages,
-                WaitTimeSeconds = _currentConsumerOptions.WaitTimeSeconds
+                WaitTimeSeconds = _currentConsumerOptions.WaitTimeSeconds,
+                AttributeNames = new List<string>(1) {"All"},
+                MessageAttributeNames = new List<string>(1) {"All"}
             };
 
             if (_currentConsumerOptions.VisibilityTimeout.HasValue)
