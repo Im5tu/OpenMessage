@@ -14,6 +14,7 @@ namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsConsumer<T> : ISqsConsumer<T>
     {
+        private static readonly List<string> RequestAttributes = new List<string>(1) { "All" };
         private static readonly string MisconfiguredConsumerMessage = "Consumer has not been initialized. Please call Initialize with the configured consumer id.";
         private readonly IDeserializationProvider _deserializationProvider;
         private readonly List<SqsMessage<T>> _emptyList = new List<SqsMessage<T>>(0);
@@ -39,8 +40,8 @@ namespace OpenMessage.AWS.SQS
                 QueueUrl = _currentConsumerOptions.QueueUrl,
                 MaxNumberOfMessages = _currentConsumerOptions.MaxNumberOfMessages,
                 WaitTimeSeconds = _currentConsumerOptions.WaitTimeSeconds,
-                AttributeNames = new List<string>(1) {"All"},
-                MessageAttributeNames = new List<string>(1) {"All"}
+                AttributeNames = RequestAttributes,
+                MessageAttributeNames = RequestAttributes
             };
 
             if (_currentConsumerOptions.VisibilityTimeout.HasValue)
