@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.3.102.50" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.3.102.52" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.0" />
   </ItemGroup>
 
