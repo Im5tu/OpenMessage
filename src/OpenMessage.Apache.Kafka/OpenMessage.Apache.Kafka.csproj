@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Kafka consumer and dispatcher implementation for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>

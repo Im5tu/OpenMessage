@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>SNS dispatcher implementation for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>

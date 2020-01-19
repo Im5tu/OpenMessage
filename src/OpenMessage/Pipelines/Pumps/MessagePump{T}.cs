@@ -49,6 +49,25 @@ namespace OpenMessage.Pipelines.Pumps
         }
 
         /// <inheritDoc />
-        protected abstract override Task ExecuteAsync(CancellationToken cancellationToken);
+        protected sealed override async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await ConsumeAsync(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Logger.LogError(e, e.Message);
+                        await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken); // TODO : make this configurable
+                    }
+                }
+            }
+        }
+
+        protected abstract Task ConsumeAsync(CancellationToken cancellationToken);
     }
 }

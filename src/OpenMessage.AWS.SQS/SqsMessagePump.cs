@@ -28,35 +28,30 @@ namespace OpenMessage.AWS.SQS
             return base.StartAsync(cancellationToken);
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ConsumeAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
-                try
-                {
-                    var messages = await _sqsConsumer.ConsumeAsync(cancellationToken);
+            try
+            {
+                var messages = await _sqsConsumer.ConsumeAsync(cancellationToken);
 
-                    if (messages.Count == 0)
-                        continue;
+                if (messages.Count == 0)
+                    return;
 
-                    foreach (var message in messages)
-                        await ChannelWriter.WriteAsync(message, cancellationToken);
-                }
-                catch (QueueDoesNotExistException queueException)
-                {
-                    await HandleMissingQueue(queueException, cancellationToken);
-                }
-                catch (AmazonSQSException sqsException) when (sqsException.ErrorCode == "AWS.SimpleQueueService.NonExistentQueue")
-                {
-                    await HandleMissingQueue(sqsException, cancellationToken);
-                }
-                catch (TaskCanceledException) { }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, ex.Message);
-                }
+                foreach (var message in messages)
+                    await ChannelWriter.WriteAsync(message, cancellationToken);
+            }
+            catch (QueueDoesNotExistException queueException)
+            {
+                await HandleMissingQueueAsync(queueException, cancellationToken);
+            }
+            catch (AmazonSQSException sqsException) when (sqsException.ErrorCode == "AWS.SimpleQueueService.NonExistentQueue")
+            {
+                await HandleMissingQueueAsync(sqsException, cancellationToken);
+            }
+            catch (TaskCanceledException) { }
         }
 
-        private async Task HandleMissingQueue<TException>(TException exception, CancellationToken cancellationToken)
+        private async Task HandleMissingQueueAsync<TException>(TException exception, CancellationToken cancellationToken)
             where TException : Exception
         {
             Logger.LogError(exception, $"Queue for type '{TypeCache<T>.FriendlyName}' does not exist. Retrying in 15 seconds.");

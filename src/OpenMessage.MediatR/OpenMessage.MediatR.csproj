@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Mediatr implementation for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>
