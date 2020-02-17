@@ -10,7 +10,6 @@ namespace OpenMessage.AWS.SQS.Configuration
     internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T>
     {
         private Action<HostBuilderContext, SQSConsumerOptions> _configuration;
-        private int _consumerCount = 1;
 
         public SqsConsumerBuilder(IMessagingBuilder hostBuilder)
             : base(hostBuilder) { }
@@ -21,8 +20,9 @@ namespace OpenMessage.AWS.SQS.Configuration
             HostBuilder.TryConfigureDefaultPipeline<T>();
             ConfigureOptions(_configuration);
 
-            for (var i = 0; i < _consumerCount; i++)
-                CreateConsumer();
+            HostBuilder.Services.TryAddTransient<ISqsConsumer<T>, SqsConsumer<T>>();
+            HostBuilder.Services.TryAddTransient<IQueueMonitor<T>, QueueMonitor<T>>();
+            HostBuilder.Services.AddConsumerService<SqsMessagePump<T>>(ConsumerId);
         }
 
         public ISqsConsumerBuilder<T> FromConfiguration(Action<SQSConsumerOptions> configuration)
@@ -42,22 +42,6 @@ namespace OpenMessage.AWS.SQS.Configuration
             _configuration = (context, options) => context.Configuration.Bind(configurationSection, options);
 
             return this;
-        }
-
-        public ISqsConsumerBuilder<T> FromConsumerCount(int count)
-        {
-            if (count < 1 || count > 50)
-                throw new ArgumentOutOfRangeException("Consumer count must be between 1 & 50.");
-
-            _consumerCount = count;
-
-            return this;
-        }
-
-        private void CreateConsumer()
-        {
-            HostBuilder.Services.TryAddTransient<ISqsConsumer<T>, SqsConsumer<T>>();
-            HostBuilder.Services.AddConsumerService<SqsMessagePump<T>>(ConsumerId);
         }
     }
 }

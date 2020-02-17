@@ -42,5 +42,15 @@ namespace OpenMessage.AWS.SQS.Configuration
         ///     The waiting period before return the messages, in seconds
         /// </summary>
         public int WaitTimeSeconds { get; set; }
+
+        /// <summary>
+        ///     The minimum number of consumers to manage
+        /// </summary>
+        public byte MinimumConsumerCount { get; set; } = 1;
+
+        /// <summary>
+        ///     The maximum number of consumers to manage
+        /// </summary>
+        public byte MaximumConsumerCount { get; set; } = 20;
     }
 }

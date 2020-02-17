@@ -16,7 +16,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
     <Version>1.0.0</Version>
-    <PackageVersion>$(Version)-preview-6</PackageVersion>
+    <PackageVersion>$(Version)-preview-7</PackageVersion>
     <PackageOutputPath>$(RepositoryRoot)/artifacts</PackageOutputPath>
     <PackageReleaseNotes>Preview release for use with .Net Core 3</PackageReleaseNotes>
     <Title>$(MSBuildProjectName)</Title>
