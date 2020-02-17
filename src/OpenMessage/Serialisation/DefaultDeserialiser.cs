@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace OpenMessage.Serialisation
@@ -7,20 +8,20 @@ namespace OpenMessage.Serialisation
     {
         public IEnumerable<string> SupportedContentTypes { get; } = new[] {"application/json"};
 
-        public T From<T>(string data)
+        public T From<T>(string data, Type messageType)
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return JsonSerializer.Deserialize<T>(data);
+            return (T)JsonSerializer.Deserialize(data, messageType);
         }
 
-        public T From<T>(byte[] data)
+        public T From<T>(byte[] data, Type messageType)
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return JsonSerializer.Deserialize<T>(data);
+            return (T)JsonSerializer.Deserialize(data, messageType);
         }
     }
 }

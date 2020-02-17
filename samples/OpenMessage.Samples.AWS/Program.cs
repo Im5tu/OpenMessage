@@ -29,7 +29,7 @@ namespace OpenMessage.Samples.AWS
                       .ConfigureMessaging(host =>
                       {
                           // Adds a handler that writes to console every 1000 messages
-                          host.ConfigureHandler<SimpleModel>(msg =>
+                          host.ConfigureHandler<CoreModel>(msg =>
                           {
                               var counter = Interlocked.Increment(ref _counter);
 
@@ -47,7 +47,7 @@ namespace OpenMessage.Samples.AWS
                               .Build();
 
                           // Consume from the same topic as we are writing to
-                          host.ConfigureSqsConsumer<SimpleModel>()
+                          host.ConfigureSqsConsumer<CoreModel>()
                               .FromConfiguration(config =>
                               {
                                   config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";

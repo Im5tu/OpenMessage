@@ -22,7 +22,6 @@ namespace OpenMessage.AWS.SQS
         private readonly MessageAttributeValue _contentType;
         private readonly string _queueUrl;
         private readonly ISerializer _serializer;
-        private readonly MessageAttributeValue _valueTypeName;
 
         public SqsDispatcher(IOptions<SQSDispatcherOptions<T>> options, ISerializer serializer, ILogger<SqsDispatcher<T>> logger)
             : base(logger)
@@ -48,12 +47,6 @@ namespace OpenMessage.AWS.SQS
                 DataType = AttributeType,
                 StringValue = _serializer.ContentType
             };
-
-            _valueTypeName = new MessageAttributeValue
-            {
-                DataType = AttributeType,
-                StringValue = typeof(T).AssemblyQualifiedName
-            };
         }
 
         public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
@@ -76,7 +69,11 @@ namespace OpenMessage.AWS.SQS
             var result = new Dictionary<string, MessageAttributeValue>
             {
                 [KnownProperties.ContentType] = _contentType,
-                [KnownProperties.ValueTypeName] = _valueTypeName
+                [KnownProperties.ValueTypeName] = new MessageAttributeValue
+                {
+                    DataType = AttributeType,
+                    StringValue = message.Value.GetType().AssemblyQualifiedName
+                }
             };
 
             if (Activity.Current is {})

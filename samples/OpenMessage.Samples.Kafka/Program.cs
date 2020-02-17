@@ -22,7 +22,7 @@ namespace OpenMessage.Samples.Kafka
                       .ConfigureMessaging(host =>
                       {
                           // Adds a handler that writes to console every 1000 messages
-                          host.ConfigureHandler<SimpleModel>(msg =>
+                          host.ConfigureHandler<CoreModel>(msg =>
                           {
                               var counter = Interlocked.Increment(ref _counter);
 
@@ -34,7 +34,8 @@ namespace OpenMessage.Samples.Kafka
                           host.ConfigureKafkaDispatcher<SimpleModel>(options => { });
 
                           // Consume from the same topic as we are writing to
-                          host.ConfigureKafkaConsumer<SimpleModel>()
+                          host.ConfigureKafkaConsumer<CoreModel>()
+                              .FromTopic("OpenMessage.Samples.Core.Models.SimpleModel".ToLowerInvariant())
                               .Build();
                       })
                       .Build()

@@ -49,13 +49,13 @@ namespace OpenMessage.Apache.Kafka
                         return null;
                     }
 
-                    var messageProperties = ParseMessageHeaders(message, out var contentType);
+                    var messageProperties = ParseMessageHeaders(message, out var contentType, out var messageType);
 
                     if (string.IsNullOrWhiteSpace(contentType))
                         contentType = ContentTypes.Json;
 
-                    var key = _deserializationProvider.From<TKey>(message.Key, contentType);
-                    var value = _deserializationProvider.From<TValue>(message.Value, contentType);
+                    var key = _deserializationProvider.From<TKey>(message.Key, contentType, TypeCache<TKey>.AssemblyQualifiedName);
+                    var value = _deserializationProvider.From<TValue>(message.Value, contentType, messageType);
 
                     _offsetTracker.AddOffset(message.Partition, message.Offset);
 
@@ -121,9 +121,10 @@ namespace OpenMessage.Apache.Kafka
             _offsetTracker.Clear();
         }
 
-        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> message, out string contentType)
+        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> message, out string contentType, out string messageType)
         {
             contentType = ContentTypes.Json;
+            messageType = null;
 
             if (message.Headers is null)
                 return Enumerable.Empty<KeyValuePair<string, string>>();
@@ -143,6 +144,9 @@ namespace OpenMessage.Apache.Kafka
 
                 if (header.Key == KnownProperties.ContentType)
                     contentType = value;
+
+                if (header.Key == KnownProperties.ValueTypeName)
+                    messageType = value;
             }
 
             return headers;

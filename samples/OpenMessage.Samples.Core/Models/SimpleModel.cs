@@ -2,7 +2,7 @@
 
 namespace OpenMessage.Samples.Core.Models
 {
-    public class SimpleModel
+    public class SimpleModel : CoreModel
     {
         public string Property1 { get; set; } = Guid.NewGuid()
                                                     .ToString("n");

@@ -1,4 +1,5 @@
-﻿using OpenMessage.Serialisation;
+﻿using System;
+using OpenMessage.Serialisation;
 using ServiceStack.Text;
 using System.Collections.Generic;
 using System.IO;
@@ -30,22 +31,22 @@ namespace OpenMessage.Serializer.ServiceStackJson
             return JsonSerializer.SerializeToString(entity);
         }
 
-        public T From<T>(string data)
+        public T From<T>(string data, Type messageType)
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return JsonSerializer.DeserializeFromString<T>(data);
+            return (T) JsonSerializer.DeserializeFromString(data, messageType);
         }
 
-        public T From<T>(byte[] data)
+        public T From<T>(byte[] data, Type messageType)
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             using var ms = new MemoryStream(data);
 
-            return JsonSerializer.DeserializeFromStream<T>(ms);
+            return (T) JsonSerializer.DeserializeFromStream(messageType, ms);
         }
     }
 }

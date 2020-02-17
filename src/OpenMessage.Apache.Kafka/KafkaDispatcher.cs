@@ -13,8 +13,6 @@ namespace OpenMessage.Apache.Kafka
 {
     internal sealed class KafkaDispatcher<T> : KafkaClient, IDispatcher<T>
     {
-        private static readonly byte[] _valueType = Encoding.UTF8.GetBytes(typeof(T).AssemblyQualifiedName);
-
         private readonly byte[] _contentType;
         private readonly IOptionsMonitor<KafkaOptions<T>> _options;
         private readonly IProducer<byte[], byte[]> _producer;
@@ -72,7 +70,7 @@ namespace OpenMessage.Apache.Kafka
                     h.Add(KnownProperties.ContentType, _contentType);
 
                 if (!valueType)
-                    h.Add(KnownProperties.ValueTypeName, _valueType);
+                    h.Add(KnownProperties.ValueTypeName, Encoding.UTF8.GetBytes(message.Value.GetType().AssemblyQualifiedName));
 
                 if (Activity.Current is {})
                     h.Add(KnownProperties.ActivityId, Encoding.UTF8.GetBytes(Activity.Current.Id));
