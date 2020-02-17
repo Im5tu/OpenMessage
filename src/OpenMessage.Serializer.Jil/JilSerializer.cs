@@ -1,4 +1,5 @@
-﻿using Jil;
+﻿using System;
+using Jil;
 using OpenMessage.Serialisation;
 using System.Collections.Generic;
 using System.Text;
@@ -28,20 +29,20 @@ namespace OpenMessage.Serializer.Jil
             return JSON.Serialize(entity);
         }
 
-        public T From<T>(string data)
+        public T From<T>(string data, Type messageType)
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return JSON.Deserialize<T>(data);
+            return (T)JSON.Deserialize(data, messageType);
         }
 
-        public T From<T>(byte[] data)
+        public T From<T>(byte[] data, Type messageType)
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return JSON.Deserialize<T>(Encoding.UTF8.GetString(data));
+            return (T)JSON.Deserialize(Encoding.UTF8.GetString(data), messageType);
         }
     }
 }

@@ -34,22 +34,22 @@ namespace OpenMessage.Serializer.Protobuf
             return Convert.ToBase64String(AsBytes(entity));
         }
 
-        public T From<T>(string data)
+        public T From<T>(string data, Type messageType)
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return From<T>(Convert.FromBase64String(data));
+            return From<T>(Convert.FromBase64String(data), messageType);
         }
 
-        public T From<T>(byte[] data)
+        public T From<T>(byte[] data, Type messageType)
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             using var ms = new MemoryStream(data);
 
-            return ProtoBuf.Serializer.Deserialize<T>(ms);
+            return (T)ProtoBuf.Serializer.Deserialize(messageType, ms);
         }
     }
 }

@@ -69,13 +69,17 @@ namespace OpenMessage.AWS.SQS
                 if (message.MessageAttributes.TryGetValue(KnownProperties.ContentType, out var cta))
                     contentType = cta.StringValue;
 
+                var messageType = default(string);
+                if (message.MessageAttributes.TryGetValue(KnownProperties.ValueTypeName, out var vtn))
+                    messageType = vtn.StringValue;
+
                 result.Add(new SqsMessage<T>(_acknowledgementAction)
                 {
                     Id = message.MessageId,
                     Properties = properties,
                     ReceiptHandle = message.ReceiptHandle,
                     QueueUrl = _currentConsumerOptions.QueueUrl,
-                    Value = _deserializationProvider.From<T>(message.Body, contentType)
+                    Value = _deserializationProvider.From<T>(message.Body, contentType, messageType)
                 });
             }
 

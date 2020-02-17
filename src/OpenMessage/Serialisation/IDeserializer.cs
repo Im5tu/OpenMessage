@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace OpenMessage.Serialisation
 {
@@ -17,15 +18,17 @@ namespace OpenMessage.Serialisation
         /// </summary>
         /// <typeparam name="T">The type to convert to</typeparam>
         /// <param name="data">The data to convert from</param>
+        /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
-        T From<T>(string data);
+        T From<T>(string data, Type messageType);
 
         /// <summary>
         ///     Deserializes the data to a given T
         /// </summary>
         /// <typeparam name="T">The type to convert to</typeparam>
         /// <param name="data">The data to convert from</param>
+        /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
-        T From<T>(byte[] data);
+        T From<T>(byte[] data, Type messageType);
     }
 }
