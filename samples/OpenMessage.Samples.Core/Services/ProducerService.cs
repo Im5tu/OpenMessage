@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,11 +21,11 @@ namespace OpenMessage.Samples.Core.Services
                 try
                 {
                     await Task.Delay(1000);
-                    await _dispatcher.DispatchAsync(_fixture.Create<T>());
+                    await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Producer: " + e.Message);
                 }
         }
     }

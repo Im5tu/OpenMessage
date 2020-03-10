@@ -51,6 +51,8 @@ namespace OpenMessage.Pipelines.Pumps
         /// <inheritDoc />
         protected sealed override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            await Task.Delay(100);
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 try

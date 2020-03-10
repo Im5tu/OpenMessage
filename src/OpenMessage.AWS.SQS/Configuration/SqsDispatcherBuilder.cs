@@ -17,6 +17,8 @@ namespace OpenMessage.AWS.SQS.Configuration
         {
             ConfigureOptions(_configuration, true);
             HostBuilder.Services.AddSingleton<IDispatcher<T>, SqsDispatcher<T>>();
+            HostBuilder.Services.AddHostedService<SqsDispatcherService>();
+            HostBuilder.Services.TryAddChannel<SendMessage>();
         }
 
         public ISqsDispatcherBuilder<T> FromConfiguration(Action<SQSDispatcherOptions<T>> configuration)

@@ -45,6 +45,7 @@ namespace OpenMessage.AWS.SQS
         {
             _consumerCheckTask = Task.Run(async () =>
             {
+                await Task.Delay(100);
                 var token = _cancellationTokenSource.Token;
                 while (!token.IsCancellationRequested)
                 {
@@ -63,7 +64,7 @@ namespace OpenMessage.AWS.SQS
                                 var newConsumerCount = Math.Min(count == 0 ? options.MinimumConsumerCount : Math.Max(count / targetCountPerConsumer, options.MinimumConsumerCount), options.MaximumConsumerCount);
                                 for (var i = 0; i < newConsumerCount; i++)
                                 {
-                                    InitialiseConsumer(count);
+                                    InitialiseConsumer(count, token);
                                 }
                             }
                             else if (count >= 0)
@@ -71,7 +72,7 @@ namespace OpenMessage.AWS.SQS
                                 var maxCapacity = _consumers.Count * targetCountPerConsumer;
                                 if (count > (maxCapacity + targetCountPerConsumer * 3) && _consumers.Count < options.MaximumConsumerCount)
                                 {
-                                    InitialiseConsumer(count);
+                                    InitialiseConsumer(count, token);
                                 }
                                 else if (count < (maxCapacity / 2) && _consumers.Count - 1 >= options.MinimumConsumerCount)
                                 {
@@ -79,18 +80,26 @@ namespace OpenMessage.AWS.SQS
                                 }
                             }
                         }
-
-                        await Task.Delay(5000, cancellationToken);
                     }
-                    catch (OperationCanceledException) {}
+                    catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
                         Logger.LogError(ex, ex.Message);
+                    }
+                    finally
+                    {
+                        await Task.Delay(5000, cancellationToken);
                     }
                 }
             });
 
             return base.StartAsync(cancellationToken);
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _cancellationTokenSource.Cancel();
+            return base.StopAsync(cancellationToken);
         }
 
         protected override async Task ConsumeAsync(CancellationToken cancellationToken)
@@ -124,12 +133,12 @@ namespace OpenMessage.AWS.SQS
             await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
         }
 
-        private void InitialiseConsumer(int queueLength)
+        private void InitialiseConsumer(int queueLength, CancellationToken cancellationToken)
         {
             lock (_consumers)
             {
                 var consumer = _services.GetRequiredService<ISqsConsumer<T>>();
-                consumer.Initialize(_consumerId);
+                consumer.Initialize(_consumerId, cancellationToken);
                 _consumers.Add(consumer);
                 Logger.LogInformation("Initialized new consumer. Current consumer count: {0}. Queue Length: {1}", _consumers.Count, queueLength);
             }

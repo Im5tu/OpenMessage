@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.AWS.SQS
 {
@@ -17,6 +18,7 @@ namespace OpenMessage.AWS.SQS
         private static readonly List<string> RequestAttributes = new List<string>(1) { "All" };
         private static readonly string MisconfiguredConsumerMessage = "Consumer has not been initialized. Please call Initialize with the configured consumer id.";
         private readonly IDeserializationProvider _deserializationProvider;
+        private readonly ILogger<SqsConsumer<T>> _logger;
         private readonly List<SqsMessage<T>> _emptyList = new List<SqsMessage<T>>(0);
 
         private readonly IOptionsMonitor<SQSConsumerOptions> _options;
@@ -24,10 +26,11 @@ namespace OpenMessage.AWS.SQS
         private IAmazonSQS _client;
         private SQSConsumerOptions _currentConsumerOptions;
 
-        public SqsConsumer(IOptionsMonitor<SQSConsumerOptions> options, IDeserializationProvider deserializationProvider)
+        public SqsConsumer(IOptionsMonitor<SQSConsumerOptions> options, IDeserializationProvider deserializationProvider, ILogger<SqsConsumer<T>> logger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _deserializationProvider = deserializationProvider ?? throw new ArgumentNullException(nameof(deserializationProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<List<SqsMessage<T>>> ConsumeAsync(CancellationToken cancellationToken)
@@ -86,9 +89,9 @@ namespace OpenMessage.AWS.SQS
             return result;
         }
 
-        public void Initialize(string consumerId)
+        public void Initialize(string consumerId, CancellationToken cancellationToken)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
                 try
                 {
                     _currentConsumerOptions = _options.Get(consumerId);
@@ -109,7 +112,7 @@ namespace OpenMessage.AWS.SQS
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    _logger.LogError(e, e.Message);
                     Thread.Sleep(TimeSpan.FromSeconds(2));
                 }
         }
