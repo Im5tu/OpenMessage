@@ -41,7 +41,7 @@ namespace OpenMessage.Samples.AWS
                           host.ConfigureSnsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.TopicArn = "arn:aws:sns:us-east-1:000000000000:openmessage_samples_core_models_simplemodel";
+                                  config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
                                   config.ServiceURL = "http://localhost:4575";
                               })
                               .Build();

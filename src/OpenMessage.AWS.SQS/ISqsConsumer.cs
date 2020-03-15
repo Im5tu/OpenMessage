@@ -7,6 +7,6 @@ namespace OpenMessage.AWS.SQS
     internal interface ISqsConsumer<T>
     {
         Task<List<SqsMessage<T>>> ConsumeAsync(CancellationToken cancellationToken);
-        void Initialize(string consumerId);
+        void Initialize(string consumerId, CancellationToken cancellationToken);
     }
 }
