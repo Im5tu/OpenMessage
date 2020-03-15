@@ -29,6 +29,9 @@ namespace OpenMessage.AWS.SQS
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
+            await Task.Yield();
+
             var queues = new Dictionary<string, List<SendMessage>>(StringComparer.Ordinal);
 
             while (!stoppingToken.IsCancellationRequested)
@@ -96,25 +99,20 @@ namespace OpenMessage.AWS.SQS
                     throw new Exception("Well balls");
 
                 foreach (var msg in messages)
-                    msg.TCS.TrySetResult(true);
+                    msg.TaskCompletionSource.TrySetResult(true);
             }
             catch (Exception e)
             {
                 foreach (var msg in messages)
-                    msg.TCS.TrySetException(e);
+                    msg.TaskCompletionSource.TrySetException(e);
             }
         }
-
-        // private void ThrowExceptionFromHttpResponse(SendMessageResponse response)
-        // {
-        //     throw new Exception($"Failed to send the message to SQS. Type: '{TypeCache<T>.FriendlyName}' Queue Url: '{_queueUrl ?? "<NULL>"}' Status Code: '{response.HttpStatusCode}'.");
-        // }
     }
 
     internal class SendMessage
     {
         internal string QueueUrl { get; set; }
         internal SendMessageBatchRequestEntry Message { get; set; }
-        internal TaskCompletionSource<bool> TCS { get; } = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<bool> TaskCompletionSource { get; } = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }
