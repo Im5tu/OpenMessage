@@ -17,11 +17,14 @@ namespace OpenMessage.Samples.Core.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
+            await Task.Yield();
+
             while (!stoppingToken.IsCancellationRequested)
                 try
                 {
-                    await Task.Delay(1000);
                     await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
+                    await Task.Delay(1000);
                 }
                 catch (Exception e)
                 {
