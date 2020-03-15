@@ -51,6 +51,9 @@ namespace OpenMessage.Pipelines.Pumps
         /// <inheritDoc />
         protected sealed override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
+            await Task.Yield();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
