@@ -12,6 +12,21 @@
         public T Value { get; set; }
 
         /// <summary>
+        ///     Creates a new message
+        /// </summary>
+        public Message()
+        {
+        }
+
+        /// <summary>
+        ///     Creates a new message with the specified value
+        /// </summary>
+        public Message(T value)
+        {
+            Value = value;
+        }
+
+        /// <summary>
         ///     Implicitly converts the message to the type T
         /// </summary>
         /// <param name="message">The message to convert</param>
