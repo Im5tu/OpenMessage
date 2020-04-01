@@ -21,7 +21,7 @@ namespace OpenMessage.Samples.Core.Services
             await Task.Yield();
 
             while (!stoppingToken.IsCancellationRequested)
-                await Task.WhenAll(Enumerable.Range(1, 100)
+                await Task.WhenAll(Enumerable.Range(1, 10)
                                              .Select(async x =>
                                              {
                                                  try
