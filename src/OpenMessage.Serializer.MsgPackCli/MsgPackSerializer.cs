@@ -1,5 +1,5 @@
-﻿using MsgPack.Serialization;
-using OpenMessage.Serialisation;
+using MsgPack.Serialization;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

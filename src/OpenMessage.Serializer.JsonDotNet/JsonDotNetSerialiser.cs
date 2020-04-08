@@ -1,6 +1,6 @@
-﻿using System.Text;
+using System.Text;
 using Newtonsoft.Json;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 
 namespace OpenMessage.Serializer.JsonDotNet
 {

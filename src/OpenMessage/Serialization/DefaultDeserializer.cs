@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     internal sealed class DefaultDeserializer : IDeserializer
     {

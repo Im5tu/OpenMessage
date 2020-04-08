@@ -1,4 +1,4 @@
-﻿namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     /// <summary>
     ///     A serializer for a given entity

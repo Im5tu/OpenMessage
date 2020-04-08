@@ -9,7 +9,7 @@ using OpenMessage.Pipelines.Builders;
 using OpenMessage.Pipelines.Endpoints;
 using OpenMessage.Pipelines.Middleware;
 using OpenMessage.Pipelines.Pumps;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
