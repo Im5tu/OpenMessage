@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,10 +19,10 @@ namespace OpenMessage.Pipelines.Middleware
                 if (message is ISupportAcknowledgement acknowledgement)
                     await acknowledgement.AcknowledgeAsync();
             }
-            catch
+            catch (Exception e)
             {
                 if (message is ISupportAcknowledgement acknowledgement)
-                    await acknowledgement.AcknowledgeAsync(false);
+                    await acknowledgement.AcknowledgeAsync(false, e);
 
                 throw;
             }

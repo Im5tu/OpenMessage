@@ -34,7 +34,7 @@ namespace OpenMessage.Testing.Memory
                 AcknowledgementState = AcknowledgementState.NegativelyAcknowledged;
 
             if (_message is ISupportAcknowledgement ack)
-                await ack.AcknowledgeAsync(positivelyAcknowledge);
+                await ack.AcknowledgeAsync(positivelyAcknowledge, exception);
 
             if (exception == null)
                 _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);

@@ -37,7 +37,7 @@ namespace OpenMessage.Samples.AWS
                                   Console.WriteLine($"Counter: {counter}");
                           });
 
-                          // Allow us to write to kafka
+                          // Allow us to write to SNS
                           host.ConfigureSnsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
