@@ -83,7 +83,7 @@ namespace OpenMessage.AWS.SQS
                     catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, $"Error occurred while running '{TypeCache<T>.FriendlyName}' {nameof(SqsMessagePump<T>)}");
+                        Logger.LogError(ex, $"Error occurred while running '{TypeCache<T>.FriendlyName}' {nameof(SqsMessagePump<T>)}. {ex.Message}");
                     }
                     finally
                     {
