@@ -1,8 +1,8 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenMessage.Apache.Kafka.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Diagnostics;
 using System.Text;

@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
-namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     internal sealed class DefaultSerializer : ISerializer
     {

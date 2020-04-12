@@ -3,7 +3,7 @@ using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Microsoft.Extensions.Options;
 using OpenMessage.AWS.SNS.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

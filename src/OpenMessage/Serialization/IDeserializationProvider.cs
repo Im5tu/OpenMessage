@@ -1,4 +1,4 @@
-﻿namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     /// <summary>
     ///     Negotiates the deserializer to use based on a content type

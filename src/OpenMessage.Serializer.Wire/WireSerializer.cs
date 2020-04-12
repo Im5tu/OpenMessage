@@ -1,4 +1,4 @@
-﻿using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;

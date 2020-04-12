@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     internal sealed class DeserializationProvider : IDeserializationProvider
     {

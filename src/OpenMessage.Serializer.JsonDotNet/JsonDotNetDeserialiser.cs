@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using Newtonsoft.Json;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System.Collections.Generic;
 using System.Text;
 

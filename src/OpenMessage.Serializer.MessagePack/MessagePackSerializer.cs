@@ -1,7 +1,7 @@
-﻿using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
-using serialiser = MessagePack.MessagePackSerializer;
+using serializer = MessagePack.MessagePackSerializer;
 
 namespace OpenMessage.Serializer.MessagePack
 {
@@ -18,7 +18,7 @@ namespace OpenMessage.Serializer.MessagePack
             if (entity is null)
                 Throw.ArgumentNullException(nameof(entity));
 
-            return serialiser.Serialize(entity);
+            return serializer.Serialize(entity);
         }
 
         public string AsString<T>(T entity)
@@ -42,7 +42,7 @@ namespace OpenMessage.Serializer.MessagePack
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return (T)serialiser.Deserialize(messageType, data);
+            return (T)serializer.Deserialize(messageType, data);
         }
     }
 }

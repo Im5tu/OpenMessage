@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     /// <summary>
     ///     An instance of a deserializer

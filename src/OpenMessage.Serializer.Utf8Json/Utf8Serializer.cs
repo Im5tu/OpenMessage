@@ -1,5 +1,5 @@
-﻿using System;
-using OpenMessage.Serialisation;
+using System;
+using OpenMessage.Serialization;
 using System.Collections.Generic;
 using Utf8Json;
 

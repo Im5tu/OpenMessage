@@ -1,12 +1,10 @@
-﻿using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
 namespace OpenMessage.Serializer.Protobuf
 {
-    using Serializer = Protobuf;
-
     internal sealed class ProtobufSerializer : ISerializer, IDeserializer
     {
         private static readonly string _contentType = "binary/protobuf";

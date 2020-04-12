@@ -3,7 +3,7 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using OpenMessage.AWS.SQS.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
