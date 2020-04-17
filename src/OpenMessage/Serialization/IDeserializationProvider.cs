@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace OpenMessage.Serialization
 {
     /// <summary>
@@ -13,6 +15,7 @@ namespace OpenMessage.Serialization
         /// <param name="type">The type contained within data</param>
         /// <typeparam name="T">The type to deserialize to</typeparam>
         /// <returns>An instance of T</returns>
+        [return: MaybeNull]
         T From<T>(string data, string contentType, string type);
 
         /// <summary>
@@ -23,6 +26,7 @@ namespace OpenMessage.Serialization
         /// <param name="type">The type contained within data</param>
         /// <typeparam name="T">The type to deserialize to</typeparam>
         /// <returns>An instance of T</returns>
+        [return: MaybeNull]
         T From<T>(byte[] data, string contentType, string type);
     }
 }

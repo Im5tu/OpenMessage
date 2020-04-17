@@ -1,4 +1,6 @@
-﻿namespace OpenMessage
+using System.Diagnostics.CodeAnalysis;
+
+namespace OpenMessage
 {
     /// <summary>
     ///     Represents a message from another system of a give type
@@ -9,6 +11,7 @@
         /// <summary>
         ///     The entity sent by the counterpart system
         /// </summary>
+        [MaybeNull, AllowNull]
         public T Value { get; set; }
 
         /// <summary>
@@ -16,6 +19,7 @@
         /// </summary>
         public Message()
         {
+            Value = default;
         }
 
         /// <summary>
@@ -31,6 +35,7 @@
         /// </summary>
         /// <param name="message">The message to convert</param>
         /// <returns>Default if the message is null, otherwise the Value</returns>
+        [return: MaybeNull]
         public static implicit operator T(Message<T> message) => message is null ? default : message.Value;
     }
 }

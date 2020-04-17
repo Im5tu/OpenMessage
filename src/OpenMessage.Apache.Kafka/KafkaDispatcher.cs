@@ -5,6 +5,7 @@ using OpenMessage.Apache.Kafka.Configuration;
 using OpenMessage.Serialization;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace OpenMessage.Apache.Kafka
 
         public async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
-            if (message is null)
+            if (message is null || message.Value is null)
                 Throw.ArgumentNullException(nameof(message));
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -64,13 +65,14 @@ namespace OpenMessage.Apache.Kafka
 
         private Headers CreateHeadersFromExisting(Message<T> message)
         {
-            Headers HeadersIncludingDefaults(Headers h, bool contentType = false, bool valueType = false)
+            Headers HeadersIncludingDefaults(Headers h, Message<T> msg, bool contentType = false, bool valueType = false)
             {
                 if (!contentType)
                     h.Add(KnownProperties.ContentType, _contentType);
 
-                if (!valueType)
-                    h.Add(KnownProperties.ValueTypeName, Encoding.UTF8.GetBytes(message.Value.GetType().AssemblyQualifiedName));
+                var aqn = msg.Value?.GetType().AssemblyQualifiedName;
+                if (!valueType && aqn is {})
+                    h.Add(KnownProperties.ValueTypeName, Encoding.UTF8.GetBytes(aqn));
 
                 if (Activity.Current is {})
                     h.Add(KnownProperties.ActivityId, Encoding.UTF8.GetBytes(Activity.Current.Id));
@@ -78,7 +80,6 @@ namespace OpenMessage.Apache.Kafka
                 return h;
             }
 
-            // TODO :: Add support for activity id
             var headers = new Headers();
 
             switch (message)
@@ -107,7 +108,7 @@ namespace OpenMessage.Apache.Kafka
             }
 
             if (headers.Count == 0)
-                return HeadersIncludingDefaults(headers);
+                return HeadersIncludingDefaults(headers, message);
 
             bool hasContentType = false,
                 hasValueType = false;
@@ -121,14 +122,14 @@ namespace OpenMessage.Apache.Kafka
                     hasValueType = true;
             }
 
-            return HeadersIncludingDefaults(headers, hasContentType, hasValueType);
+            return HeadersIncludingDefaults(headers, message, hasContentType, hasValueType);
         }
 
         private byte[] CreateKeyForMessage(Message<T> message)
         {
             return message switch
             {
-                ISupportIdentification<byte[]> mi => mi.Id,
+                ISupportIdentification<byte[]> mi => mi.Id!,
                 ISupportIdentification mi2 => _serializer.AsBytes(mi2.Id),
                 _ => _serializer.AsBytes(Guid.NewGuid())
             };

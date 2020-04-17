@@ -13,7 +13,7 @@ namespace OpenMessage
     public abstract class DispatcherBase<T> : IDispatcher<T>
     {
         private readonly ILogger _logger;
-        private readonly Action<ILogger, string, Exception> _dispatchMessage;
+        private readonly Action<ILogger, string, Exception?> _dispatchMessage;
 
         protected DispatcherBase(ILogger logger)
         {
@@ -37,7 +37,7 @@ namespace OpenMessage
         protected void LogDispatch(Message<T> message)
         {
             if (_logger.IsEnabled(LogLevel.Debug) && message is ISupportIdentification msgId)
-                _dispatchMessage(_logger, msgId.Id, null);
+                _dispatchMessage(_logger, msgId.Id ?? string.Empty, null);
         }
     }
 }

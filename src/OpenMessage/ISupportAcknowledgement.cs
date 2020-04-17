@@ -19,6 +19,6 @@ namespace OpenMessage
         /// <param name="positivelyAcknowledge">Indicates whether or not to positively acknowledge the message, or negatively acknowledge</param>
         /// <param name="exception">The exception that caused the acknowledgement</param>
         /// <returns>A task that completes when the message source has completed the acknowledgement</returns>
-        Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null);
+        Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception? exception = null);
     }
 }

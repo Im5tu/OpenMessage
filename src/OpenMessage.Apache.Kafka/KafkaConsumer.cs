@@ -22,9 +22,9 @@ namespace OpenMessage.Apache.Kafka
 
         private readonly OffsetTracker _offsetTracker = new OffsetTracker();
         private readonly IOptionsMonitor<KafkaOptions> _options;
-        private IConsumer<byte[], byte[]> _consumer;
-        private string _topicName;
-        private Task _trackAcknowledgedTask;
+        private IConsumer<byte[], byte[]>? _consumer;
+        private string? _topicName;
+        private Task? _trackAcknowledgedTask;
 
         public KafkaConsumer(ILogger<KafkaConsumer<TKey, TValue>> logger, IDeserializationProvider deserializationProvider, IOptionsMonitor<KafkaOptions> options)
             : base(logger)
@@ -34,12 +34,15 @@ namespace OpenMessage.Apache.Kafka
             _acknowledgementAction = msg => _offsetTracker.AckOffset(msg.Partition, msg.Offset);
         }
 
-        public Task<KafkaMessage<TKey, TValue>> ConsumeAsync(CancellationToken cancellationToken)
+        public Task<KafkaMessage<TKey, TValue>?> ConsumeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 try
                 {
+                    if (_consumer is null)
+                        return null;
+
                     var consumeResult = _consumer.Consume(cancellationToken);
 
                     if (consumeResult is null || consumeResult.IsPartitionEOF)
@@ -54,7 +57,14 @@ namespace OpenMessage.Apache.Kafka
                     if (string.IsNullOrWhiteSpace(contentType))
                         contentType = ContentTypes.Json;
 
-                    var key = _deserializationProvider.From<TKey>(consumeResult.Message.Key, contentType, TypeCache<TKey>.AssemblyQualifiedName);
+                    var keyType = TypeCache<TKey>.AssemblyQualifiedName;
+                    if (string.IsNullOrWhiteSpace(keyType))
+                        Throw.Exception("Cannot find key assembly type name for: " + typeof(TKey).Name);
+
+                    if (string.IsNullOrWhiteSpace(messageType))
+                        Throw.Exception("Cannot find message assembly type name for: " + typeof(TKey).Name);
+
+                    var key = _deserializationProvider.From<TKey>(consumeResult.Message.Key, contentType, keyType);
                     var value = _deserializationProvider.From<TValue>(consumeResult.Message.Value, contentType, messageType);
 
                     _offsetTracker.AddOffset(consumeResult.Partition, consumeResult.Offset);
@@ -117,11 +127,11 @@ namespace OpenMessage.Apache.Kafka
 
         public void Stop()
         {
-            _consumer.Unsubscribe();
+            _consumer?.Unsubscribe();
             _offsetTracker.Clear();
         }
 
-        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> consumeResult, out string contentType, out string messageType)
+        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> consumeResult, out string contentType, out string? messageType)
         {
             contentType = ContentTypes.Json;
             messageType = null;
@@ -133,9 +143,11 @@ namespace OpenMessage.Apache.Kafka
             {
                 new KeyValuePair<string, string>(KnownKafkaProperties.Offset, consumeResult.Offset.Value.ToString(CultureInfo.InvariantCulture)),
                 new KeyValuePair<string, string>(KnownKafkaProperties.Partition, consumeResult.Partition.Value.ToString(CultureInfo.InvariantCulture)),
-                new KeyValuePair<string, string>(KnownKafkaProperties.Timestamp, consumeResult.Message.Timestamp.UtcDateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture)),
-                new KeyValuePair<string, string>(KnownKafkaProperties.Topic, _topicName)
+                new KeyValuePair<string, string>(KnownKafkaProperties.Timestamp, consumeResult.Message.Timestamp.UtcDateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture))
             };
+
+            if (!string.IsNullOrWhiteSpace(_topicName))
+                headers.Add(new KeyValuePair<string, string>(KnownKafkaProperties.Topic, _topicName));
 
             foreach (var header in consumeResult.Message.Headers)
             {

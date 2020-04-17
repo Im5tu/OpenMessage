@@ -7,8 +7,8 @@
     <RepositoryUrl>https://github.com/Im5tu/OpenMessage.git</RepositoryUrl>
     <!-- Allow us to use all the latest goodness from all over -->
     <LangVersion>Latest</LangVersion>
-    <!-- Enable nullable reference types -->
-    <Nullable Condition="$(Nullable) == 'true'">enable</Nullable>
+    <!-- Enable nullable reference types  Condition="$(TargetFramework) != 'net461'" -->
+    <Nullable>enable</Nullable>
     <!-- Treat all warnigns as errors -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->

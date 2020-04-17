@@ -13,7 +13,7 @@ namespace OpenMessage
             if (type is null)
                 Throw.ArgumentNullException(nameof(type));
 
-            return _friendlyNames.GetOrAdd(type, key =>
+            return _friendlyNames.GetOrAdd(type!, key =>
             {
                 if (key.IsGenericType)
                     return $"{key.Namespace}.{key.Name.Remove(key.Name.IndexOf('`'))}<{string.Join(", ", key.GetGenericArguments().Select(GetFriendlyName))}>";

@@ -9,7 +9,7 @@ namespace OpenMessage.AWS.SQS.Configuration
 {
     internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T>
     {
-        private Action<HostBuilderContext, SQSConsumerOptions> _configuration;
+        private Action<HostBuilderContext, SQSConsumerOptions>? _configuration;
 
         public SqsConsumerBuilder(IMessagingBuilder hostBuilder)
             : base(hostBuilder) { }
@@ -18,7 +18,9 @@ namespace OpenMessage.AWS.SQS.Configuration
         {
             HostBuilder.Services.TryAddConsumerService<T>();
             HostBuilder.TryConfigureDefaultPipeline<T>();
-            ConfigureOptions(_configuration);
+
+            if (_configuration is {})
+                ConfigureOptions(_configuration);
 
             HostBuilder.Services.TryAddTransient<ISqsConsumer<T>, SqsConsumer<T>>();
             HostBuilder.Services.TryAddTransient<IQueueMonitor<T>, QueueMonitor<T>>();

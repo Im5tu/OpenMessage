@@ -11,7 +11,7 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         ///     Allow the configuration of the raw AWS SQS Client Config during initialization of the consumer.
         /// </summary>
-        public Action<AmazonSQSConfig> AwsConsumerConfiguration { get; set; }
+        public Action<AmazonSQSConfig>? AwsConsumerConfiguration { get; set; }
 
         /// <summary>
         ///     The maximum number of messages to consume
@@ -21,17 +21,17 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         ///     The url of the queue to consume from
         /// </summary>
-        public string QueueUrl { get; set; }
+        public string? QueueUrl { get; set; }
 
         /// <summary>
         ///     The region endpoint to use
         /// </summary>
-        public string RegionEndpoint { get; set; }
+        public string? RegionEndpoint { get; set; }
 
         /// <summary>
         ///     The service url to use
         /// </summary>
-        public string ServiceURL { get; set; }
+        public string? ServiceURL { get; set; }
 
         /// <summary>
         ///     How long to leave the message on the queue before it becomes consumable again

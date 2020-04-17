@@ -22,7 +22,7 @@ namespace OpenMessage.AWS.SQS
         private readonly IOptionsMonitor<SQSConsumerOptions> _sqsOptions;
         private readonly IServiceProvider _services;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private Task _consumerCheckTask;
+        private Task? _consumerCheckTask;
         private List<ISqsConsumer<T>> _consumers = new List<ISqsConsumer<T>>();
 
         public SqsMessagePump(ChannelWriter<Message<T>> channelWriter,
@@ -87,7 +87,8 @@ namespace OpenMessage.AWS.SQS
                     }
                     finally
                     {
-                        await Task.Delay(5000, cancellationToken);
+                        if (!cancellationToken.IsCancellationRequested)
+                            await Task.Delay(5000, cancellationToken);
                     }
                 }
             });

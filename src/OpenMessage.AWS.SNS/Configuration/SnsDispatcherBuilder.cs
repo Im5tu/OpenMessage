@@ -8,14 +8,15 @@ namespace OpenMessage.AWS.SNS.Configuration
 {
     internal sealed class SnsDispatcherBuilder<T> : Builder, ISnsDispatcherBuilder<T>
     {
-        private Action<HostBuilderContext, SNSOptions<T>> _configuration;
+        private Action<HostBuilderContext, SNSOptions<T>>? _configuration;
 
         public SnsDispatcherBuilder(IMessagingBuilder hostBuilder)
             : base(hostBuilder) { }
 
         public override void Build()
         {
-            ConfigureOptions(_configuration, true);
+            if (_configuration is {})
+                ConfigureOptions(_configuration, true);
             HostBuilder.Services.AddSingleton<IDispatcher<T>, SnsDispatcher<T>>();
         }
 

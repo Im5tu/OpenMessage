@@ -15,7 +15,7 @@ namespace OpenMessage
         /// </summary>
         /// <param name="operationName">The name to give to the activity</param>
         /// <param name="parentId">The parent of the activity if not known</param>
-        public static ActivityTracer WithActivity(string operationName, string parentId = null)
+        public static ActivityTracer WithActivity(string operationName, string? parentId = null)
         {
             if (string.IsNullOrWhiteSpace(operationName))
                 Throw.ArgumentException(nameof(operationName), "Cannot be null, empty or whitespace");

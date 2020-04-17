@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace OpenMessage.Serialization
@@ -19,6 +20,7 @@ namespace OpenMessage.Serialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: MaybeNull]
         public T From<T>(string data, string contentType, string type)
         {
             if (string.IsNullOrWhiteSpace(data))
@@ -31,6 +33,7 @@ namespace OpenMessage.Serialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: MaybeNull]
         public T From<T>(byte[] data, string contentType, string type)
         {
             if (data is null || data.Length == 0)
@@ -57,7 +60,12 @@ namespace OpenMessage.Serialization
                 if (TypeCache<T>.IsAbstractOrInterface)
                     Throw.Exception("Cannot deserialize because type is abstract and no data type supplied.");
                 else
-                    type = TypeCache<T>.AssemblyQualifiedName;
+                {
+                    var name = TypeCache<T>.AssemblyQualifiedName;
+                    if (string.IsNullOrWhiteSpace(name))
+                        Throw.Exception("Cannot deserialize because the assembly qualified name cannot be null, empty or whitespace");
+                    type = name;
+                }
 
             if (TypeCache.TryGetType(type, out var deserializedType) && deserializedType != null)
             {

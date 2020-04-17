@@ -10,9 +10,9 @@ namespace OpenMessage.Apache.Kafka.Configuration
 {
     internal sealed class KafkaConsumerBuilder<TKey, TValue> : Builder, IKafkaConsumerBuilder<TKey, TValue>
     {
-        private Action<HostBuilderContext, KafkaOptions> _options;
+        private Action<HostBuilderContext, KafkaOptions>? _options;
 
-        private string _topicName = TypeCache<TValue>.FriendlyName.ToLowerInvariant()
+        private string? _topicName = TypeCache<TValue>.FriendlyName?.ToLowerInvariant()
                                                      .Replace("<", "_")
                                                      .Replace(">", "_");
 

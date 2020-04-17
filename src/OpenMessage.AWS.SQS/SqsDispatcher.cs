@@ -28,7 +28,7 @@ namespace OpenMessage.AWS.SQS
         {
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             var config = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _queueUrl = config.QueueUrl;
+            _queueUrl = config.QueueUrl ?? throw new Exception("No queue url set for type: " + (TypeCache<T>.FriendlyName ?? string.Empty));
 
             var sqsConfig = new AmazonSQSConfig
             {
@@ -51,10 +51,19 @@ namespace OpenMessage.AWS.SQS
 
         public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
+            LogDispatch(message);
+
+            if (message.Value is null)
+                Throw.Exception("Message value cannot be null");
+
+            var msg = _serializer.AsString(message.Value);
+            if (string.IsNullOrWhiteSpace(msg))
+                Throw.Exception("Message could not be serialized");
+
             var request = new SendMessageRequest
             {
                 MessageAttributes = GetMessageProperties(message),
-                MessageBody = _serializer.AsString(message.Value),
+                MessageBody = msg,
                 QueueUrl = _queueUrl
             };
 
@@ -68,13 +77,15 @@ namespace OpenMessage.AWS.SQS
         {
             var result = new Dictionary<string, MessageAttributeValue>
             {
-                [KnownProperties.ContentType] = _contentType,
-                [KnownProperties.ValueTypeName] = new MessageAttributeValue
+                [KnownProperties.ContentType] = _contentType
+            };
+
+            if (!(message.Value is null))
+                result[KnownProperties.ValueTypeName] = new MessageAttributeValue
                 {
                     DataType = AttributeType,
                     StringValue = message.Value.GetType().AssemblyQualifiedName
-                }
-            };
+                };
 
             if (Activity.Current is {})
                 result[KnownProperties.ActivityId] = new MessageAttributeValue

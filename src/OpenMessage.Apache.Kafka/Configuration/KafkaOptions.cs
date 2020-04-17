@@ -15,6 +15,6 @@ namespace OpenMessage.Apache.Kafka.Configuration
         /// <summary>
         ///     The name of the topic to consume from/dispatch to
         /// </summary>
-        public string TopicName { get; set; }
+        public string? TopicName { get; set; }
     }
 }
