@@ -281,7 +281,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (executingAssembly is { } && !executingAssembly.Equals(entryAssembly))
                     assemblyList.Add(executingAssembly);
 
-                assembliesToScan = assemblyList.ToArray();
+                var thisAssembly = typeof(OpenMessageExtensions).Assembly;
+                assembliesToScan = assemblyList.Where(x => !x.Equals(thisAssembly)).ToArray();
             }
 
             var handlerTypes = new[] {typeof(IHandler<>), typeof(IBatchHandler<>)};
