@@ -314,7 +314,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             if (handlersFound == 0)
-                throw new Exception("No handlers found in assmeblies. " + string.Join(", ", assembliesToScan.Select(x => x.FullName)));
+                throw new Exception("No handlers found in assemblies. " + string.Join(", ", assembliesToScan.Select(x => x.FullName)));
 
             return messagingBuilder;
         }
