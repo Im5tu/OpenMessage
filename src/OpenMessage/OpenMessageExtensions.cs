@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -39,6 +40,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSerialization();
                 services.TryAddSingleton<ISerializer, DefaultSerializer>();
                 services.TryAddSingleton<IDeserializer, DefaultDeserializer>();
+                services.Configure<JsonSerializerOptions>(SerializationConstants.SerializerSettings, x =>
+                {
+                    x.IgnoreNullValues = true;
+                });
+                services.Configure<JsonSerializerOptions>(SerializationConstants.DeserializerSettings, x => { });
                 services.AddSingleton(typeof(BatchPipelineEndpoint<>));
                 services.AddScoped(typeof(HandlerPipelineEndpoint<>));
                 services.AddScoped(typeof(BatchHandlerPipelineEndpoint<>));
@@ -169,7 +175,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The OpenMessageBuilder</returns>
         public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>, CancellationToken> action)
         {
-            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            messagingBuilder.Services.AddSingleton<IHandler<T>>(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
             return messagingBuilder;
         }
 
@@ -182,7 +188,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The OpenMessageBuilder</returns>
         public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>> action)
         {
-            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            messagingBuilder.Services.AddSingleton<IHandler<T>>(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
             return messagingBuilder;
         }
 
@@ -195,7 +201,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The OpenMessageBuilder</returns>
         public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, CancellationToken, Task> action)
         {
-            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            messagingBuilder.Services.AddSingleton<IHandler<T>>(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
             return messagingBuilder;
         }
 
@@ -208,7 +214,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The OpenMessageBuilder</returns>
         public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, Task> action)
         {
-            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            messagingBuilder.Services.AddSingleton<IHandler<T>>(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
             return messagingBuilder;
         }
 
@@ -308,7 +314,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             if (handlersFound == 0)
-                throw new Exception("No handlers found in assmeblies. " + string.Join(", ", assembliesToScan.Select(x => x.FullName)));
+                throw new Exception("No handlers found in assemblies. " + string.Join(", ", assembliesToScan.Select(x => x.FullName)));
 
             return messagingBuilder;
         }

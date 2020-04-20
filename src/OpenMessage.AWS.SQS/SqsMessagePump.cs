@@ -45,6 +45,7 @@ namespace OpenMessage.AWS.SQS
         {
             _consumerCheckTask = Task.Run(async () =>
             {
+                await Task.Delay(100);
                 var token = _cancellationTokenSource.Token;
                 while (!token.IsCancellationRequested)
                 {

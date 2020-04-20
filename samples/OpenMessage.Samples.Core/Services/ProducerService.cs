@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,16 +19,19 @@ namespace OpenMessage.Samples.Core.Services
         {
             // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
             await Task.Yield();
-            
+
             while (!stoppingToken.IsCancellationRequested)
                 try
                 {
-                    await Task.Delay(1000);
-                    await _dispatcher.DispatchAsync(_fixture.Create<T>());
+                    await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine("Producer: " + e.Message);
+                }
+                finally
+                {
+                    await Task.Delay(1000);
                 }
         }
     }

@@ -18,7 +18,7 @@ namespace OpenMessage.Samples.AWS
             Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "XXX", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "XXX", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "XXX", EnvironmentVariableTarget.Process);
-            Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "us-east-1", EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "eu-west-2", EnvironmentVariableTarget.Process);
 
             await Host.CreateDefaultBuilder()
                       .ConfigureServices(services => services.AddOptions()
@@ -28,7 +28,7 @@ namespace OpenMessage.Samples.AWS
                       )
                       .ConfigureMessaging(host =>
                       {
-                          // Adds a handler that writes to console every 1000 messages
+                          // Adds a handler that writes to console every 100 messages
                           host.ConfigureHandler<CoreModel>(msg =>
                           {
                               var counter = Interlocked.Increment(ref _counter);

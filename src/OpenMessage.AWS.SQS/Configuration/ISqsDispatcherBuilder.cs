@@ -30,5 +30,12 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <param name="configurationSection">The configuration section to use</param>
         /// <returns>The SQS dispatcher builder</returns>
         ISqsDispatcherBuilder<T> FromConfiguration(string configurationSection);
+
+        /// <summary>
+        ///    Enables the batched dispatcher mechanism
+        /// </summary>
+        /// <param name="enabled">Whether or not to enable the batched dispatcher</param>
+        /// <returns>The SQS dispatcher builder</returns>
+        ISqsDispatcherBuilder<T> WithBatchedDispatcher(bool enabled = true);
     }
 }

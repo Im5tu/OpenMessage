@@ -26,11 +26,11 @@ namespace OpenMessage.Samples.Core.Services
                                              {
                                                  try
                                                  {
-                                                     await _dispatcher.DispatchAsync(_fixture.Create<T>());
+                                                     await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
                                                  }
                                                  catch (Exception e)
                                                  {
-                                                     Console.WriteLine(e.Message);
+                                                     Console.WriteLine("MassProducer: " + e.Message);
                                                  }
                                              }));
         }

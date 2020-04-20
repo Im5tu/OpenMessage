@@ -15,12 +15,11 @@ namespace OpenMessage.Pipelines.Middleware
         /// <inheritDoc />
         protected override async Task OnInvoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
-            _ = TryGetActivityId(message, out var activityId);
-
-            using (Trace.WithActivity(ConsumeActivityName, activityId))
-            {
+            if (TryGetActivityId(message, out var activityId))
+                using (Trace.WithActivity(ConsumeActivityName, activityId))
+                    await next(message, cancellationToken, messageContext);
+            else
                 await next(message, cancellationToken, messageContext);
-            }
         }
 
         private static bool TryGetActivityId(Message<T> message, [NotNullWhen(true)] out string? activityId)
