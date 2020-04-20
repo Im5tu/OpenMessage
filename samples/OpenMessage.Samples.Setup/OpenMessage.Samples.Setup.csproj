@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="LocalStack.Client" Version="0.8.0.163" />
+      <PackageReference Include="LocalStack.Client" Version="1.0.0" />
     </ItemGroup>
 
 </Project>
