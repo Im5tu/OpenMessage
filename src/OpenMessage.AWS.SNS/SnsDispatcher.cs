@@ -3,7 +3,7 @@ using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
 using Microsoft.Extensions.Options;
 using OpenMessage.AWS.SNS.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -52,17 +52,24 @@ namespace OpenMessage.AWS.SNS
                 DataType = AttributeType,
                 StringValue = typeof(T).AssemblyQualifiedName
             };
-            _topicArn = config.TopicArn;
+            _topicArn = config.TopicArn ?? throw new Exception("No topic arn set for type: " + (TypeCache<T>.FriendlyName ?? string.Empty));
         }
 
         public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
             LogDispatch(message);
-            
+
+            if (message.Value is null)
+                Throw.Exception("Message value cannot be null");
+
+            var msg = _serializer.AsString(message.Value);
+            if (string.IsNullOrWhiteSpace(msg))
+                Throw.Exception("Message could not be serialized");
+
             var request = new PublishRequest
             {
                 MessageAttributes = GetMessageProperties(message),
-                Message = _serializer.AsString(message.Value),
+                Message = msg,
                 TopicArn = _topicArn
             };
 
@@ -134,7 +141,7 @@ namespace OpenMessage.AWS.SNS
             return result;
         }
 
-        private void ThrowExceptionFromHttpResponse(HttpStatusCode statusCode, Exception innerException = null)
+        private void ThrowExceptionFromHttpResponse(HttpStatusCode statusCode, Exception? innerException = null)
         {
             var msg = $"Failed to send the message to SNS. Type: '{TypeCache<T>.FriendlyName}' Topic ARN: '{_topicArn ?? "<NULL>"}' Status Code: '{statusCode}'.";
 

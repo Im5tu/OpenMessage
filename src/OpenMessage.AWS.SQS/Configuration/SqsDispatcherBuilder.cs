@@ -8,14 +8,15 @@ namespace OpenMessage.AWS.SQS.Configuration
 {
     internal sealed class SqsDispatcherBuilder<T> : Builder, ISqsDispatcherBuilder<T>
     {
-        private Action<HostBuilderContext, SQSDispatcherOptions<T>> _configuration;
+        private Action<HostBuilderContext, SQSDispatcherOptions<T>>? _configuration;
 
         public SqsDispatcherBuilder(IMessagingBuilder hostBuilder)
             : base(hostBuilder) { }
 
         public override void Build()
         {
-            ConfigureOptions(_configuration, true);
+            if (_configuration is {})
+                ConfigureOptions(_configuration, true);
             HostBuilder.Services.AddSingleton<IDispatcher<T>, SqsDispatcher<T>>();
             HostBuilder.Services.AddHostedService<SqsDispatcherService>();
             HostBuilder.Services.TryAddChannel<SendMessage>();

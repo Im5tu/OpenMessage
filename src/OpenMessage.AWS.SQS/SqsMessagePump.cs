@@ -22,7 +22,7 @@ namespace OpenMessage.AWS.SQS
         private readonly IOptionsMonitor<SQSConsumerOptions> _sqsOptions;
         private readonly IServiceProvider _services;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private Task _consumerCheckTask;
+        private Task? _consumerCheckTask;
         private List<ISqsConsumer<T>> _consumers = new List<ISqsConsumer<T>>();
 
         public SqsMessagePump(ChannelWriter<Message<T>> channelWriter,
@@ -64,7 +64,7 @@ namespace OpenMessage.AWS.SQS
                                 var newConsumerCount = Math.Min(count == 0 ? options.MinimumConsumerCount : Math.Max(count / targetCountPerConsumer, options.MinimumConsumerCount), options.MaximumConsumerCount);
                                 for (var i = 0; i < newConsumerCount; i++)
                                 {
-                                    InitialiseConsumer(count, token);
+                                    InitialiseConsumer(count, cancellationToken);
                                 }
                             }
                             else if (count >= 0)
@@ -72,7 +72,7 @@ namespace OpenMessage.AWS.SQS
                                 var maxCapacity = _consumers.Count * targetCountPerConsumer;
                                 if (count > (maxCapacity + targetCountPerConsumer * 3) && _consumers.Count < options.MaximumConsumerCount)
                                 {
-                                    InitialiseConsumer(count, token);
+                                    InitialiseConsumer(count, cancellationToken);
                                 }
                                 else if (count < (maxCapacity / 2) && _consumers.Count - 1 >= options.MinimumConsumerCount)
                                 {
@@ -84,7 +84,12 @@ namespace OpenMessage.AWS.SQS
                     catch (OperationCanceledException) { }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, ex.Message);
+                        Logger.LogError(ex, $"Error occurred while running '{TypeCache<T>.FriendlyName}' {nameof(SqsMessagePump<T>)}. {ex.Message}");
+                    }
+                    finally
+                    {
+                        if (!cancellationToken.IsCancellationRequested)
+                            await Task.Delay(5000, cancellationToken);
                     }
                     finally
                     {
@@ -140,7 +145,7 @@ namespace OpenMessage.AWS.SQS
                 var consumer = _services.GetRequiredService<ISqsConsumer<T>>();
                 consumer.Initialize(_consumerId, cancellationToken);
                 _consumers.Add(consumer);
-                Logger.LogInformation("Initialized new consumer. Current consumer count: {0}. Queue Length: {1}", _consumers.Count, queueLength);
+                Logger.LogInformation("Initialized new '{0}' consumer. Current consumer count: {1}. Queue Length: {2}", TypeCache<T>.FriendlyName, _consumers.Count, queueLength);
             }
         }
 
@@ -152,7 +157,7 @@ namespace OpenMessage.AWS.SQS
                     return;
 
                 _consumers.RemoveAt(_consumers.Count - 1);
-                Logger.LogInformation("Removed consumer. Current consumer count: {0}", _consumers.Count);
+                Logger.LogInformation("Removed '{0}' consumer. Current consumer count: {1}", TypeCache<T>.FriendlyName, _consumers.Count);
             }
         }
     }

@@ -11,21 +11,21 @@ namespace OpenMessage.AWS.SNS.Configuration
         /// <summary>
         ///     Allow the configuration of the raw AWS SNS Dispatcher Config during initialization of the dispatcher.
         /// </summary>
-        public Action<AmazonSimpleNotificationServiceConfig> AwsDispatcherConfiguration { get; set; }
+        public Action<AmazonSimpleNotificationServiceConfig>? AwsDispatcherConfiguration { get; set; }
 
         /// <summary>
         ///     The region endpoint to use
         /// </summary>
-        public string RegionEndpoint { get; set; }
+        public string? RegionEndpoint { get; set; }
 
         /// <summary>
         ///     The url to use for authentication
         /// </summary>
-        public string ServiceURL { get; set; }
+        public string? ServiceURL { get; set; }
 
         /// <summary>
         ///     The topic ARN to send to
         /// </summary>
-        public string TopicArn { get; set; }
+        public string? TopicArn { get; set; }
     }
 }

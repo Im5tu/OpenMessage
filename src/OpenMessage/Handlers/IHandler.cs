@@ -15,6 +15,6 @@ namespace OpenMessage.Handlers
         /// <param name="message">The message to handle</param>
         /// <param name="cancellationToken">The cancellation token used</param>
         /// <returns>A task that completes when the handle method has completed</returns>
-        Task HandleAsync(Message<T> message, CancellationToken cancellationToken);
+        Task HandleAsync(Message<T>? message, CancellationToken cancellationToken);
     }
 }

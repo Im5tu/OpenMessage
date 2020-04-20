@@ -1,5 +1,5 @@
-﻿using Hyperion;
-using OpenMessage.Serialisation;
+using Hyperion;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;

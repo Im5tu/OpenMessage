@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,15 +15,14 @@ namespace OpenMessage.Pipelines.Middleware
         /// <inheritDoc />
         protected override async Task OnInvoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
-            _ = TryGetActivityId(message, out var activityId);
-
-            using (Trace.WithActivity(ConsumeActivityName, activityId))
-            {
+            if (TryGetActivityId(message, out var activityId))
+                using (Trace.WithActivity(ConsumeActivityName, activityId))
+                    await next(message, cancellationToken, messageContext);
+            else
                 await next(message, cancellationToken, messageContext);
-            }
         }
 
-        private static bool TryGetActivityId(Message<T> message, out string activityId)
+        private static bool TryGetActivityId(Message<T> message, [NotNullWhen(true)] out string? activityId)
         {
             activityId = null;
 
@@ -31,7 +31,7 @@ namespace OpenMessage.Pipelines.Middleware
                 case ISupportProperties p:
                 {
                     foreach (var prop in p.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
+                        if (prop.Key == KnownProperties.ActivityId && !string.IsNullOrWhiteSpace(prop.Value))
                         {
                             activityId = prop.Value;
 
@@ -43,11 +43,14 @@ namespace OpenMessage.Pipelines.Middleware
                 case ISupportProperties<byte[]> p2:
                 {
                     foreach (var prop in p2.Properties)
-                        if (prop.Key == KnownProperties.ActivityId)
+                        if (prop.Key == KnownProperties.ActivityId && prop.Value?.Length > 0)
                         {
-                            activityId = Encoding.UTF8.GetString(prop.Value);
-
-                            return true;
+                            var id = Encoding.UTF8.GetString(prop.Value);
+                            if (!string.IsNullOrWhiteSpace(id))
+                            {
+                                activityId = id;
+                                return true;
+                            }
                         }
 
                     break;

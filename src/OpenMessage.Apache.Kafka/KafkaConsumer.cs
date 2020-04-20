@@ -1,9 +1,9 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenMessage.Apache.Kafka.Configuration;
 using OpenMessage.Apache.Kafka.OffsetTracking;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,9 +22,9 @@ namespace OpenMessage.Apache.Kafka
 
         private readonly OffsetTracker _offsetTracker = new OffsetTracker();
         private readonly IOptionsMonitor<KafkaOptions> _options;
-        private IConsumer<byte[], byte[]> _consumer;
-        private string _topicName;
-        private Task _trackAcknowledgedTask;
+        private IConsumer<byte[], byte[]>? _consumer;
+        private string? _topicName;
+        private Task? _trackAcknowledgedTask;
 
         public KafkaConsumer(ILogger<KafkaConsumer<TKey, TValue>> logger, IDeserializationProvider deserializationProvider, IOptionsMonitor<KafkaOptions> options)
             : base(logger)
@@ -34,32 +34,42 @@ namespace OpenMessage.Apache.Kafka
             _acknowledgementAction = msg => _offsetTracker.AckOffset(msg.Partition, msg.Offset);
         }
 
-        public Task<KafkaMessage<TKey, TValue>> ConsumeAsync(CancellationToken cancellationToken)
+        public Task<KafkaMessage<TKey, TValue>?> ConsumeAsync(CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
                 try
                 {
-                    var message = _consumer.Consume(cancellationToken);
+                    if (_consumer is null)
+                        return null;
 
-                    if (message is null || message.IsPartitionEOF)
+                    var consumeResult = _consumer.Consume(cancellationToken);
+
+                    if (consumeResult is null || consumeResult.IsPartitionEOF)
                     {
-                        Logger.LogInformation(message is null ? "No message received from consumer." : $"End of partition reached. Topic: {message.Topic} Partition: {message.Partition} Offset: {message.Offset}");
+                        Logger.LogInformation(consumeResult is null ? "No message received from consumer." : $"End of partition reached. Topic: {consumeResult.Topic} Partition: {consumeResult.Partition} Offset: {consumeResult.Offset}");
 
                         return null;
                     }
 
-                    var messageProperties = ParseMessageHeaders(message, out var contentType, out var messageType);
+                    var messageProperties = ParseMessageHeaders(consumeResult, out var contentType, out var messageType);
 
                     if (string.IsNullOrWhiteSpace(contentType))
                         contentType = ContentTypes.Json;
 
-                    var key = _deserializationProvider.From<TKey>(message.Key, contentType, TypeCache<TKey>.AssemblyQualifiedName);
-                    var value = _deserializationProvider.From<TValue>(message.Value, contentType, messageType);
+                    var keyType = TypeCache<TKey>.AssemblyQualifiedName;
+                    if (string.IsNullOrWhiteSpace(keyType))
+                        Throw.Exception("Cannot find key assembly type name for: " + typeof(TKey).Name);
 
-                    _offsetTracker.AddOffset(message.Partition, message.Offset);
+                    if (string.IsNullOrWhiteSpace(messageType))
+                        Throw.Exception("Cannot find message assembly type name for: " + typeof(TKey).Name);
 
-                    return new KafkaMessage<TKey, TValue>(_acknowledgementAction, message.Partition.Value, message.Offset.Value)
+                    var key = _deserializationProvider.From<TKey>(consumeResult.Message.Key, contentType, keyType);
+                    var value = _deserializationProvider.From<TValue>(consumeResult.Message.Value, contentType, messageType);
+
+                    _offsetTracker.AddOffset(consumeResult.Partition, consumeResult.Offset);
+
+                    return new KafkaMessage<TKey, TValue>(_acknowledgementAction, consumeResult.Partition.Value, consumeResult.Offset.Value)
                     {
                         Id = key,
                         Properties = messageProperties,
@@ -117,27 +127,29 @@ namespace OpenMessage.Apache.Kafka
 
         public void Stop()
         {
-            _consumer.Unsubscribe();
+            _consumer?.Unsubscribe();
             _offsetTracker.Clear();
         }
 
-        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> message, out string contentType, out string messageType)
+        private IEnumerable<KeyValuePair<string, string>> ParseMessageHeaders(ConsumeResult<byte[], byte[]> consumeResult, out string contentType, out string? messageType)
         {
             contentType = ContentTypes.Json;
             messageType = null;
 
-            if (message.Headers is null)
+            if (consumeResult.Message.Headers is null)
                 return Enumerable.Empty<KeyValuePair<string, string>>();
 
-            var headers = new List<KeyValuePair<string, string>>(message.Headers.Count + 3)
+            var headers = new List<KeyValuePair<string, string>>(consumeResult.Message.Headers.Count + 3)
             {
-                new KeyValuePair<string, string>(KnownKafkaProperties.Offset, message.Offset.Value.ToString(CultureInfo.InvariantCulture)),
-                new KeyValuePair<string, string>(KnownKafkaProperties.Partition, message.Partition.Value.ToString(CultureInfo.InvariantCulture)),
-                new KeyValuePair<string, string>(KnownKafkaProperties.Timestamp, message.Timestamp.UtcDateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture)),
-                new KeyValuePair<string, string>(KnownKafkaProperties.Topic, _topicName)
+                new KeyValuePair<string, string>(KnownKafkaProperties.Offset, consumeResult.Offset.Value.ToString(CultureInfo.InvariantCulture)),
+                new KeyValuePair<string, string>(KnownKafkaProperties.Partition, consumeResult.Partition.Value.ToString(CultureInfo.InvariantCulture)),
+                new KeyValuePair<string, string>(KnownKafkaProperties.Timestamp, consumeResult.Message.Timestamp.UtcDateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture))
             };
 
-            foreach (var header in message.Headers)
+            if (!string.IsNullOrWhiteSpace(_topicName))
+                headers.Add(new KeyValuePair<string, string>(KnownKafkaProperties.Topic, _topicName));
+
+            foreach (var header in consumeResult.Message.Headers)
             {
                 var value = Encoding.UTF8.GetString(header.GetValueBytes());
                 headers.Add(new KeyValuePair<string, string>(header.Key, value));

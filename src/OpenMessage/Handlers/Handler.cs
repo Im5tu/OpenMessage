@@ -23,7 +23,7 @@ namespace OpenMessage.Handlers
         protected Handler(ILogger logger) => Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <inheritdoc />
-        public Task HandleAsync(Message<T> message, CancellationToken cancellationToken)
+        public Task HandleAsync(Message<T>? message, CancellationToken cancellationToken)
         {
             if (message is null)
                 Throw.ArgumentNullException(nameof(message));

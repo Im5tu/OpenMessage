@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace OpenMessage
@@ -8,9 +9,9 @@ namespace OpenMessage
     {
         private static ConcurrentDictionary<string, Type> _types = new ConcurrentDictionary<string, Type>();
 
-        public static bool TryGetType(string typeName, out Type type)
+        public static bool TryGetType(string typeName, [NotNullWhen(true)] out Type? type)
         {
-            if (_types.TryGetValue(typeName, out type))
+            if (_types.TryGetValue(typeName, out  type))
                 return true;
 
             var originalTypeName = typeName;
@@ -42,36 +43,36 @@ namespace OpenMessage
         /// <summary>
         ///     The friendly name of the class, with expanded generics
         /// </summary>
-        public static string FriendlyName { get; } = _type.GetFriendlyName();
+        public static string? FriendlyName = _type.GetFriendlyName();
 
         /// <summary>
         ///     True, if the type is a class
         /// </summary>
-        public static bool IsReferenceType { get; } = _type.IsClass;
+        public static bool IsReferenceType = _type.IsClass;
 
         /// <summary>
         ///     The assembly qualified name of the type
         /// </summary>
-        public static string AssemblyQualifiedName { get; } = _type.AssemblyQualifiedName;
+        public static string? AssemblyQualifiedName = _type.AssemblyQualifiedName;
 
         /// <summary>
         ///     True, if the type is abstract
         /// </summary>
-        public static bool IsAbstract { get; } = _type.IsAbstract;
+        public static bool IsAbstract = _type.IsAbstract;
 
         /// <summary>
         ///     True, if the type is abstract or if the type is an interface
         /// </summary>
-        public static bool IsAbstractOrInterface { get; } = _type.IsAbstract || _type.IsInterface;
+        public static bool IsAbstractOrInterface = _type.IsAbstract || _type.IsInterface;
 
         /// <summary>
         ///    True, if the type is an interface
         /// </summary>
-        public static bool IsInterface { get; } = _type.IsInterface;
+        public static bool IsInterface = _type.IsInterface;
 
         /// <summary>
         ///     The name of the class
         /// </summary>
-        public static string Name { get; } = _type.Name;
+        public static string? Name = _type.Name;
     }
 }

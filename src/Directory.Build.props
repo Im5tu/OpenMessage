@@ -2,7 +2,7 @@
   <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')"/>
 
   <PropertyGroup>
-    <ProjectTargetFrameworks>net461;netstandard2.0;netcoreapp3.1</ProjectTargetFrameworks>
+    <ProjectTargetFrameworks>netstandard2.1;netcoreapp3.1</ProjectTargetFrameworks>
     <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup Condition="Exists('icon.png')">
@@ -16,7 +16,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
     <Version>1.0.0</Version>
-    <PackageVersion>$(Version)-preview-7</PackageVersion>
+    <PackageVersion>$(Version)-preview-8</PackageVersion>
     <PackageOutputPath>$(RepositoryRoot)/artifacts</PackageOutputPath>
     <PackageReleaseNotes>Preview release for use with .Net Core 3</PackageReleaseNotes>
     <Title>$(MSBuildProjectName)</Title>

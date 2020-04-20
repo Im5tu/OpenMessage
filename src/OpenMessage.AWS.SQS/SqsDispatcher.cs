@@ -1,7 +1,7 @@
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using OpenMessage.AWS.SQS.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,7 +27,7 @@ namespace OpenMessage.AWS.SQS
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _messageWriter = messageWriter ?? throw new ArgumentNullException(nameof(messageWriter));
             var config = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _queueUrl = config.QueueUrl;
+            _queueUrl = config.QueueUrl ?? throw new Exception("No queue url set for type: " + (TypeCache<T>.FriendlyName ?? string.Empty));
 
             _contentType = new MessageAttributeValue
             {
@@ -38,22 +38,26 @@ namespace OpenMessage.AWS.SQS
 
         public override async Task DispatchAsync(Message<T> message, CancellationToken cancellationToken)
         {
+            if (message.Value is null)
+                Throw.Exception("Message value cannot be null");
+
+            var json = _serializer.AsString(message.Value);
+            if (string.IsNullOrWhiteSpace(msg))
+                Throw.Exception("Message could not be serialized");
+
+            LogDispatch(message);
+
             var request = new SendMessageBatchRequestEntry
             {
                 Id = Guid.NewGuid().ToString("N"),
                 MessageAttributes = GetMessageProperties(message),
-                MessageBody = _serializer.AsString(message.Value)
-            };
-
-            var msg = new SendMessage
-            {
-                Message = request,
+                MessageBody = json,
                 QueueUrl = _queueUrl
             };
 
-            await _messageWriter.WriteAsync(msg, cancellationToken);
+            await _messageWriter.WriteAsync(request, cancellationToken);
 
-            var taskCancellation = cancellationToken.Register(() => msg.TaskCompletionSource.TrySetCanceled());
+            var taskCancellation = cancellationToken.Register(() => request.TaskCompletionSource.TrySetCanceled());
             try
             {
                 await msg.TaskCompletionSource.Task;
@@ -68,13 +72,15 @@ namespace OpenMessage.AWS.SQS
         {
             var result = new Dictionary<string, MessageAttributeValue>
             {
-                [KnownProperties.ContentType] = _contentType,
-                [KnownProperties.ValueTypeName] = new MessageAttributeValue
+                [KnownProperties.ContentType] = _contentType
+            };
+
+            if (!(message.Value is null))
+                result[KnownProperties.ValueTypeName] = new MessageAttributeValue
                 {
                     DataType = AttributeType,
                     StringValue = message.Value.GetType().AssemblyQualifiedName
-                }
-            };
+                };
 
             if (Activity.Current is {})
                 result[KnownProperties.ActivityId] = new MessageAttributeValue

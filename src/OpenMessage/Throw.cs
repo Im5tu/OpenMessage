@@ -1,6 +1,5 @@
 ﻿using System;
-
-#nullable enable
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenMessage
 {
@@ -13,6 +12,7 @@ namespace OpenMessage
         ///     Throws a ArgumentException
         /// </summary>
         /// <exception cref="System.ArgumentException">The exception</exception>
+        [DoesNotReturn]
         public static void ArgumentException()
         {
             throw new ArgumentException();
@@ -24,6 +24,7 @@ namespace OpenMessage
         /// <param name="paramName">The parameter name to use</param>
         /// <param name="message">The message to to use in the exception</param>
         /// <exception cref="System.ArgumentException">The exception with a specified parameter name &amp; message</exception>
+        [DoesNotReturn]
         public static void ArgumentException(string paramName, string message)
         {
             throw new ArgumentException(paramName, message);
@@ -33,6 +34,7 @@ namespace OpenMessage
         ///     Throws a ArgumentNullException
         /// </summary>
         /// <exception cref="System.ArgumentNullException">The exception</exception>
+        [DoesNotReturn]
         public static void ArgumentNullException()
         {
             throw new ArgumentNullException();
@@ -44,6 +46,7 @@ namespace OpenMessage
         /// <param name="paramName">The parameter name to use</param>
         /// <param name="message">The message to to use in the exception</param>
         /// <exception cref="System.ArgumentNullException">The exception with a specified message, if applicable</exception>
+        [DoesNotReturn]
         public static void ArgumentNullException(string paramName, string message = "Parameter cannot be null.")
         {
             throw new ArgumentNullException(paramName, message);
@@ -54,6 +57,7 @@ namespace OpenMessage
         /// </summary>
         /// <param name="message">The message to to use in the exception</param>
         /// <exception cref="System.Exception">The exception with a specified message, if applicable</exception>
+        [DoesNotReturn]
         public static void Exception(string? message = null)
         {
             if (message is null)

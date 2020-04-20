@@ -19,7 +19,7 @@ namespace OpenMessage.Pipelines.Middleware
         /// <inheritDoc />
         protected override async Task OnInvoke(Message<T> message, CancellationToken cancellationToken, MessageContext messageContext, PipelineDelegate.SingleMiddleware<T> next)
         {
-            IDisposable scope = null;
+            IDisposable? scope = null;
 
             if (message is ISupportIdentification identifier)
                 scope = _logger.BeginScope($"{ScopePrefix}{identifier.Id}");

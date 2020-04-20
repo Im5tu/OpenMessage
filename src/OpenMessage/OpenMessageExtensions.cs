@@ -9,7 +9,7 @@ using OpenMessage.Pipelines.Builders;
 using OpenMessage.Pipelines.Endpoints;
 using OpenMessage.Pipelines.Middleware;
 using OpenMessage.Pipelines.Pumps;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -167,7 +167,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="action">The implementation of the handler</param>
         /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>, CancellationToken> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>, CancellationToken> action)
+        {
+            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            return messagingBuilder;
+        }
 
         /// <summary>
         ///     Adds the specified handler
@@ -176,7 +180,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="action">The implementation of the handler</param>
         /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Action<Message<T>> action)
+        {
+            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            return messagingBuilder;
+        }
 
         /// <summary>
         ///     Adds the specified handler
@@ -185,7 +193,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="action">The implementation of the handler</param>
         /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, CancellationToken, Task> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, CancellationToken, Task> action)
+        {
+            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            return messagingBuilder;
+        }
 
         /// <summary>
         ///     Adds the specified handler
@@ -194,7 +206,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="action">The implementation of the handler</param>
         /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessageBuilder</returns>
-        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, Task> action) => messagingBuilder.ConfigureHandler(new ActionHandler<T>(action));
+        public static IMessagingBuilder ConfigureHandler<T>(this IMessagingBuilder messagingBuilder, Func<Message<T>, Task> action)
+        {
+            messagingBuilder.Services.AddSingleton(sp => ActivatorUtilities.CreateInstance<ActionHandler<T>>(sp, action));
+            return messagingBuilder;
+        }
 
         /// <summary>
         ///     Configures a default pipeline
@@ -216,7 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configurator">The configuration to use</param>
         /// <typeparam name="T">The type that the handler handles</typeparam>
         /// <returns>The OpenMessage builder</returns>
-        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>> configurator = null)
+        public static IPipelineBuilder<T> ConfigurePipeline<T>(this IMessagingBuilder messagingBuilder, Action<PipelineOptions<T>>? configurator = null)
         {
             return ConfigurePipeline<T>(messagingBuilder, (_, options) => configurator?.Invoke(options));
         }
@@ -247,7 +263,20 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IMessagingBuilder ConfigureAllHandlers(this IMessagingBuilder messagingBuilder, params Assembly[] assembliesToScan)
         {
             if (assembliesToScan?.Length == 0)
-                assembliesToScan = new[] {Assembly.GetEntryAssembly()};
+            {
+                var entryAssembly = Assembly.GetEntryAssembly();
+                var executingAssembly = Assembly.GetExecutingAssembly();
+
+                var assemblyList = new List<Assembly>();
+
+                if (entryAssembly is { })
+                    assemblyList.Add(entryAssembly);
+
+                if (executingAssembly is { } && !executingAssembly.Equals(entryAssembly))
+                    assemblyList.Add(executingAssembly);
+
+                assembliesToScan = assemblyList.ToArray();
+            }
 
             var handlerTypes = new[] {typeof(IHandler<>), typeof(IBatchHandler<>)};
 
@@ -256,7 +285,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 return ti.ImplementedInterfaces.Where(x => x.IsGenericType && handlerTypes.Contains(x.GetGenericTypeDefinition()));
             }
 
-            foreach (var assembly in assembliesToScan)
+            var handlersFound = 0;
+
+            foreach (var assembly in assembliesToScan?.Where(x => x != null) ?? Enumerable.Empty<Assembly>())
             {
                 var types = assembly.GetTypes()
                                     .Where(x => !x.IsAbstract &&
@@ -269,9 +300,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     var implementedHandlers = HandlerInterfaceFilter(handlerType.GetTypeInfo());
 
                     foreach (var implementedHandler in implementedHandlers)
+                    {
+                        handlersFound += 1;
                         messagingBuilder.Services.AddScoped(implementedHandler, handlerType);
+                    }
                 }
             }
+
+            if (handlersFound == 0)
+                throw new Exception("No handlers found in assmeblies. " + string.Join(", ", assembliesToScan.Select(x => x.FullName)));
 
             return messagingBuilder;
         }
@@ -319,7 +356,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="channelCreator">A function that creates a channel</param>
         /// <typeparam name="T">The type to handle</typeparam>
         /// <returns>The modified service collection</returns>
-        public static IServiceCollection TryAddChannel<T>(this IServiceCollection services, Func<IServiceProvider, Channel<T>> channelCreator = null)
+        public static IServiceCollection TryAddChannel<T>(this IServiceCollection services, Func<IServiceProvider, Channel<T>>? channelCreator = null)
         {
             if (channelCreator is null)
                 services.TryAddSingleton(sp =>
@@ -356,7 +393,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="channelCreator">A function that creates a channel</param>
         /// <typeparam name="T">The type to handle</typeparam>
         /// <returns>The modified service collection</returns>
-        public static IServiceCollection TryAddConsumerService<T>(this IServiceCollection services, Func<IServiceProvider, Channel<Message<T>>> channelCreator = null)
+        public static IServiceCollection TryAddConsumerService<T>(this IServiceCollection services, Func<IServiceProvider, Channel<Message<T>>>? channelCreator = null)
         {
             services.TryAddChannel(channelCreator);
             services.TryAddSingleton<IPostConfigureOptions<PipelineOptions<T>>, PipelineOptionsPostConfigurationProvider<T>>();

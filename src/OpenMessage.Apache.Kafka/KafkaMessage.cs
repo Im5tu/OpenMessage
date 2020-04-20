@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,7 +15,8 @@ namespace OpenMessage.Apache.Kafka
 #endif
 
         /// <inheritdoc />
-        public TKey Id { get; internal set; }
+        [MaybeNull, AllowNull]
+        public TKey Id { get; internal set; } = default;
 
         /// <inheritdoc />
         public IEnumerable<KeyValuePair<string, string>> Properties { get; internal set; } = Enumerable.Empty<KeyValuePair<string, string>>();
@@ -36,7 +38,7 @@ namespace OpenMessage.Apache.Kafka
         }
 
         /// <inheritdoc />
-        Task ISupportAcknowledgement.AcknowledgeAsync(bool positivelyAcknowledge, Exception exception)
+        Task ISupportAcknowledgement.AcknowledgeAsync(bool positivelyAcknowledge, Exception? exception)
         {
             try
             {

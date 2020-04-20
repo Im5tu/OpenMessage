@@ -3,7 +3,7 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using OpenMessage.AWS.SQS.Configuration;
-using OpenMessage.Serialisation;
+using OpenMessage.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -22,9 +22,9 @@ namespace OpenMessage.AWS.SQS
         private readonly List<SqsMessage<T>> _emptyList = new List<SqsMessage<T>>(0);
 
         private readonly IOptionsMonitor<SQSConsumerOptions> _options;
-        private Func<SqsMessage<T>, Task> _acknowledgementAction;
-        private IAmazonSQS _client;
-        private SQSConsumerOptions _currentConsumerOptions;
+        private Func<SqsMessage<T>, Task>? _acknowledgementAction;
+        private IAmazonSQS? _client;
+        private SQSConsumerOptions? _currentConsumerOptions;
 
         public SqsConsumer(IOptionsMonitor<SQSConsumerOptions> options, IDeserializationProvider deserializationProvider, ILogger<SqsConsumer<T>> logger)
         {
@@ -52,7 +52,7 @@ namespace OpenMessage.AWS.SQS
 
             var response = await _client.ReceiveMessageAsync(request, cancellationToken);
 
-            if (response.HttpStatusCode != HttpStatusCode.OK || (response.Messages?.Count ?? 0) == 0)
+            if (response is null || response.HttpStatusCode != HttpStatusCode.OK || response.Messages is null || response.Messages.Count == 0)
                 return _emptyList;
 
             var result = new List<SqsMessage<T>>(response.Messages.Count);
@@ -76,13 +76,16 @@ namespace OpenMessage.AWS.SQS
                 if (message.MessageAttributes.TryGetValue(KnownProperties.ValueTypeName, out var vtn))
                     messageType = vtn.StringValue;
 
+                if (_acknowledgementAction is null)
+                    Throw.Exception("Acknowledgement action cannot be null for SQS message");
+
                 result.Add(new SqsMessage<T>(_acknowledgementAction)
                 {
                     Id = message.MessageId,
                     Properties = properties,
                     ReceiptHandle = message.ReceiptHandle,
                     QueueUrl = _currentConsumerOptions.QueueUrl,
-                    Value = _deserializationProvider.From<T>(message.Body, contentType, messageType)
+                    Value = _deserializationProvider.From<T>(message.Body, contentType, messageType ?? string.Empty)
                 });
             }
 
@@ -105,15 +108,16 @@ namespace OpenMessage.AWS.SQS
                         config.RegionEndpoint = RegionEndpoint.GetBySystemName(_currentConsumerOptions.RegionEndpoint);
 
                     _currentConsumerOptions.AwsConsumerConfiguration?.Invoke(config);
-                    _acknowledgementAction = msg => _client.DeleteMessageAsync(msg.QueueUrl, msg.ReceiptHandle);
                     _client = new AmazonSQSClient(config);
+                    _acknowledgementAction = msg => _client?.DeleteMessageAsync(msg.QueueUrl, msg.ReceiptHandle, default) ?? Task.CompletedTask;
 
                     return;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, e.Message);
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    if (!cancellationToken.IsCancellationRequested)
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
                 }
         }
     }

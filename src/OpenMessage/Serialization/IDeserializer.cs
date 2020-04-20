@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-namespace OpenMessage.Serialisation
+namespace OpenMessage.Serialization
 {
     /// <summary>
     ///     An instance of a deserializer
@@ -20,6 +21,7 @@ namespace OpenMessage.Serialisation
         /// <param name="data">The data to convert from</param>
         /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
+        [return: MaybeNull]
         T From<T>(string data, Type messageType);
 
         /// <summary>
@@ -29,6 +31,7 @@ namespace OpenMessage.Serialisation
         /// <param name="data">The data to convert from</param>
         /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
+        [return: MaybeNull]
         T From<T>(byte[] data, Type messageType);
     }
 }

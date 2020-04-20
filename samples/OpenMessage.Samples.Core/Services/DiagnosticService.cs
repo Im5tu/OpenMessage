@@ -21,13 +21,16 @@ namespace OpenMessage.Samples.Core.Services
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             if (eventData.EventName == EventCountEventName
-                && eventData.Payload.Count > 0
+                && eventData.Payload?.Count > 0
                 && eventData.Payload[0] is IDictionary<string, object> data
                 && data.TryGetValue(EventCounterType, out var counterType)
                 && data.TryGetValue(EventName, out var name))
             {
-                string metricName = name.ToString();
-                string metricType = counterType.ToString();
+                if (name is null || counterType is null)
+                    return;
+
+                var metricName = name.ToString();
+                var metricType = counterType.ToString();
 
                 if (SumType.Equals(metricType) && data.TryGetValue(IncrementName, out var increment))
                 {
@@ -42,7 +45,7 @@ namespace OpenMessage.Samples.Core.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            EnableEvents(OpenMessageEventSource.Instance, EventLevel.LogAlways, EventKeywords.All, new Dictionary<string, string> {{"EventCounterIntervalSec", "1"}});
+            EnableEvents(OpenMessageEventSource.Instance, EventLevel.LogAlways, EventKeywords.All, new Dictionary<string, string?> {{"EventCounterIntervalSec", "1"}});
             return Task.CompletedTask;
         }
 

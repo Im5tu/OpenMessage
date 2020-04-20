@@ -9,24 +9,24 @@ namespace OpenMessage.Testing.Memory
     /// </summary>
     internal sealed class AwaitableMessage<T> : Message<T>, ISupportAcknowledgement, ISupportIdentification
     {
-        private readonly Message<T> _message;
+        private readonly Message<T>? _message;
         private readonly TaskCompletionSource<bool> _messageConsumedTaskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public AcknowledgementState AcknowledgementState { get; private set; }
         public string Id { get; set; }
 
-        public AwaitableMessage([CallerMemberName] string id = null)
+        public AwaitableMessage([CallerMemberName] string? id = null)
         {
-            Id = id;
+            Id = id ?? Guid.NewGuid().ToString("N");
         }
 
-        public AwaitableMessage(Message<T> message, [CallerMemberName]string id = null) : this(id)
+        public AwaitableMessage(Message<T> message, [CallerMemberName]string? id = null) : this(id)
         {
             _message = message;
             Value = message.Value;
         }
 
-        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null)
+        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception? exception = null)
         {
             if (positivelyAcknowledge)
                 AcknowledgementState = AcknowledgementState.Acknowledged;
@@ -34,7 +34,7 @@ namespace OpenMessage.Testing.Memory
                 AcknowledgementState = AcknowledgementState.NegativelyAcknowledged;
 
             if (_message is ISupportAcknowledgement ack)
-                await ack.AcknowledgeAsync(positivelyAcknowledge);
+                await ack.AcknowledgeAsync(positivelyAcknowledge, exception);
 
             if (exception == null)
                 _messageConsumedTaskCompletionSource.TrySetResult(positivelyAcknowledge);

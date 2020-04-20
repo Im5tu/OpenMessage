@@ -16,16 +16,16 @@ namespace OpenMessage.Samples.AWS
 
         private static async Task Main(string[] args)
         {
-            // Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "XXX", EnvironmentVariableTarget.Process);
-            // Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "XXX", EnvironmentVariableTarget.Process);
-            // Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "XXX", EnvironmentVariableTarget.Process);
-            // Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "us-east-1", EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "XXX", EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "XXX", EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "XXX", EnvironmentVariableTarget.Process);
+            Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "eu-west-2", EnvironmentVariableTarget.Process);
 
             await Host.CreateDefaultBuilder()
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
                                                              .AddSampleCore()
-                                                             //.AddProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
+                                                             .AddProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>
                       {
@@ -40,13 +40,12 @@ namespace OpenMessage.Samples.AWS
                                   Console.WriteLine($"Counter: {counter}");
                           });
 
-                          // Allow us to write to kafka
-                          host.ConfigureSqsDispatcher<SimpleModel>()
+                          // Allow us to write to SNS
+                          host.ConfigureSnsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.QueueUrl = "https://sqs.eu-west-1.amazonaws.com/528130383285/stu_test";
-                                  // config.TopicArn = "arn:aws:sns:us-east-1:000000000000:openmessage_samples_core_models_simplemodel";
-                                  // config.ServiceURL = "http://localhost:4575";
+                                  config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
+                                  config.ServiceURL = "http://localhost:4575";
                               })
                               .Build();
 
@@ -54,10 +53,8 @@ namespace OpenMessage.Samples.AWS
                           host.ConfigureSqsConsumer<CoreModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.QueueUrl = "https://sqs.eu-west-1.amazonaws.com/528130383285/stu_test";
-                                  config.RegionEndpoint = "eu-west-1";
-                                  //config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
-                                  //config.ServiceURL = "http://localhost:4576";
+                                  config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
+                                  config.ServiceURL = "http://localhost:4576";
                               })
                               .Build();
                       })

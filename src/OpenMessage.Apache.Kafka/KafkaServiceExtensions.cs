@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="options">Options for the dispatcher</param>
         /// <typeparam name="T">The type to dispatch</typeparam>
         /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<KafkaOptions<T>> options = null)
+        public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<KafkaOptions<T>>? options = null)
         {
             if (options is {})
                 messagingBuilder.Services.Configure(options);
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="options">Options for the dispatcher</param>
         /// <typeparam name="T">The type to dispatch</typeparam>
         /// <returns>The modified builder</returns>
-        public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, KafkaOptions<T>> options = null)
+        public static IMessagingBuilder ConfigureKafkaDispatcher<T>(this IMessagingBuilder messagingBuilder, Action<HostBuilderContext, KafkaOptions<T>>? options = null)
         {
             if (options is {})
                 messagingBuilder.Services.Configure<KafkaOptions<T>>(o => options(messagingBuilder.Context, o));

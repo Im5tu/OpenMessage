@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OpenMessage.AWS.SQS
@@ -12,10 +14,10 @@ namespace OpenMessage.AWS.SQS
 #endif
 
         public AcknowledgementState AcknowledgementState { get; private set; }
-        public string Id { get; internal set; }
-        public IEnumerable<KeyValuePair<string, string>> Properties { get; internal set;  }
-        internal string ReceiptHandle { get; set; }
-        internal string QueueUrl { get; set; }
+        [MaybeNull, AllowNull] public string Id { get; internal set; } = default;
+        public IEnumerable<KeyValuePair<string, string>> Properties { get; internal set; } = Enumerable.Empty<KeyValuePair<string, string>>();
+        internal string? ReceiptHandle { get; set; }
+        internal string? QueueUrl { get; set; }
 
         public SqsMessage(Func<SqsMessage<T>, Task> acknowledgementAction)
         {
@@ -25,7 +27,7 @@ namespace OpenMessage.AWS.SQS
 #endif
         }
 
-        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception exception = null)
+        public async Task AcknowledgeAsync(bool positivelyAcknowledge = true, Exception? exception = null)
         {
             try
             {

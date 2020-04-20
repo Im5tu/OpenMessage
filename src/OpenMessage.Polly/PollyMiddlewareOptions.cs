@@ -8,6 +8,6 @@ namespace OpenMessage.Polly
         /// <summary>
         ///     The name of the policy to use
         /// </summary>
-        public string PolicyName { get; set; }
+        public string? PolicyName { get; set; }
     }
 }

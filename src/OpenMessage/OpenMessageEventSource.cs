@@ -14,9 +14,9 @@ namespace OpenMessage
 
         private long _inflightMessages = 0;
         private long _processedCount = 0;
-        private IncrementingPollingCounter _inflightMessagesCounter;
-        private EventCounter _messageDurationCounter;
-        private IncrementingPollingCounter _processedCountCounter;
+        private IncrementingPollingCounter? _inflightMessagesCounter;
+        private EventCounter? _messageDurationCounter;
+        private IncrementingPollingCounter? _processedCountCounter;
 
         private OpenMessageEventSource() { }
 
@@ -54,7 +54,7 @@ namespace OpenMessage
         private void MessageStop(double duration)
         {
             Interlocked.Decrement(ref _inflightMessages);
-            _messageDurationCounter.WriteMetric(duration);
+            _messageDurationCounter?.WriteMetric(duration);
         }
 
         protected override void OnEventCommand(EventCommandEventArgs command)

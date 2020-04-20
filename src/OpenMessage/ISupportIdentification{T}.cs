@@ -1,4 +1,6 @@
-﻿namespace OpenMessage
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace OpenMessage
 {
     /// <summary>
     ///     Indicates the message supports identification
@@ -9,6 +11,7 @@
         /// <summary>
         ///     The message id
         /// </summary>
+        [MaybeNull, AllowNull]
         T Id { get; }
     }
 }
