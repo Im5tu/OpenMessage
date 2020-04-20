@@ -29,8 +29,6 @@ namespace OpenMessage.Samples.AWS
                       )
                       .ConfigureMessaging(host =>
                       {
-                          host.Services.Configure<SQSDispatcherOptions>(x => x.RegionEndpoint = "eu-west-1");
-
                           // Adds a handler that writes to console every 1000 messages
                           host.ConfigureHandler<CoreModel>(msg =>
                           {

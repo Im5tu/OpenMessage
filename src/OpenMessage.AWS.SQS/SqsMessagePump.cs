@@ -91,10 +91,6 @@ namespace OpenMessage.AWS.SQS
                         if (!cancellationToken.IsCancellationRequested)
                             await Task.Delay(5000, cancellationToken);
                     }
-                    finally
-                    {
-                        await Task.Delay(5000, cancellationToken);
-                    }
                 }
             });
 
