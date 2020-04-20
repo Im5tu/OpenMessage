@@ -19,16 +19,19 @@ namespace OpenMessage.Samples.Core.Services
         {
             // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
             await Task.Yield();
-            
+
             while (!stoppingToken.IsCancellationRequested)
                 try
                 {
                     await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
-                    await Task.Delay(1000);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("Producer: " + e.Message);
+                }
+                finally
+                {
+                    await Task.Delay(1000);
                 }
         }
     }

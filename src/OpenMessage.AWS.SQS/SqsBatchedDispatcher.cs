@@ -17,17 +17,16 @@ namespace OpenMessage.AWS.SQS
     {
         private static readonly string AttributeType = "String";
         private readonly MessageAttributeValue _contentType;
-        private readonly string _queueUrl;
+        private readonly IOptionsMonitor<SQSDispatcherOptions<T>> _options;
         private readonly ISerializer _serializer;
         private readonly ChannelWriter<SendSqsMessageCommand> _messageWriter;
 
-        public SqsBatchedDispatcher(IOptions<SQSDispatcherOptions<T>> options, ISerializer serializer, ILogger<SqsDispatcher<T>> logger, ChannelWriter<SendSqsMessageCommand> messageWriter)
+        public SqsBatchedDispatcher(IOptionsMonitor<SQSDispatcherOptions<T>> options, ISerializer serializer, ILogger<SqsDispatcher<T>> logger, ChannelWriter<SendSqsMessageCommand> messageWriter)
             : base(logger)
         {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _messageWriter = messageWriter ?? throw new ArgumentNullException(nameof(messageWriter));
-            var config = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            _queueUrl = config.QueueUrl ?? throw new Exception("No queue url set for type: " + (TypeCache<T>.FriendlyName ?? string.Empty));
 
             _contentType = new MessageAttributeValue
             {
@@ -45,6 +44,10 @@ namespace OpenMessage.AWS.SQS
             if (string.IsNullOrWhiteSpace(json))
                 Throw.Exception("Message could not be serialized");
 
+            var options = _options.CurrentValue;
+            if (options is null)
+                Throw.Exception("Options cannot be null");
+
             LogDispatch(message);
 
             var request = new SendMessageBatchRequestEntry
@@ -57,7 +60,9 @@ namespace OpenMessage.AWS.SQS
             var msg = new SendSqsMessageCommand
             {
                 Message = request,
-                QueueUrl = _queueUrl
+                QueueUrl = options.QueueUrl,
+                ServiceUrl = options.ServiceURL,
+                RegionEndpoint = options.RegionEndpoint
             };
 
             await _messageWriter.WriteAsync(msg, cancellationToken);

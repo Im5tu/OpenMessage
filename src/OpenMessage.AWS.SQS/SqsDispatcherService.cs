@@ -9,22 +9,17 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic;
-using OpenMessage.AWS.SQS.Configuration;
 
 namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsDispatcherService : BackgroundService
     {
         private readonly ChannelReader<SendSqsMessageCommand> _messageReader;
-        private readonly IOptionsMonitor<SQSDispatcherOptions> _optionsMonitor;
         private readonly ILogger<SqsDispatcherService> _logger;
 
-        public SqsDispatcherService(ChannelReader<SendSqsMessageCommand> messageReader, IOptionsMonitor<SQSDispatcherOptions> optionsMonitor, ILogger<SqsDispatcherService> logger)
+        public SqsDispatcherService(ChannelReader<SendSqsMessageCommand> messageReader, ILogger<SqsDispatcherService> logger)
         {
             _messageReader = messageReader ?? throw new ArgumentNullException(nameof(messageReader));
-            _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
             _logger = logger;
         }
 
@@ -53,18 +48,20 @@ namespace OpenMessage.AWS.SQS
                             continue;
                         }
 
-                        if (queues.TryGetValue(msg.QueueUrl, out var messages))
+                        var lookupKey = msg.LookupKey;
+
+                        if (queues.TryGetValue(lookupKey, out var messages))
                         {
                             messages.Add(msg);
                             if (messages.Count == 10) // This is the limit for the AWS request
                             {
-                                queues.Remove(msg.QueueUrl);
-                                _ = ProcessMessages(msg.QueueUrl, messages);
+                                queues.Remove(lookupKey);
+                                _ = ProcessMessages(messages);
                             }
                         }
                         else
                         {
-                            queues[msg.QueueUrl] = new List<SendSqsMessageCommand>
+                            queues[lookupKey] = new List<SendSqsMessageCommand>
                             {
                                 msg
                             };
@@ -76,7 +73,7 @@ namespace OpenMessage.AWS.SQS
                         {
                             // process all messages
                             foreach (var set in queues)
-                                _ = ProcessMessages(set.Key, set.Value);
+                                _ = ProcessMessages(set.Value);
                         }
 
                         await _messageReader.WaitToReadAsync(stoppingToken);
@@ -90,19 +87,23 @@ namespace OpenMessage.AWS.SQS
             }
         }
 
-        private async Task ProcessMessages(string queueUrl, List<SendSqsMessageCommand> messages)
+        private async Task ProcessMessages(List<SendSqsMessageCommand> messages)
         {
+            if (messages.Count == 0)
+                return;
+
+            var firstMessage = messages[0];
+
             try
             {
-                var request = new SendMessageBatchRequest(queueUrl, messages.Select(x => x.Message).ToList());
-                var options = _optionsMonitor.CurrentValue;
+                var request = new SendMessageBatchRequest(firstMessage.QueueUrl, messages.Select(x => x.Message).ToList());
                 var config = new AmazonSQSConfig
                 {
-                    ServiceURL = options.ServiceURL
+                    ServiceURL = firstMessage.ServiceUrl
                 };
 
-                if (options.RegionEndpoint != null)
-                    config.RegionEndpoint = RegionEndpoint.GetBySystemName(options.RegionEndpoint);
+                if (firstMessage.RegionEndpoint != null)
+                    config.RegionEndpoint = RegionEndpoint.GetBySystemName(firstMessage.RegionEndpoint);
 
                 using var client = new AmazonSQSClient(config);
 

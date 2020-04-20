@@ -6,7 +6,9 @@ using OpenMessage.Samples.Core.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Serialization;
 using OpenMessage.AWS.SQS.Configuration;
+using OpenMessage.Serializer.JsonDotNet;
 
 namespace OpenMessage.Samples.AWS
 {
@@ -34,27 +36,41 @@ namespace OpenMessage.Samples.AWS
                           {
                               var counter = Interlocked.Increment(ref _counter);
 
-                              if (counter % 100 == 0)
+                              if (counter % 10 == 0)
                                   Console.WriteLine($"Counter: {counter}");
                           });
 
                           // Allow us to write to SNS
-                          host.ConfigureSnsDispatcher<SimpleModel>()
+                          // host.ConfigureSnsDispatcher<SimpleModel>()
+                          //     .FromConfiguration(config =>
+                          //     {
+                          //         config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
+                          //         config.ServiceURL = "http://localhost:4575";
+                          //     })
+                          //     .Build();
+
+                          host.ConfigureSqsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
-                                  config.ServiceURL = "http://localhost:4575";
+                                  config.QueueUrl = "https://sqs.eu-west-1.amazonaws.com/528130383285/stu_test";
+                                  config.RegionEndpoint = "eu-west-1";
                               })
+                              .WithBatchedDispatcher(true)
                               .Build();
 
                           // Consume from the same topic as we are writing to
                           host.ConfigureSqsConsumer<CoreModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
-                                  config.ServiceURL = "http://localhost:4576";
+                                  config.QueueUrl = "https://sqs.eu-west-1.amazonaws.com/528130383285/stu_test";
+                                  config.RegionEndpoint = "eu-west-1";
+                                  //config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
+                                  //config.ServiceURL = "http://localhost:4576";
                               })
                               .Build();
+
+                          // Show off how to use the json settings
+                          host.ConfigureJsonDotNet(settings => settings.WithSnakeCaseNamingStrategy());
                       })
                       .Build()
                       .RunAsync();

@@ -6,7 +6,7 @@ namespace OpenMessage.AWS.SQS.Configuration
     /// <summary>
     ///     Configuration options for dispatchers
     /// </summary>
-    public class SQSDispatcherOptions<T> : SQSDispatcherOptions
+    public class SQSDispatcherOptions<T>
     {
         /// <summary>
         ///     Allow the configuration of the raw AWS SQS Dispatcher Config during initialization of the dispatcher.
@@ -17,13 +17,7 @@ namespace OpenMessage.AWS.SQS.Configuration
         ///     The queue url to dispatch to
         /// </summary>
         public string? QueueUrl { get; set; }
-    }
 
-    /// <summary>
-    ///     Configuration options for dispatchers
-    /// </summary>
-    public class SQSDispatcherOptions
-    {
         /// <summary>
         ///     The region endpoint to use
         /// </summary>

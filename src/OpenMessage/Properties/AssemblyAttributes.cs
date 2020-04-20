@@ -12,3 +12,4 @@
 [assembly: InternalsVisibleTo("OpenMessage.NATS")]
 [assembly: InternalsVisibleTo("OpenMessage.RabbitMq")]
 [assembly: InternalsVisibleTo("OpenMessage.Redis")]
+[assembly: InternalsVisibleTo("OpenMessage.Serializer.JsonDotNet")]
