@@ -75,7 +75,7 @@ namespace OpenMessage.AWS.SQS
                                             _ = ProcessMessages(messages);
                                         }
                                         else if (!cancellationToken.IsCancellationRequested && !readMessage)
-                                            await channel.Reader.WaitToReadAsync(cancellationToken);
+                                            await channel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
                                     }
                                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                                     {
@@ -93,6 +93,8 @@ namespace OpenMessage.AWS.SQS
 
                         await channel.Writer.WriteAsync(msg, cancellationToken).ConfigureAwait(false);
                     }
+                    else
+                        await _messageReader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
                 catch (Exception e)
