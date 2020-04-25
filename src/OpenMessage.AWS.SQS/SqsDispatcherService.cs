@@ -16,6 +16,10 @@ namespace OpenMessage.AWS.SQS
     {
         private readonly ChannelReader<SendSqsMessageCommand> _messageReader;
         private readonly ILogger<SqsDispatcherService> _logger;
+        private readonly Dictionary<string, AmazonSQSClient> _clients = new Dictionary<string, AmazonSQSClient>(StringComparer.Ordinal);
+
+        private readonly Dictionary<string, Channel<SendSqsMessageCommand>> _channels = new Dictionary<string, Channel<SendSqsMessageCommand>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Task> _channelReaderTasks = new Dictionary<string, Task>();
 
         public SqsDispatcherService(ChannelReader<SendSqsMessageCommand> messageReader, ILogger<SqsDispatcherService> logger)
         {
@@ -23,14 +27,12 @@ namespace OpenMessage.AWS.SQS
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             // Without this line we can encounter a blocking issue such as: https://github.com/dotnet/extensions/issues/2816
             await Task.Yield();
 
-            var queues = new Dictionary<string, List<SendSqsMessageCommand>>(StringComparer.Ordinal);
-
-            while (!stoppingToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -48,38 +50,51 @@ namespace OpenMessage.AWS.SQS
                             continue;
                         }
 
-                        var lookupKey = msg.LookupKey;
-
-                        if (queues.TryGetValue(lookupKey, out var messages))
+                        if (!_channels.TryGetValue(msg.LookupKey, out var channel))
                         {
-                            messages.Add(msg);
-                            if (messages.Count == 10) // This is the limit for the AWS request
+                            _channels[msg.LookupKey] = channel = Channel.CreateBounded<SendSqsMessageCommand>(new BoundedChannelOptions(20)
                             {
-                                queues.Remove(lookupKey);
-                                _ = ProcessMessages(messages);
-                            }
-                        }
-                        else
-                        {
-                            queues[lookupKey] = new List<SendSqsMessageCommand>
+                                SingleReader = true,
+                                SingleWriter = true,
+                                FullMode = BoundedChannelFullMode.Wait
+                            });
+                            _channelReaderTasks[msg.LookupKey] = Task.Run(async () =>
                             {
-                                msg
-                            };
-                        }
-                    }
-                    else
-                    {
-                        if (queues.Count > 0)
-                        {
-                            // process all messages
-                            foreach (var set in queues)
-                                _ = ProcessMessages(set.Value);
+                                var messagesToSend = new List<SendSqsMessageCommand>(10);
+                                while (!cancellationToken.IsCancellationRequested)
+                                {
+                                    try
+                                    {
+                                        var readMessage = channel.Reader.TryRead(out var msg);
+                                        if (readMessage)
+                                            messagesToSend.Add(msg);
+
+                                        if (messagesToSend.Count == 10 || messagesToSend.Count > 0 && !readMessage)
+                                        {
+                                            var messages = Interlocked.Exchange(ref messagesToSend, new List<SendSqsMessageCommand>(10));
+                                            _ = ProcessMessages(messages);
+                                        }
+                                        else if (!cancellationToken.IsCancellationRequested && !readMessage)
+                                            await channel.Reader.WaitToReadAsync(cancellationToken);
+                                    }
+                                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                                    {
+                                        foreach (var msg in messagesToSend)
+                                            msg.TaskCompletionSource.TrySetCanceled();
+                                    }
+                                    catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+                                    {
+                                        foreach (var msg in messagesToSend)
+                                            msg.TaskCompletionSource.TrySetException(ex);
+                                    }
+                                }
+                            });
                         }
 
-                        await _messageReader.WaitToReadAsync(stoppingToken);
+                        await channel.Writer.WriteAsync(msg, cancellationToken).ConfigureAwait(false);
                     }
                 }
-                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
                 catch (Exception e)
                 {
                     _logger.LogError(e, e.Message);
@@ -96,21 +111,29 @@ namespace OpenMessage.AWS.SQS
 
             try
             {
-                var request = new SendMessageBatchRequest(firstMessage.QueueUrl, messages.Select(x => x.Message).ToList());
-                var config = new AmazonSQSConfig
+                var entries = new List<SendMessageBatchRequestEntry>(messages.Count);
+                foreach(var msg in messages)
+                    if (msg.Message is {})
+                        entries.Add(msg.Message);
+
+                var request = new SendMessageBatchRequest(firstMessage.QueueUrl, entries);
+                if (!_clients.TryGetValue(firstMessage.LookupKey, out var client))
                 {
-                    ServiceURL = firstMessage.ServiceUrl
-                };
+                    var config = new AmazonSQSConfig
+                    {
+                        ServiceURL = firstMessage.ServiceUrl
+                    };
 
-                if (firstMessage.RegionEndpoint != null)
-                    config.RegionEndpoint = RegionEndpoint.GetBySystemName(firstMessage.RegionEndpoint);
+                    if (firstMessage.RegionEndpoint != null)
+                        config.RegionEndpoint = RegionEndpoint.GetBySystemName(firstMessage.RegionEndpoint);
 
-                using var client = new AmazonSQSClient(config);
+                    _clients[firstMessage.LookupKey] = client = new AmazonSQSClient(config);
+                }
 
                 var response = await client.SendMessageBatchAsync(request);
 
                 if (response.Failed.Count > 0)
-                    throw new Exception("One or more messages failed to send");
+                    Throw.Exception("One or more messages failed to send");
 
                 foreach (var msg in messages)
                     msg.TaskCompletionSource.TrySetResult(true);

@@ -15,6 +15,8 @@ namespace OpenMessage.AWS.SQS
 
         internal string? RegionEndpoint { get; set; }
 
-        internal string LookupKey => $"{QueueUrl ?? string.Empty}|{ServiceUrl ?? string.Empty}|{RegionEndpoint ?? string.Empty}";
+        internal string LookupKey => _lookupKey ??= $"{QueueUrl ?? string.Empty}|{ServiceUrl ?? string.Empty}|{RegionEndpoint ?? string.Empty}";
+
+        private string? _lookupKey;
     }
 }
