@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -23,7 +22,7 @@ namespace OpenMessage.AWS.SQS
 
         public SqsDispatcherService(ChannelReader<SendSqsMessageCommand> messageReader, ILogger<SqsDispatcherService> logger)
         {
-            _messageReader = messageReader ?? throw new ArgumentNullException(nameof(messageReader));
+            _messageReader = messageReader;
             _logger = logger;
         }
 
@@ -52,11 +51,10 @@ namespace OpenMessage.AWS.SQS
 
                         if (!_channels.TryGetValue(msg.LookupKey, out var channel))
                         {
-                            _channels[msg.LookupKey] = channel = Channel.CreateBounded<SendSqsMessageCommand>(new BoundedChannelOptions(20)
+                            _channels[msg.LookupKey] = channel = Channel.CreateUnbounded<SendSqsMessageCommand>(new UnboundedChannelOptions
                             {
                                 SingleReader = true,
-                                SingleWriter = true,
-                                FullMode = BoundedChannelFullMode.Wait
+                                SingleWriter = true
                             });
                             _channelReaderTasks[msg.LookupKey] = Task.Run(async () =>
                             {
