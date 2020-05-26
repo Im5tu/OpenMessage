@@ -5,7 +5,6 @@ using OpenMessage.Apache.Kafka.Configuration;
 using OpenMessage.Serialization;
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
