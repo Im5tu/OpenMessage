@@ -54,15 +54,13 @@ namespace OpenMessage.Pipelines.Builders
         public void Run<TPipelineEndpoint>(params object[] constructorParameters)
             where TPipelineEndpoint : IPipelineEndpoint<T>
         {
-            _middleware.Add(_ =>
+            if (constructorParameters.Length == 0)
             {
-                return (message, cancellationToken, messageContext) =>
-                {
-                    var pipelineEndpoint = constructorParameters.Any() ? ActivatorUtilities.CreateInstance<TPipelineEndpoint>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TPipelineEndpoint>();
+                _middleware.Add(_ => (message, cancellationToken, messageContext) => messageContext.ServiceProvider.GetRequiredService<TPipelineEndpoint>().Invoke(message, cancellationToken, messageContext));
+                return;
+            }
 
-                    return pipelineEndpoint.Invoke(message, cancellationToken, messageContext);
-                };
-            });
+            _middleware.Add(_ => (message, cancellationToken, messageContext) => ActivatorUtilities.CreateInstance<TPipelineEndpoint>(messageContext.ServiceProvider, constructorParameters).Invoke(message, cancellationToken, messageContext));
         }
 
         public IPipelineBuilder<T> Use(Func<PipelineDelegate.SingleMiddleware<T>, PipelineDelegate.SingleMiddleware<T>> middleware)
@@ -75,16 +73,13 @@ namespace OpenMessage.Pipelines.Builders
         public IPipelineBuilder<T> Use<TMiddleware>(params object[] constructorParameters)
             where TMiddleware : IMiddleware<T>
         {
-            _middleware.Add(next =>
+            if (constructorParameters.Length == 0)
             {
-                return (message, cancellationToken, messageContext) =>
-                {
-                    var middleware = constructorParameters.Any() ? ActivatorUtilities.CreateInstance<TMiddleware>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TMiddleware>();
+                _middleware.Add(next => (message, cancellationToken, context) => context.ServiceProvider.GetRequiredService<TMiddleware>().Invoke(message, cancellationToken, context, next));
+                return this;
+            }
 
-                    return middleware.Invoke(message, cancellationToken, messageContext, next);
-                };
-            });
-
+            _middleware.Add(next => (message, cancellationToken, messageContext) => ActivatorUtilities.CreateInstance<TMiddleware>(messageContext.ServiceProvider, constructorParameters).Invoke(message, cancellationToken, messageContext, next));
             return this;
         }
     }

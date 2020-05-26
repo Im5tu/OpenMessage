@@ -1,5 +1,6 @@
 ﻿using Amazon.SQS;
 using System;
+using System.Collections.Generic;
 
 namespace OpenMessage.AWS.SQS.Configuration
 {
@@ -51,6 +52,16 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         ///     The maximum number of consumers to manage
         /// </summary>
-        public byte MaximumConsumerCount { get; set; } = 20;
+        public byte MaximumConsumerCount { get; set; } = 5;
+
+        /// <summary>
+        ///     The SQS specific messages attributes to retrieve, eg: ApproximateFirstReceiveTimestamp, ApproximateReceiveCount, AWSTraceHeader, SenderId, SentTimestamp, MessageDeduplicationId, MessageGroupId, SequenceNumber
+        /// </summary>
+        public List<string> SQSMessageAttributes { get; set; } = new List<string>(0);
+
+        /// <summary>
+        ///     The custom message properties, eg: ContentType, to load from the message
+        /// </summary>
+        public List<string> CustomMessageAttributes { get; set; } = new List<string> { KnownProperties.ContentType, KnownProperties.ActivityId, KnownProperties.ValueTypeName };
     }
 }

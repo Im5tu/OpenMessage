@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading;
@@ -30,11 +31,20 @@ namespace OpenMessage.Pipelines.Middleware
             {
                 case ISupportProperties p:
                 {
+                    if (p.Properties is IDictionary<string, string> dictionary)
+                        if (dictionary.TryGetValue(KnownProperties.ActivityId, out activityId) && !string.IsNullOrWhiteSpace(activityId))
+                            return true;
+                        else
+                        {
+                            activityId = null; // Reset here because the value maybe whitespace
+                            return false;
+                        }
+
+                    // Fallback for other versions that aren't a dictionary
                     foreach (var prop in p.Properties)
                         if (prop.Key == KnownProperties.ActivityId && !string.IsNullOrWhiteSpace(prop.Value))
                         {
                             activityId = prop.Value;
-
                             return true;
                         }
 

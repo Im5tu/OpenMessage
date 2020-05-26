@@ -11,13 +11,11 @@ namespace OpenMessage.Pipelines.Endpoints
     internal sealed class BatchPipelineEndpoint<T> : BatcherBase<Message<T>>, IPipelineEndpoint<T>
     {
         private readonly IBatchPipelineBuilder<T> _batchPipelineBuilder;
-        private readonly ILogger<BatchPipelineEndpoint<T>> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public BatchPipelineEndpoint(ILogger<BatchPipelineEndpoint<T>> logger, IServiceScopeFactory serviceScopeFactory, IBatchPipelineBuilder<T> batchPipelineBuilder, IOptions<PipelineOptions<T>> options)
+        public BatchPipelineEndpoint(IServiceScopeFactory serviceScopeFactory, IBatchPipelineBuilder<T> batchPipelineBuilder, IOptions<PipelineOptions<T>> options)
             : base(options.Value.BatchSize, options.Value.BatchTimeout)
         {
-            _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
             _batchPipelineBuilder = batchPipelineBuilder;
         }

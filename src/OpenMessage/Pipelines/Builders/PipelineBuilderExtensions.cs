@@ -15,10 +15,9 @@ namespace OpenMessage.Pipelines.Builders
         #region Use
 
         /// <summary>
-        ///     Adds <see cref="TraceMiddleware{T}" />, <see cref="LoggerScopeMiddleware{T}" />, <see cref="ServiceScopeMiddleware{T}" />, <see cref="TimeoutMiddleware{T}" />, <see cref="AutoAcknowledgeMiddleware{T}" /> to the pipeline
+        ///     Adds <see cref="TraceMiddleware{T}" />, <see cref="ServiceScopeMiddleware{T}" />, <see cref="TimeoutMiddleware{T}" />, <see cref="AutoAcknowledgeMiddleware{T}" /> to the pipeline
         /// </summary>
         public static IPipelineBuilder<T> UseDefaultMiddleware<T>(this IPipelineBuilder<T> builder) => builder.UseTracing()
-                                                                                                              .UseLoggingScope()
                                                                                                               .UseServiceScope()
                                                                                                               .UseTimeout()
                                                                                                               .UseAutoAcknowledge();

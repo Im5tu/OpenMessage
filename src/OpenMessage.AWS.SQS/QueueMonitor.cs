@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace OpenMessage.AWS.SQS
             "ApproximateNumberOfMessagesDelayed",
             "ApproximateNumberOfMessagesNotVisible"
         };
+        private readonly ConcurrentDictionary<string, AmazonSQSClient> _clients = new ConcurrentDictionary<string, AmazonSQSClient>();
 
         public QueueMonitor(IOptionsMonitor<SQSConsumerOptions> sqsOptions)
         {
@@ -31,17 +33,19 @@ namespace OpenMessage.AWS.SQS
                 throw new ArgumentNullException(nameof(consumerId));
 
             var options = _sqsOptions.Get(consumerId);
-
-            var config = new AmazonSQSConfig
+            var client = _clients.GetOrAdd(consumerId, id =>
             {
-                ServiceURL = options.ServiceURL
-            };
+                var config = new AmazonSQSConfig
+                {
+                    ServiceURL = options.ServiceURL
+                };
 
-            if (!string.IsNullOrEmpty(options.RegionEndpoint))
-                config.RegionEndpoint = RegionEndpoint.GetBySystemName(options.RegionEndpoint);
+                if (!string.IsNullOrEmpty(options.RegionEndpoint))
+                    config.RegionEndpoint = RegionEndpoint.GetBySystemName(options.RegionEndpoint);
 
-            options.AwsConsumerConfiguration?.Invoke(config);
-            using var client = new AmazonSQSClient(config);
+                options.AwsConsumerConfiguration?.Invoke(config);
+                return new AmazonSQSClient(config);
+            });
 
             var attributes = await client.GetQueueAttributesAsync(new GetQueueAttributesRequest
             {

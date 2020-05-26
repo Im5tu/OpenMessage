@@ -15,7 +15,6 @@ namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsConsumer<T> : ISqsConsumer<T>
     {
-        private static readonly List<string> RequestAttributes = new List<string>(1) { "All" };
         private static readonly string MisconfiguredConsumerMessage = "Consumer has not been initialized. Please call Initialize with the configured consumer id.";
         private readonly IDeserializationProvider _deserializationProvider;
         private readonly ILogger<SqsConsumer<T>> _logger;
@@ -43,8 +42,8 @@ namespace OpenMessage.AWS.SQS
                 QueueUrl = _currentConsumerOptions.QueueUrl,
                 MaxNumberOfMessages = _currentConsumerOptions.MaxNumberOfMessages,
                 WaitTimeSeconds = _currentConsumerOptions.WaitTimeSeconds,
-                AttributeNames = RequestAttributes,
-                MessageAttributeNames = RequestAttributes
+                AttributeNames = _currentConsumerOptions.SQSMessageAttributes,
+                MessageAttributeNames = _currentConsumerOptions.CustomMessageAttributes
             };
 
             if (_currentConsumerOptions.VisibilityTimeout.HasValue)
@@ -59,13 +58,13 @@ namespace OpenMessage.AWS.SQS
 
             foreach (var message in response.Messages)
             {
-                var properties = new List<KeyValuePair<string, string>>(message.Attributes.Count + message.MessageAttributes.Count);
+                var properties = new Dictionary<string, string>(message.Attributes.Count + message.MessageAttributes.Count, StringComparer.Ordinal);
 
                 foreach (var attribute in message.Attributes)
-                    properties.Add(new KeyValuePair<string, string>(attribute.Key, attribute.Value));
+                    properties[attribute.Key] = attribute.Value;
 
                 foreach (var msgAttribute in message.MessageAttributes)
-                    properties.Add(new KeyValuePair<string, string>(msgAttribute.Key, msgAttribute.Value.StringValue));
+                    properties[msgAttribute.Key] = msgAttribute.Value.StringValue;
 
                 var contentType = ContentTypes.Json;
 

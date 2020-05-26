@@ -3,7 +3,6 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Logging;
 using OpenMessage.Pipelines.Pumps;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -112,9 +111,31 @@ namespace OpenMessage.AWS.SQS
                 lock(_consumers)
                     consumers = _consumers.ToList();
 
-                var messages = await Task.WhenAll(consumers.Select(x => x.ConsumeAsync(cancellationToken)));
-                foreach (var message in messages.SelectMany(x => x))
-                    await ChannelWriter.WriteAsync(message, cancellationToken);
+                if (consumers.Count == 0)
+                    return;
+
+                if (consumers.Count == 1)
+                {
+                    var consumer = consumers[0];
+                    var result = await consumer.ConsumeAsync(cancellationToken);
+                    foreach (var msg in result)
+                        await ChannelWriter.WriteAsync(msg, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    var tasks = new Task<List<SqsMessage<T>>>[consumers.Count];
+
+                    for (var i = consumers.Count - 1; i >= 0; i--)
+                        tasks[i] = consumers[i].ConsumeAsync(cancellationToken);
+
+                    for (var i = consumers.Count - 1; i >= 0; i--)
+                    {
+                        var lst = await tasks[i];
+
+                        foreach (var msg in lst)
+                            await ChannelWriter.WriteAsync(msg, cancellationToken);
+                    }
+                }
             }
             catch (QueueDoesNotExistException queueException)
             {

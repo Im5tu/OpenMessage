@@ -63,6 +63,9 @@ namespace OpenMessage.AWS.SQS
                                 {
                                     try
                                     {
+                                        if (messagesToSend is null)
+                                            continue;
+
                                         var readMessage = channel.Reader.TryRead(out var msg);
                                         if (readMessage)
                                             messagesToSend.Add(msg);
@@ -70,20 +73,23 @@ namespace OpenMessage.AWS.SQS
                                         if (messagesToSend.Count == 10 || messagesToSend.Count > 0 && !readMessage)
                                         {
                                             var messages = Interlocked.Exchange(ref messagesToSend, new List<SendSqsMessageCommand>(10));
-                                            _ = ProcessMessages(messages);
+                                            if (messages is {})
+                                                _ = ProcessMessages(messages);
                                         }
                                         else if (!cancellationToken.IsCancellationRequested && !readMessage)
                                             await channel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
                                     }
                                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                                     {
-                                        foreach (var msg in messagesToSend)
-                                            msg.TaskCompletionSource.TrySetCanceled();
+                                        if (messagesToSend is {})
+                                            foreach (var msg in messagesToSend)
+                                                msg.TaskCompletionSource.TrySetCanceled();
                                     }
                                     catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
                                     {
-                                        foreach (var msg in messagesToSend)
-                                            msg.TaskCompletionSource.TrySetException(ex);
+                                        if (messagesToSend is {})
+                                            foreach (var msg in messagesToSend)
+                                                msg.TaskCompletionSource.TrySetException(ex);
                                     }
                                 }
                             });

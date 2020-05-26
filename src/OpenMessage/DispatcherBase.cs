@@ -36,7 +36,7 @@ namespace OpenMessage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void LogDispatch(Message<T> message)
         {
-            if (_logger.IsEnabled(LogLevel.Debug) && message is ISupportIdentification msgId)
+            if (message is ISupportIdentification msgId && _logger.IsEnabled(LogLevel.Debug))
                 _dispatchMessage(_logger, msgId.Id ?? string.Empty, null);
         }
     }

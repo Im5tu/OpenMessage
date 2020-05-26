@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,8 +22,8 @@ namespace OpenMessage.Pipelines.Middleware
         {
             IDisposable? scope = null;
 
-            if (message is ISupportIdentification identifier)
-                scope = _logger.BeginScope($"{ScopePrefix}{identifier.Id}");
+            if (message is ISupportIdentification identifier && !string.IsNullOrEmpty(identifier?.Id))
+                scope = _logger.BeginScope(new KeyValuePair<string, string>(ScopePrefix, identifier.Id));
 
             using (scope)
             {

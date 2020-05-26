@@ -65,19 +65,9 @@ namespace OpenMessage.Pipelines.Pumps
 
                         // TODO :: We don't need to check this every time, we just change the implementation when the options changes and use a field to represent the option we want to use.
                         if (_options.CurrentValue.PipelineType == PipelineType.Serial)
-                            await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
+                            await InvokePipeline(message, cancellationToken);
                         else
-                            _ = Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.LogError(e, e.Message);
-                                }
-                            }, cancellationToken);
+                            _ = InvokePipeline(message, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -88,6 +78,18 @@ namespace OpenMessage.Pipelines.Pumps
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+            }
+        }
+
+        private async Task InvokePipeline(Message<T> message, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _pipeline(message, cancellationToken, new MessageContext(_serviceProvider));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, e.Message);
             }
         }
     }
