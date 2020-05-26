@@ -24,7 +24,7 @@ namespace OpenMessage.Samples.AWS
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
                                                              .AddSampleCore()
-                                                             .AddProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
+                                                             .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>
                       {
@@ -38,12 +38,22 @@ namespace OpenMessage.Samples.AWS
                           });
 
                           // Allow us to write to SNS
-                          host.ConfigureSnsDispatcher<SimpleModel>()
+                          // host.ConfigureSnsDispatcher<SimpleModel>()
+                          //     .FromConfiguration(config =>
+                          //     {
+                          //         config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
+                          //         config.ServiceURL = "http://localhost:4575";
+                          //     })
+                          //     .Build();
+
+                          // For testing the dispatchers
+                          host.ConfigureSqsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.TopicArn = "arn:aws:sns:eu-west-2:000000000000:openmessage_samples_core_models_simplemodel";
-                                  config.ServiceURL = "http://localhost:4575";
+                                  config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
+                                  config.ServiceURL = "http://localhost:4576";
                               })
+                              .WithBatchedDispatcher(true)
                               .Build();
 
                           // Consume from the same topic as we are writing to
