@@ -23,7 +23,7 @@ namespace OpenMessage.Samples.AWS
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
                                                              .AddSampleCore()
-                                                             .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
+                                                             //.AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>
                       {

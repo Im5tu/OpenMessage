@@ -101,10 +101,12 @@ namespace OpenMessage.AWS.SQS
             return base.StopAsync(cancellationToken);
         }
 
-        protected override async Task ConsumeAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             await Task.Yield();
         }
+
+        protected override Task ConsumeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         private async Task HandleMissingQueueAsync<TException>(TException exception, CancellationToken cancellationToken)
             where TException : Exception
