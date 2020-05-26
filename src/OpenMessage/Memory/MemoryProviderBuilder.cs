@@ -6,7 +6,7 @@ namespace OpenMessage.Memory
 {
     internal sealed class MemoryProviderBuilder<T> : IMemoryProviderBuilder<T>
     {
-        private Func<IServiceProvider, Channel<Message<T>>>? _channelCreator;
+        private Func<IServiceProvider, Channel<Message<T>>>? _channelCreator = null;
 
         public IMessagingBuilder HostBuilder { get; }
 
@@ -14,13 +14,7 @@ namespace OpenMessage.Memory
 
         public void Build()
         {
-            if (!(_channelCreator is null))
-            {
-                HostBuilder.Services.TryAddChannel(_channelCreator)
-                    .TryAddConsumerService(_channelCreator)
-                    .AddSingleton<IDispatcher<T>, MemoryDispatcher<T>>();
-            }
-
+            HostBuilder.Services.TryAddChannel(_channelCreator).TryAddConsumerService(_channelCreator).AddSingleton<IDispatcher<T>, MemoryDispatcher<T>>();
             HostBuilder.TryConfigureDefaultPipeline<T>();
         }
 
