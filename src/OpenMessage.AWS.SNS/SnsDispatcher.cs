@@ -73,6 +73,10 @@ namespace OpenMessage.AWS.SNS
                 TopicArn = _topicArn
             };
 
+#if NETCOREAPP3_1
+            var stopwatch = OpenMessageEventSource.Instance.ProcessMessageDispatchStart();
+#endif
+
             try
             {
                 var response = await _client.PublishAsync(request, cancellationToken);
@@ -83,6 +87,13 @@ namespace OpenMessage.AWS.SNS
             catch (AmazonSimpleNotificationServiceException e) when (e.ErrorCode == "NotFound")
             {
                 ThrowExceptionFromHttpResponse(e.StatusCode, e);
+            }
+            finally
+            {
+#if NETCOREAPP3_1
+                if (stopwatch.HasValue)
+                    OpenMessageEventSource.Instance.ProcessMessageDispatchStop(stopwatch.Value);
+#endif
             }
         }
 

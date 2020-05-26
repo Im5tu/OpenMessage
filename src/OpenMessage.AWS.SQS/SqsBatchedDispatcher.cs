@@ -67,10 +67,10 @@ namespace OpenMessage.AWS.SQS
 
             await _messageWriter.WriteAsync(msg, cancellationToken);
 
-            var taskCancellation = cancellationToken.Register(() => msg.TaskCompletionSource.TrySetCanceled());
+            var taskCancellation = cancellationToken.Register(() => msg.Cancel(cancellationToken));
             try
             {
-                await msg.TaskCompletionSource.Task;
+                await msg.WaitForCompletion();
             }
             finally
             {

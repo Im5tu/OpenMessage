@@ -22,7 +22,7 @@ namespace OpenMessage.AWS.SQS
         private readonly IServiceProvider _services;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Task? _consumerCheckTask;
-        private List<ISqsConsumer<T>> _consumers = new List<ISqsConsumer<T>>();
+        private List<(Task tsk, CancellationTokenSource cts)> _consumers = new List<(Task tsk, CancellationTokenSource cts)>();
 
         public SqsMessagePump(ChannelWriter<Message<T>> channelWriter,
             ILogger<SqsMessagePump<T>> logger,
@@ -102,51 +102,7 @@ namespace OpenMessage.AWS.SQS
             return base.StopAsync(cancellationToken);
         }
 
-        protected override async Task ConsumeAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                List<ISqsConsumer<T>> consumers;
-
-                lock(_consumers)
-                    consumers = _consumers.ToList();
-
-                if (consumers.Count == 0)
-                    return;
-
-                if (consumers.Count == 1)
-                {
-                    var consumer = consumers[0];
-                    var result = await consumer.ConsumeAsync(cancellationToken);
-                    foreach (var msg in result)
-                        await ChannelWriter.WriteAsync(msg, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    var tasks = new Task<List<SqsMessage<T>>>[consumers.Count];
-
-                    for (var i = consumers.Count - 1; i >= 0; i--)
-                        tasks[i] = consumers[i].ConsumeAsync(cancellationToken);
-
-                    for (var i = consumers.Count - 1; i >= 0; i--)
-                    {
-                        var lst = await tasks[i];
-
-                        foreach (var msg in lst)
-                            await ChannelWriter.WriteAsync(msg, cancellationToken);
-                    }
-                }
-            }
-            catch (QueueDoesNotExistException queueException)
-            {
-                await HandleMissingQueueAsync(queueException, cancellationToken);
-            }
-            catch (AmazonSQSException sqsException) when (sqsException.ErrorCode == "AWS.SimpleQueueService.NonExistentQueue")
-            {
-                await HandleMissingQueueAsync(sqsException, cancellationToken);
-            }
-            catch (OperationCanceledException) { }
-        }
+        protected override Task ConsumeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         private async Task HandleMissingQueueAsync<TException>(TException exception, CancellationToken cancellationToken)
             where TException : Exception
@@ -161,7 +117,10 @@ namespace OpenMessage.AWS.SQS
             {
                 var consumer = _services.GetRequiredService<ISqsConsumer<T>>();
                 consumer.Initialize(_consumerId, cancellationToken);
-                _consumers.Add(consumer);
+                var cts = new CancellationTokenSource();
+                var ct = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+                var consumerTask = RunConsumerTask(consumer, ct.Token);
+                _consumers.Add((consumerTask, cts));
                 Logger.LogInformation("Initialized new '{0}' consumer. Current consumer count: {1}. Queue Length: {2}", TypeCache<T>.FriendlyName, _consumers.Count, queueLength);
             }
         }
@@ -173,8 +132,41 @@ namespace OpenMessage.AWS.SQS
                 if (_consumers.Count == 0)
                     return;
 
-                _consumers.RemoveAt(_consumers.Count - 1);
+                var index = _consumers.Count - 1;
+                var tskGroup = _consumers[index];
+                _consumers.RemoveAt(index);
+                tskGroup.cts.Cancel(false);
                 Logger.LogInformation("Removed '{0}' consumer. Current consumer count: {1}", TypeCache<T>.FriendlyName, _consumers.Count);
+            }
+        }
+
+        private async Task RunConsumerTask(ISqsConsumer<T> consumer, CancellationToken cancellationToken)
+        {
+            var writer = ChannelWriter;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var messages = await consumer.ConsumeAsync(cancellationToken);
+                    foreach (var message in messages)
+                        if (!writer.TryWrite(message))
+                            await writer.WriteAsync(message, cancellationToken);
+                }
+                catch (QueueDoesNotExistException queueException)
+                {
+                    await HandleMissingQueueAsync(queueException, cancellationToken);
+                }
+                catch (AmazonSQSException sqsException) when (sqsException.ErrorCode == "AWS.SimpleQueueService.NonExistentQueue")
+                {
+                    await HandleMissingQueueAsync(sqsException, cancellationToken);
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, e.Message);
+                    throw;
+                }
             }
         }
     }

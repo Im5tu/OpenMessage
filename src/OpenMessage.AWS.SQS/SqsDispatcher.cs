@@ -67,10 +67,23 @@ namespace OpenMessage.AWS.SQS
                 QueueUrl = _queueUrl
             };
 
-            var response = await _client.SendMessageAsync(request, cancellationToken);
+#if NETCOREAPP3_1
+            var stopwatch = OpenMessageEventSource.Instance.ProcessMessageDispatchStart();
+#endif
 
-            if (response.HttpStatusCode != HttpStatusCode.OK)
-                ThrowExceptionFromHttpResponse(response);
+            try
+            {
+                var response = await _client.SendMessageAsync(request, cancellationToken);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
+                    ThrowExceptionFromHttpResponse(response);
+            }
+            finally
+            {
+#if NETCOREAPP3_1
+                if (stopwatch.HasValue)
+                    OpenMessageEventSource.Instance.ProcessMessageDispatchStop(stopwatch.Value);
+#endif
+            }
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)

@@ -52,7 +52,7 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         ///     The maximum number of consumers to manage
         /// </summary>
-        public byte MaximumConsumerCount { get; set; } = 5;
+        public byte MaximumConsumerCount { get; set; } = 10;
 
         /// <summary>
         ///     The SQS specific messages attributes to retrieve, eg: ApproximateFirstReceiveTimestamp, ApproximateReceiveCount, AWSTraceHeader, SenderId, SentTimestamp, MessageDeduplicationId, MessageGroupId, SequenceNumber
@@ -62,6 +62,6 @@ namespace OpenMessage.AWS.SQS.Configuration
         /// <summary>
         ///     The custom message properties, eg: ContentType, to load from the message
         /// </summary>
-        public List<string> CustomMessageAttributes { get; set; } = new List<string> { KnownProperties.ContentType, KnownProperties.ActivityId, KnownProperties.ValueTypeName };
+        public List<string> CustomMessageAttributes { get; set; } = new List<string> { "All" };
     }
 }

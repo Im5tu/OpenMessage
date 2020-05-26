@@ -14,9 +14,14 @@ namespace OpenMessage
 
         private long _inflightMessages = 0;
         private long _processedCount = 0;
+        private long _dispatchingMessages = 0;
+        private long _dispatchedMessages = 0;
+        private EventCounter? _messageProcessDurationCounter;
+        private EventCounter? _messageDispatchDurationCounter;
         private IncrementingPollingCounter? _inflightMessagesCounter;
-        private EventCounter? _messageDurationCounter;
         private IncrementingPollingCounter? _processedCountCounter;
+        private IncrementingPollingCounter? _dispatchingCounter;
+        private IncrementingPollingCounter? _dispatchedCounter;
 
         private OpenMessageEventSource() { }
 
@@ -54,7 +59,39 @@ namespace OpenMessage
         private void MessageStop(double duration)
         {
             Interlocked.Decrement(ref _inflightMessages);
-            _messageDurationCounter?.WriteMetric(duration);
+            _messageProcessDurationCounter?.WriteMetric(duration);
+        }
+
+        [NonEvent]
+        public ValueStopwatch? ProcessMessageDispatchStart()
+        {
+            if (!IsEnabled()) return null;
+
+            MessageDispatchStart();
+
+            return ValueStopwatch.StartNew();
+        }
+
+        [Event(3, Level = EventLevel.Informational, Message = "Dispatching message")]
+        private void MessageDispatchStart()
+        {
+            Interlocked.Increment(ref _dispatchingMessages);
+        }
+
+        [NonEvent]
+        public void ProcessMessageDispatchStop(ValueStopwatch stopwatch)
+        {
+            if (!IsEnabled()) return;
+
+            MessageDispatchStop(stopwatch.IsActive ? stopwatch.GetElapsedTime().TotalMilliseconds : 0.0);
+        }
+
+        [Event(4, Level = EventLevel.Informational, Message = "Message dispatched")]
+        private void MessageDispatchStop(double duration)
+        {
+            Interlocked.Decrement(ref _dispatchingMessages);
+            Interlocked.Increment(ref _dispatchedMessages);
+            _messageDispatchDurationCounter?.WriteMetric(duration);
         }
 
         protected override void OnEventCommand(EventCommandEventArgs command)
@@ -68,14 +105,29 @@ namespace OpenMessage
                     DisplayName = "Inflight Messages",
                     DisplayUnits = "Messages"
                 };
-                _messageDurationCounter ??= new EventCounter("message-duration", this)
+                _messageProcessDurationCounter ??= new EventCounter("message-process-duration", this)
                 {
-                    DisplayName = "Average Message Duration",
+                    DisplayName = "Average Message Process Duration",
+                    DisplayUnits = "ms"
+                };
+                _messageDispatchDurationCounter ??= new EventCounter("message-dispatch-duration", this)
+                {
+                    DisplayName = "Average Message Dispatch Duration",
                     DisplayUnits = "ms"
                 };
                 _processedCountCounter ??= new IncrementingPollingCounter("processed-count", this, () => _processedCount)
                 {
                     DisplayName = "Messages Processed",
+                    DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+                };
+                _dispatchingCounter ??= new IncrementingPollingCounter("dispatching-count", this, () => _dispatchingMessages)
+                {
+                    DisplayName = "Messages Dispatching",
+                    DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+                };
+                _dispatchedCounter ??= new IncrementingPollingCounter("dispatched-count", this, () => _dispatchedMessages)
+                {
+                    DisplayName = "Messages Dispatched",
                     DisplayRateTimeScale = TimeSpan.FromSeconds(1)
                 };
             }

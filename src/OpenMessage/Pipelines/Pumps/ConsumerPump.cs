@@ -61,13 +61,19 @@ namespace OpenMessage.Pipelines.Pumps
                 while (!cancellationToken.IsCancellationRequested && !_channelReader.Completion.IsCompleted)
                     try
                     {
-                        var message = await _channelReader.ReadAsync(cancellationToken);
-
-                        // TODO :: We don't need to check this every time, we just change the implementation when the options changes and use a field to represent the option we want to use.
-                        if (_options.CurrentValue.PipelineType == PipelineType.Serial)
-                            await InvokePipeline(message, cancellationToken);
+                        if (_channelReader.TryRead(out var message))
+                        {
+                            // TODO :: We don't need to check this every time, we just change the implementation when the options changes and use a field to represent the option we want to use.
+                            if (_options.CurrentValue.PipelineType == PipelineType.Serial)
+                                await InvokePipeline(message, cancellationToken);
+                            else
+                                _ = InvokePipeline(message, cancellationToken);
+                        }
                         else
-                            _ = InvokePipeline(message, cancellationToken);
+                        {
+                            // Console.WriteLine("Waiting for message");
+                            await _channelReader.WaitToReadAsync(cancellationToken);
+                        }
                     }
                     catch (Exception ex)
                     {

@@ -39,13 +39,13 @@ namespace OpenMessage.AWS.SQS
                     {
                         if (msg.QueueUrl is null)
                         {
-                            msg.TaskCompletionSource.TrySetException(new Exception("Cannot process message without a destination queue url"));
+                            msg.Exception(new Exception("Cannot process message without a destination queue url"));
                             continue;
                         }
 
                         if (msg.Message is null)
                         {
-                            msg.TaskCompletionSource.TrySetException(new Exception("Cannot process message without a message to send"));
+                            msg.Exception(new Exception("Cannot process message without a message to send"));
                             continue;
                         }
 
@@ -83,13 +83,13 @@ namespace OpenMessage.AWS.SQS
                                     {
                                         if (messagesToSend is {})
                                             foreach (var msg in messagesToSend)
-                                                msg.TaskCompletionSource.TrySetCanceled();
+                                                msg.Cancel(cancellationToken);
                                     }
                                     catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
                                     {
                                         if (messagesToSend is {})
                                             foreach (var msg in messagesToSend)
-                                                msg.TaskCompletionSource.TrySetException(ex);
+                                                msg.Exception(ex);
                                     }
                                 }
                             });
@@ -138,16 +138,17 @@ namespace OpenMessage.AWS.SQS
 
                 var response = await client.SendMessageBatchAsync(request);
 
+                // TODO :: we should be able to complete certain messages here
                 if (response.Failed.Count > 0)
                     Throw.Exception("One or more messages failed to send");
 
                 foreach (var msg in messages)
-                    msg.TaskCompletionSource.TrySetResult(true);
+                    msg.Complete();
             }
             catch (Exception e)
             {
                 foreach (var msg in messages)
-                    msg.TaskCompletionSource.TrySetException(e);
+                    msg.Exception(e);
             }
         }
     }
