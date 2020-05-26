@@ -1,8 +1,17 @@
 ﻿namespace OpenMessage.Serialization
 {
-    internal static class SerializationConstants
+    /// <summary>
+    ///     Constants for the OpenMessage serialization framework
+    /// </summary>
+    public static class SerializationConstants
     {
-        internal static readonly string DeserializerSettings = "OpenMessageDeserializer";
-        internal static readonly string SerializerSettings = "OpenMessageSerializer";
+        /// <summary>
+        ///     Settings for the OpenMessage Deserializers
+        /// </summary>
+        public static readonly string DeserializerSettings = "OpenMessageDeserializer";
+        /// <summary>
+        ///     Settings for the OpenMessage Serializers
+        /// </summary>
+        public static readonly string SerializerSettings = "OpenMessageSerializer";
     }
 }
