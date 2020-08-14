@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -15,6 +15,8 @@ namespace OpenMessage.AWS.SQS
 {
     internal sealed class SqsBatchedDispatcher<T> : DispatcherBase<T>
     {
+        //15min = 900sec is the maximum delay supported by sqs
+        private const int MaximumSqsDelaySeconds = 900;
         private static readonly string AttributeType = "String";
         private readonly MessageAttributeValue _contentType;
         private readonly IOptionsMonitor<SQSDispatcherOptions<T>> _options;
@@ -54,6 +56,7 @@ namespace OpenMessage.AWS.SQS
             {
                 Id = Guid.NewGuid().ToString("N"),
                 MessageAttributes = GetMessageProperties(message),
+                DelaySeconds = DelaySeconds(message),
                 MessageBody = json
             };
 
@@ -76,6 +79,16 @@ namespace OpenMessage.AWS.SQS
             {
                 taskCancellation.Dispose();
             }
+        }
+
+        private static int DelaySeconds(Message<T> message)
+        {
+            if (message is ISupportSendDelay delay && delay.SendDelay > TimeSpan.Zero)
+            {
+                return Math.Min(MaximumSqsDelaySeconds, (int) delay.SendDelay.TotalSeconds);
+            }
+
+            return 0;
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)

@@ -1,6 +1,7 @@
 using AutoFixture;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace OpenMessage.Samples.Core.Services
     {
         private readonly IDispatcher<T> _dispatcher;
         private readonly Fixture _fixture = new Fixture();
+        private const int DispatchBatchSize = 100;
 
         public MassProducerService(IDispatcher<T> dispatcher) => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
@@ -21,18 +23,29 @@ namespace OpenMessage.Samples.Core.Services
             await Task.Yield();
 
             while (!stoppingToken.IsCancellationRequested)
-                await Task.WhenAll(Enumerable.Range(1, 100)
-                                             .Select(async x =>
-                                             {
-                                                 try
-                                                 {
-                                                     await _dispatcher.DispatchAsync(_fixture.Create<T>(), stoppingToken);
-                                                 }
-                                                 catch (Exception e)
-                                                 {
-                                                     Console.WriteLine("MassProducer: " + e.Message);
-                                                 }
-                                             }));
+            {
+                await Task.WhenAll(Enumerable.Range(1, DispatchBatchSize)
+                    .Select(async x =>
+                    {
+                        try
+                        {
+                            await _dispatcher.DispatchAsync(new ExtendedMessage<T>(_fixture.Create<T>())
+                            {
+                                SendDelay = TimeSpan.FromSeconds(15),
+                                Properties = new List<KeyValuePair<string, string>>
+                                {
+                                    new KeyValuePair<string, string>("Dispatched", DateTime.UtcNow.ToString())
+                                }
+                            }, stoppingToken);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("MassProducer: " + e.Message);
+                        }
+                    }));
+
+                Console.WriteLine($"Dispatched: {DispatchBatchSize}");
+            }
         }
     }
 }
