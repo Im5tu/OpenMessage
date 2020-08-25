@@ -23,4 +23,4 @@ jobs:
     - name: Test
       run: dotnet test --no-restore --verbosity normal
     - name: Publish Package
-      run: dotnet nuget push "artifacts/nupkgs/*.nupkg" -s ${{ secrets.NUGET_URL }} -k ${{ secrets.NUGET_TOKEN }}
+      run: dotnet nuget push "artifacts/*.nupkg" -s ${{ secrets.NUGET_URL }} -k ${{ secrets.NUGET_TOKEN }}
