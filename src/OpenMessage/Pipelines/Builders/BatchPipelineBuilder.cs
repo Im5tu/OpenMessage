@@ -49,7 +49,7 @@ namespace OpenMessage.Pipelines.Builders
             {
                 return (message, cancellationToken, messageContext) =>
                 {
-                    var pipelineEndpoint = constructorParameters.Any() ? ActivatorUtilities.CreateInstance<TBatchPipelineEndpoint>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TBatchPipelineEndpoint>();
+                    var pipelineEndpoint = constructorParameters.Length > 0 ? ActivatorUtilities.CreateInstance<TBatchPipelineEndpoint>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TBatchPipelineEndpoint>();
 
                     return pipelineEndpoint.Invoke(message, cancellationToken, messageContext);
                 };
@@ -70,7 +70,7 @@ namespace OpenMessage.Pipelines.Builders
             {
                 return (messages, cancellationToken, messageContext) =>
                 {
-                    IBatchMiddleware<T> middleware = constructorParameters.Any() ? ActivatorUtilities.CreateInstance<TMiddleware>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TMiddleware>();
+                    IBatchMiddleware<T> middleware = constructorParameters.Length > 0 ? ActivatorUtilities.CreateInstance<TMiddleware>(messageContext.ServiceProvider, constructorParameters) : messageContext.ServiceProvider.GetRequiredService<TMiddleware>();
 
                     return middleware.Invoke(messages, cancellationToken, messageContext, next);
                 };
