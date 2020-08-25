@@ -98,10 +98,16 @@ namespace OpenMessage.Tests
 
             await _app.StartAsync();
 
-            await _app.Services.GetRequiredService<IDispatcher<string>>()
+            try
+            {
+                await _app.Services.GetRequiredService<IDispatcher<string>>()
                       .DispatchAsync(message);
-
-            Assert.Equal(AcknowledgementState.NegativelyAcknowledged, message.AcknowledgementState);
+            }
+            catch { } // Expected
+            finally
+            {
+                Assert.Equal(AcknowledgementState.NegativelyAcknowledged, message.AcknowledgementState);
+            }
         }
 
         private class CustomMessage : Message<string>, ISupportAcknowledgement
