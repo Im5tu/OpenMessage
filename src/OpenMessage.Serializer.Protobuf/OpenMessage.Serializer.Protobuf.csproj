@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Protobuf serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="2.4.6" />
+    <PackageReference Include="protobuf-net" Version="3.0.29" />
   </ItemGroup>
 
 </Project>

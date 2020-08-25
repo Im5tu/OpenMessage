@@ -4,6 +4,8 @@
   <PropertyGroup>
     <ProjectTargetFrameworks>netstandard2.1;netcoreapp3.1</ProjectTargetFrameworks>
     <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+    <!-- pre-release packages get the label preview -->
+    <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
   </PropertyGroup>
   <ItemGroup Condition="Exists('icon.png')">
     <None Include="..\icon.png">
@@ -15,8 +17,6 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
-    <PackageVersion>$(Version)-preview-8.7</PackageVersion>
     <PackageOutputPath>$(RepositoryRoot)/artifacts</PackageOutputPath>
     <PackageReleaseNotes>Preview release for use with .Net Core 3</PackageReleaseNotes>
     <Title>$(MSBuildProjectName)</Title>

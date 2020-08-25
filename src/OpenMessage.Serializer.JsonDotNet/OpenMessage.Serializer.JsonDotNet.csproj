@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Json.Net serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>

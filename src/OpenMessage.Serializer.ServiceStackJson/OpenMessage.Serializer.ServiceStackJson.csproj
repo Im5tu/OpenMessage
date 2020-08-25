@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>ServiceStackJson serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack.Text" Version="5.8.0" />
+    <PackageReference Include="ServiceStack.Text" Version="5.9.2" />
   </ItemGroup>
 
 </Project>

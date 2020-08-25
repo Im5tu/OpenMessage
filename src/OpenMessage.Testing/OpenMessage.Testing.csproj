@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Helpful testing extensions for OpenMessage</Description>
   </PropertyGroup>
 
 </Project>

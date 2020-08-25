@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Jil (Json) serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>

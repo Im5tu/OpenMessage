@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>Hyperion serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hyperion" Version="0.9.15" />
+    <PackageReference Include="Hyperion" Version="0.9.16" />
   </ItemGroup>
 
 </Project>

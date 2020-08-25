@@ -31,7 +31,7 @@ namespace OpenMessage.Samples.Core.Services
                         {
                             await _dispatcher.DispatchAsync(new ExtendedMessage<T>(_fixture.Create<T>())
                             {
-                                SendDelay = TimeSpan.FromSeconds(15),
+                                //SendDelay = TimeSpan.FromSeconds(15),
                                 Properties = new List<KeyValuePair<string, string>>
                                 {
                                     new KeyValuePair<string, string>("Dispatched", DateTime.UtcNow.ToString())
@@ -40,6 +40,9 @@ namespace OpenMessage.Samples.Core.Services
                         }
                         catch (Exception e)
                         {
+                            if (stoppingToken.IsCancellationRequested)
+                                return;
+
                             Console.WriteLine("MassProducer: " + e.Message);
                         }
                     }));

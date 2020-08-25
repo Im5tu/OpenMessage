@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EventStore.Client" Version="5.0.8" />
+    <PackageReference Include="EventStore.Client" Version="20.6.0" />
   </ItemGroup>
 
 </Project>

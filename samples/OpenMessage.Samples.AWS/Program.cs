@@ -63,7 +63,7 @@ namespace OpenMessage.Samples.AWS
                           host.ConfigureSqsDispatcher<SimpleModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
+                                  config.QueueUrl = "http://localhost:4576/000000000000/openmessage_samples_core_models_simplemodel.queue";
                                   config.ServiceURL = "http://localhost:4576";
                               })
                               .WithBatchedDispatcher(true)
@@ -73,7 +73,7 @@ namespace OpenMessage.Samples.AWS
                           host.ConfigureSqsConsumer<CoreModel>()
                               .FromConfiguration(config =>
                               {
-                                  config.QueueUrl = "http://localhost:4576/queue/openmessage_samples_core_models_simplemodel.queue";
+                                  config.QueueUrl = "http://localhost:4576/000000000000/openmessage_samples_core_models_simplemodel.queue";
                                   config.ServiceURL = "http://localhost:4576";
                               })
                               .Build();

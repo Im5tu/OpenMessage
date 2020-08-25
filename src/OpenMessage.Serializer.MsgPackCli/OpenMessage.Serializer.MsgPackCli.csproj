@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ProjectTargetFrameworks)</TargetFrameworks>
+    <Description>MsgPack serializer for OpenMessage</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,8 +17,4 @@
       <ProjectReference Include="..\..\src\OpenMessage.Redis\OpenMessage.Redis.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="LocalStack.Client" Version="1.0.0" />
-    </ItemGroup>
-
 </Project>
