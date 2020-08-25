@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using OpenMessage.AWS.SQS;
 using OpenMessage.Samples.Core.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,11 +21,13 @@ namespace OpenMessage.Samples.AWS
             Environment.SetEnvironmentVariable("AWS_SESSION_TOKEN", "XXX", EnvironmentVariableTarget.Process);
             Environment.SetEnvironmentVariable("AWS_DEFAULT_REGION", "eu-west-2", EnvironmentVariableTarget.Process);
 
+            var verbose = false;
+
             await Host.CreateDefaultBuilder()
                       .ConfigureServices(services => services.AddOptions()
                                                              .AddLogging()
                                                              .AddSampleCore()
-                                                             //.AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
+                                                             .AddMassProducerService<SimpleModel>() // Adds a producer that calls configured dispatcher
                       )
                       .ConfigureMessaging(host =>
                       {
@@ -32,8 +36,18 @@ namespace OpenMessage.Samples.AWS
                           {
                               var counter = Interlocked.Increment(ref _counter);
 
-                              if (counter % 100 == 0)
-                                  Console.WriteLine($"Counter: {counter}");
+                              if (verbose)
+                              {
+                                  var properties = msg is ISupportProperties sp
+                                      ? sp.Properties
+                                      : Enumerable.Empty<KeyValuePair<string, string>>();
+
+                                  Console.WriteLine($"Received: #{counter} Received: {DateTime.UtcNow} Properties: {string.Join(",", properties)}");
+                              }
+                              else if(counter % 100 == 1)
+                              {
+                                  Console.WriteLine($"Received: #{counter}");
+                              }
                           });
 
                           // Allow us to write to SNS

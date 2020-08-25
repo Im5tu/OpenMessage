@@ -1,4 +1,4 @@
-﻿using OpenMessage.Samples.Core.Services;
+using OpenMessage.Samples.Core.Services;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
