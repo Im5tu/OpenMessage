@@ -1,0 +1,102 @@
+version: '3.5'
+
+services:
+  eventstore:
+    image: eventstore/eventstore:latest
+    hostname: eventstore
+    container_name: eventstore
+    restart: always
+    networks: [ "OpenMessage" ]
+    ports:
+      - 1113:1113
+      - 2112:2112
+      - 2113:2113
+    environment:
+      EVENTSTORE_CLUSTER_DNS: eventstore
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_CLUSTER_GOSSIP_PORT: 2112
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    networks: [ "OpenMessage" ]
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:latest
+    hostname: kafka
+    container_name: kafka
+    restart: always
+    networks: [ "OpenMessage" ]
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  rabbit:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    restart: always
+    networks: [ "OpenMessage" ]
+    ports:
+      - 4369:4369
+      - 5671:5671
+      - 5672:5672
+      - 15672:15672
+      - 25672:25672
+
+  redis:
+    image: redis:alpine
+    hostname: redis
+    container_name: redis
+    restart: always
+    networks: [ "OpenMessage" ]
+    ports:
+      - 6379:6379
+
+  redisUI:
+    image: rediscommander/redis-commander
+    hostname: redisui
+    container_name: redisui
+    restart: always
+    networks: [ "OpenMessage" ]
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - 8081:8081
+
+  localstack:
+    image: localstack/localstack
+    hostname: localstack
+    container_name: localstack
+    restart: always
+    networks: [ "OpenMessage" ]
+    environment:
+      SERVICES: "sns,sqs"
+      AWS_DEFAULT_REGION: eu-west-2
+      PORT_WEB_UI: 8082
+      AWS_ACCESS_KEY_ID: XXX
+      AWS_SECRET_ACCESS_KEY: XXX
+      DEBUG: 1
+    ports:
+      - 4575:4575
+      - 4576:4576
+      - 8082:8082
+
+networks:
+  OpenMessage:
+    driver: bridge

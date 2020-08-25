@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="CheckForOutDatedProjects" AfterTargets="Build" Condition="$(ProjectDir) != '' AND $(CheckOutdated) == 'true'">
+    <Exec Command="dotnet list package --outdated" WorkingDirectory="$(ProjectDir)" />
+  </Target>
+</Project>

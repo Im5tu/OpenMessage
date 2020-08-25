@@ -1,40 +1,48 @@
-﻿using Jil;
 using System;
-using System.IO;
+using Jil;
+using OpenMessage.Serialization;
+using System.Collections.Generic;
 using System.Text;
-using JilOptions = Jil.Options;
 
 namespace OpenMessage.Serializer.Jil
 {
-    public class JilSerializer : ISerializer
+    internal sealed class JilSerializer : ISerializer, IDeserializer
     {
-        private readonly JilOptions _settings;
+        private static readonly string _contentType = "application/json";
 
-        public string TypeName => "application/json";
+        public string ContentType { get; } = _contentType;
+        public IEnumerable<string> SupportedContentTypes { get; } = new[] {_contentType};
 
-        public JilSerializer(JilOptions options)
+        public byte[] AsBytes<T>(T entity)
         {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
-            _settings = options;
+            return Encoding.UTF8.GetBytes(JSON.Serialize(entity));
         }
 
-        public T Deserialize<T>(Stream entity)
+        public string AsString<T>(T entity)
         {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
+            if (entity is null)
+                Throw.ArgumentNullException(nameof(entity));
 
-            using (var streamReader = new StreamReader(entity))
-                return JSON.Deserialize<T>(streamReader.ReadToEnd(), _settings);
+            return JSON.Serialize(entity);
         }
 
-        public Stream Serialize<T>(T entity)
+        public T From<T>(string data, Type messageType)
         {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
+            if (string.IsNullOrWhiteSpace(data))
+                Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return new MemoryStream(Encoding.UTF8.GetBytes(JSON.Serialize(entity, _settings)));
+            return (T)JSON.Deserialize(data, messageType);
+        }
+
+        public T From<T>(byte[] data, Type messageType)
+        {
+            if (data is null || data.Length == 0)
+                Throw.ArgumentException(nameof(data), "Cannot be null or empty");
+
+            return (T)JSON.Deserialize(Encoding.UTF8.GetString(data), messageType);
         }
     }
 }

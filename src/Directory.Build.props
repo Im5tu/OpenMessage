@@ -1,0 +1,41 @@
+<Project>
+  <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')"/>
+
+  <PropertyGroup>
+    <ProjectTargetFrameworks>netstandard2.1;netcoreapp3.1</ProjectTargetFrameworks>
+    <PackageIcon Condition="Exists('icon.png')">icon.png</PackageIcon>
+    <!-- pre-release packages get the label preview -->
+    <MinVerDefaultPreReleasePhase>preview</MinVerDefaultPreReleasePhase>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('icon.png')">
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild Condition="$(Configuration) == 'Release'">true</GeneratePackageOnBuild>
+    <PackageOutputPath>$(RepositoryRoot)/artifacts</PackageOutputPath>
+    <PackageReleaseNotes>Preview release for use with .Net Core 3</PackageReleaseNotes>
+    <Title>$(MSBuildProjectName)</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <!-- NU5048: PackageIconUrl is no longer supported -->
+    <!-- NU5105: Ignore warning about semver -->
+    <NoWarn>$(NoWarn);NU5048;NU5105</NoWarn>
+    <!-- Ensure that the url to the repository is published as part of the package -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Ensure that pdb's can be added to nuget packages -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <!-- Default to allowing source link -->
+    <EnableSourceLink Condition="$(EnableSourceLink) == ''">true</EnableSourceLink>
+    <IsCoreProject>false</IsCoreProject>
+    <IsSerializer>false</IsSerializer>
+    <IsCoreProject Condition="$(MSBuildProjectName) == 'OpenMessage'">true</IsCoreProject>
+    <IsSerializer Condition="!$(IsCoreProject) AND $(MSBuildProjectName.StartsWith('OpenMessage.Serializer'))">true</IsSerializer>
+    <IsProvider Condition="!$(IsCoreProject) AND !$(IsSerializer)">true</IsProvider>
+  </PropertyGroup>
+</Project>

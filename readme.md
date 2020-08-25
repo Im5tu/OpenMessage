@@ -1,86 +1,97 @@
-#OpenMessage
-
-Master Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/2/badge)
-
-Dev Branch: ![Build Status](https://im5tu.visualstudio.com/_apis/public/build/definitions/e4fcda74-9f33-4672-b774-b4419099857c/5/badge)
+# OpenMessage
 
 OpenMessage aims to simplify the service bus paradigm by using pre-existing patterns to build an extensible architecture.
 
-##Getting Started
+Designed for the generic hosting model that .Net Core 3 supports, the library aims to be able to cater for a wide range of scenarios, including receiving the same type from multiple sources - aiding a whole host of scenarios.
 
-The library is based around the `Microsoft.Extensions.*` packages and relies upon the abstractions for depenency injection and logging allowing you the freedom to pick the implementations that best suit your scenario.
+The core library `OpenMessage` ships with an InMemory provider and a JSON serializer from the AspNetCore team (`System.Text.Json`).
 
-Assuming you want to connect to Azure Service Bus, here is how you configure OpenMessage:
+## Getting Started
 
-1 - Add the provider: 
+The library is based around the `Microsoft.Extensions.*` packages and relies upon the abstractions for dependency injection and logging allowing you the freedom to pick the implementations that best suit your scenario.
 
-    PM> Install-Package OpenMessage.Providers.Azure
+_Note: The rest of this guide requires you to be using version 3 of `Microsoft.Extensions.*`._
 
-2 - Add the serializer (or write your own):
+1 - Install the `OpenMessage` package:
 
-    PM> Install-Package OpenMessage.Serializer.JsonNet
-    
-3 - Add the services to your service collection: 
+> PM> Install-Package OpenMessage
 
-    using OpenMessage;
-    using OpenMessage.Providers.Azure.Configuration;
-    using OpenMessage.Serializer.JsonNet;
-    
-    ...
-    
-    IServiceCollection AddServices(IServiceCollection services)
+_You may also any of the providers listed below for this sample as the Memory provider ships out of the box._
+
+2 - Configure your host:
+
+    internal class Program
     {
-        return services
-                .AddOpenMessage()
-                .AddJsonNetSerializer()
-                .Configure<OpenMessageAzureProviderOptions>(config => {
-                    config.ConnectionString = "YOUR CONNECTION STRING HERE");    
-                });
-    }
-    
-###Sending Messages
-
-4 - Add either a Queue/Topic dispatcher to the service collection:
-
-    IServiceCollection AddQueueBindings(IServiceCollection services)
-    {
-        return services.AddQueueDispatcher<MyType>();    
-    }
-    
-5 - Inject an `IDispatcher<T>` into your class of choice:
-
-    internal class CommandGenerator
-    {
-        private readonly IDispatcher<MyType> _dispatcher;
-        
-        public CommandGenerator(IDispatcher<MyType> dispatcher)
+        private static async Task Main()
         {
-            _dispatcher = dispatcher;    
-        }    
+            await Host.CreateDefaultBuilder()
+                .ConfigureServices(services => services.AddOptions().AddLogging())
+                // Configure OpenMessage
+                .ConfigureMessaging(host =>
+                {
+                    // Adds a memory based consumer and dispatcher
+                    host.ConfigureMemory<Person>();
+
+                    // Adds a handler that writes the entire message in json format to the console
+                    host.ConfigureHandler<Person>(msg => Console.WriteLine($"Hello {msg.Value.Name}"));
+                })
+                .Build()
+                .RunAsync();
+        }
     }
     
-###Receiving Messages
+### Sending Messages
 
-4 - Add either a Queue/Subscription observable to the service collection:
+To send messages, inject `IDispatcher<T>` and call `DispatchAsync` and the library will route your message to the configured dispatcher for that type.
+    
+### Receiving Messages
 
-    IServiceCollection AddQueueBindings(IServiceCollection services)
-    {
-        return services.AddQueueObservable<MyType>();    
-    }
+When a message is received, it flows as follows:
 
-5 - When done, resolve an `IEnumerable<IBroker>` from the service collection to begin receiving messages.
+> Message Pump > Channel > Consumer Pump > Pipeline > Handler
 
-##Serializers
+This library takes care of everything except the handlers. You have a few choices for implementing a handler, all registered via `.ConfigureHandler`:
+
+1. Use a simple `Action<Message<T>>`
+2. Use a simple `Func<Message<T>, Task>`
+3. Inherit from `Handler<T>`
+4. Implement `IHandler<T>`
+
+By default, after your handler has been run, and assuming the underlying provider supports it, the message is automatically acknowledged. This can be configured by calling `ConfigurePipelineOptions<T>` as well as options for the consumer pump and handler timeout. 
+
+## Serializers
 
 You can add more than one serializer to OpenMessage. In this scenario, all registered serializers are checked to see whether they can deserialize the message. When serializing the last registered serializer is used, service collection provider depending.
 
-- [x] [Json.Net](http://www.nuget.org/packages/OpenMessage.Serializer.JsonNet/)
-- [x] [Jil](http://www.nuget.org/packages/OpenMessage.Serializer.Jil/)
-- [x] [Protobuf](http://www.nuget.org/packages/OpenMessage.Serializer.ProtobufNet/)
+Here is a list of the available serializers:
 
-##Providers
+- [x] Hyperion
+- [x] Jil
+- [x] JsonDotNet
+- [x] MessagePack
+- [x] MsgPack
+- [x] Protobuf
+- [x] ServiceStackJson
+- [x] Utf8Json
+- [x] Wire
 
-- [x] [Azure Service Bus](http://www.nuget.org/packages/OpenMessage.Providers.Azure/)
+## Providers
+
+With OpenMessage you can easily receive from multiple sources in a centralised pipeline whilst providing as much of the underlying providers flexibility as possible. 
+
+Here is a list of the available providers:
+
+- [x] Apache Kafka
+- [x] AWS SQS
+- [x] AWS SNS
+- [ ] AWS Kinesis
+- [ ] AWS EventBridge
 - [ ] Azure Event Hubs
-- [ ] In Memory
-- [ ] Rabbit MQ
+- [ ] Azure Service Bus
+- [ ] Eventstore
+- [x] InMemory 
+- [x] MediatR
+- [ ] NATS
+- [ ] RabbitMq
+
+_Note: Any unchecked providers are currently a work in progress_.
