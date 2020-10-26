@@ -78,14 +78,22 @@ namespace OpenMessage.AWS.SQS
                 if (_acknowledgementAction is null)
                     Throw.Exception("Acknowledgement action cannot be null for SQS message");
 
-                result.Add(new SqsMessage<T>(_acknowledgementAction)
+                try
                 {
-                    Id = message.MessageId,
-                    Properties = properties,
-                    ReceiptHandle = message.ReceiptHandle,
-                    QueueUrl = _currentConsumerOptions.QueueUrl,
-                    Value = _deserializationProvider.From<T>(message.Body, contentType, messageType ?? string.Empty)
-                });
+                    result.Add(new SqsMessage<T>(_acknowledgementAction)
+                    {
+                        Id = message.MessageId,
+                        Properties = properties,
+                        ReceiptHandle = message.ReceiptHandle,
+                        QueueUrl = _currentConsumerOptions.QueueUrl,
+                        Value = _deserializationProvider.From<T>(message.Body, contentType, messageType ?? string.Empty)
+                    });
+                }
+                catch (Exception e)
+                {
+                    // Swallow deserialization exception to prevent blocking the pipeline and processing of subsequent messages
+                    _logger.LogError(e,$"Error deserializing message body. {e.Message}. {nameof(message.MessageId)}:{message.MessageId}. {nameof(message.MD5OfBody)}:{message.MD5OfBody}");
+                }
             }
 
             return result;
