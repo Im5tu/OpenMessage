@@ -91,7 +91,7 @@ namespace OpenMessage.AWS.SQS
                 }
                 catch (Exception e)
                 {
-                    // Swallow deserialization exception to prevent blocking the pipeline and processing of subsequent messages
+                    // Swallow deserialization exception to prevent blocking the pipeline and processing of subsequent messages.
                     _logger.LogError(e,$"Error deserializing message body. {e.Message}. {nameof(message.MessageId)}:{message.MessageId}. {nameof(message.MD5OfBody)}:{message.MD5OfBody}");
                 }
             }
