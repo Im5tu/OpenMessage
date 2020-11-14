@@ -31,9 +31,9 @@ namespace OpenMessage.Tests.Pipelines
 
             Assert.Equal(1, _history.Count);
 
-            Assert.Equal(_batchSize - 1, _history.Single()
-                                                 .Count);
-            Assert.True(stopwatch.Elapsed >= _timeout);
+            Assert.Equal(_batchSize - 1, _history.Single().Count);
+
+            Assert.True(stopwatch.Elapsed.Add(TimeSpan.FromMilliseconds(5)) >= _timeout);
         }
 
         [Fact]
@@ -49,8 +49,8 @@ namespace OpenMessage.Tests.Pipelines
 
             Assert.Equal(1, _history.Count);
 
-            Assert.Equal(_batchSize, _history.Single()
-                                             .Count);
+            Assert.Equal(_batchSize, _history.Single().Count);
+
             Assert.True(stopwatch.Elapsed < _timeout);
         }
 
