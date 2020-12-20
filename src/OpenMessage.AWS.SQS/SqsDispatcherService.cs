@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
@@ -138,7 +138,7 @@ namespace OpenMessage.AWS.SQS
 
                 var response = await client.SendMessageBatchAsync(request);
 
-                // TODO :: we should be able to complete certain messages here
+                // TODO :: Complete elements in the batch that we can
                 if (response.Failed.Count > 0)
                     Throw.Exception("One or more messages failed to send");
 
