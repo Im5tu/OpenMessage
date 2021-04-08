@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OpenMessage.Apache.Kafka.HostedServices
 {
-    internal sealed class KafkaMessagePump<TKey, TValue> : MessagePump<TValue>
+    internal sealed class KafkaMessagePump<TKey, TValue> : MessagePump<TValue> where TKey : class where TValue : class
     {
         private readonly string _consumerId;
         private readonly IKafkaConsumer<TKey, TValue> _kafkaConsumer;

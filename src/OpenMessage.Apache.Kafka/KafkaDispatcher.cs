@@ -73,7 +73,7 @@ namespace OpenMessage.Apache.Kafka
                 if (!valueType && aqn is {})
                     h.Add(KnownProperties.ValueTypeName, Encoding.UTF8.GetBytes(aqn));
 
-                if (Activity.Current is {})
+                if (Activity.Current is {} && !string.IsNullOrEmpty(Activity.Current.Id))
                     h.Add(KnownProperties.ActivityId, Encoding.UTF8.GetBytes(Activity.Current.Id));
 
                 return h;

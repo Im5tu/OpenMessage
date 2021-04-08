@@ -29,15 +29,15 @@ namespace OpenMessage.Serializer.Jil
             return JSON.Serialize(entity);
         }
 
-        public T From<T>(string data, Type messageType)
+        public T? From<T>(string data, Type messageType) where T : class
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return (T)JSON.Deserialize(data, messageType);
+            return (T?)JSON.Deserialize(data, messageType);
         }
 
-        public T From<T>(byte[] data, Type messageType)
+        public T? From<T>(byte[] data, Type messageType) where T : class
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");

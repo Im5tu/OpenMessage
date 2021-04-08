@@ -31,7 +31,7 @@ namespace OpenMessage.Serializer.ServiceStackJson
             return JsonSerializer.SerializeToString(entity);
         }
 
-        public T From<T>(string data, Type messageType)
+        public T? From<T>(string data, Type messageType) where T : class
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
@@ -39,14 +39,14 @@ namespace OpenMessage.Serializer.ServiceStackJson
             return (T) JsonSerializer.DeserializeFromString(data, messageType);
         }
 
-        public T From<T>(byte[] data, Type messageType)
+        public T? From<T>(byte[] data, Type messageType) where T : class
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
             using var ms = new MemoryStream(data);
 
-            return (T) JsonSerializer.DeserializeFromStream(messageType, ms);
+            return (T?) JsonSerializer.DeserializeFromStream(messageType, ms);
         }
     }
 }

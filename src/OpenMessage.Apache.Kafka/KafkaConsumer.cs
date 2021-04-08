@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace OpenMessage.Apache.Kafka
 {
-    internal sealed class KafkaConsumer<TKey, TValue> : KafkaClient, IKafkaConsumer<TKey, TValue>
+    internal sealed class KafkaConsumer<TKey, TValue> : KafkaClient, IKafkaConsumer<TKey, TValue> where TKey : class where TValue : class
     {
         private static readonly string TimestampFormat = "o";
         private readonly Action<KafkaMessage<TKey, TValue>> _acknowledgementAction;

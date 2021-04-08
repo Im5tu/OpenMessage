@@ -13,7 +13,7 @@ using OpenMessage.AWS.SQS.Configuration;
 
 namespace OpenMessage.AWS.SQS
 {
-    internal sealed class SqsMessagePump<T> : MessagePump<T>
+    internal sealed class SqsMessagePump<T> : MessagePump<T> where T : class
     {
         private readonly string _consumerId;
         private readonly IQueueMonitor<T> _queueMonitor;

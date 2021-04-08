@@ -5,4 +5,11 @@
     <Description>Helpful testing extensions for OpenMessage</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Update="MinVer" Version="2.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

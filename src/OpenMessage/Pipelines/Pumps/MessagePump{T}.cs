@@ -11,7 +11,7 @@ namespace OpenMessage.Pipelines.Pumps
     ///     Defines the basis of a message pump
     /// </summary>
     /// <typeparam name="T">The type produced by the message pump</typeparam>
-    public abstract class MessagePump<T> : BackgroundService
+    public abstract class MessagePump<T> : BackgroundService where T : class
     {
         /// <summary>
         ///     The writable channel to use

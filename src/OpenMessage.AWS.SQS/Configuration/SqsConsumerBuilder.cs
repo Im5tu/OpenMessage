@@ -7,7 +7,7 @@ using System;
 
 namespace OpenMessage.AWS.SQS.Configuration
 {
-    internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T>
+    internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T> where T : class
     {
         private Action<HostBuilderContext, SQSConsumerOptions>? _configuration;
 
@@ -20,7 +20,7 @@ namespace OpenMessage.AWS.SQS.Configuration
             HostBuilder.TryConfigureDefaultPipeline<T>();
 
             if (_configuration is {})
-                ConfigureOptions(_configuration);
+                ConfigureOptions(_configuration!);
 
             HostBuilder.Services.TryAddTransient<ISqsConsumer<T>, SqsConsumer<T>>();
             HostBuilder.Services.TryAddTransient<IQueueMonitor<T>, QueueMonitor<T>>();

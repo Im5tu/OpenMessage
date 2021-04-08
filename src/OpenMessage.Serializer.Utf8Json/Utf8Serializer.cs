@@ -28,20 +28,20 @@ namespace OpenMessage.Serializer.Utf8Json
             return JsonSerializer.ToJsonString(entity);
         }
 
-        public T From<T>(string data, Type messageType)
+        public T? From<T>(string data, Type messageType) where T : class
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
 
-            return (T) JsonSerializer.NonGeneric.Deserialize(messageType, data);
+            return (T?) JsonSerializer.NonGeneric.Deserialize(messageType, data);
         }
 
-        public T From<T>(byte[] data, Type messageType)
+        public T? From<T>(byte[] data, Type messageType) where T : class
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
 
-            return (T) JsonSerializer.NonGeneric.Deserialize(messageType, data);
+            return (T?) JsonSerializer.NonGeneric.Deserialize(messageType, data);
         }
     }
 }
