@@ -56,9 +56,12 @@ namespace OpenMessage.AWS.SQS
             {
                 Id = Guid.NewGuid().ToString("N"),
                 MessageAttributes = GetMessageProperties(message),
-                DelaySeconds = DelaySeconds(message),
                 MessageBody = json
             };
+
+            var delay = DelaySeconds(message);
+            if (delay.HasValue)
+                request.DelaySeconds = delay.Value;
 
             var msg = new SendSqsMessageCommand
             {
@@ -81,14 +84,14 @@ namespace OpenMessage.AWS.SQS
             }
         }
 
-        private static int DelaySeconds(Message<T> message)
+        private static int? DelaySeconds(Message<T> message)
         {
             if (message is ISupportSendDelay delay && delay.SendDelay > TimeSpan.Zero)
             {
                 return Math.Min(MaximumSqsDelaySeconds, (int) delay.SendDelay.TotalSeconds);
             }
 
-            return 0;
+            return null;
         }
 
         private Dictionary<string, MessageAttributeValue> GetMessageProperties(Message<T> message)
