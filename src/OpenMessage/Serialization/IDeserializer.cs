@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace OpenMessage.Serialization
 {
@@ -21,8 +20,7 @@ namespace OpenMessage.Serialization
         /// <param name="data">The data to convert from</param>
         /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
-        [return: MaybeNull]
-        T From<T>(string data, Type messageType);
+        T? From<T>(string data, Type messageType) where T : class;
 
         /// <summary>
         ///     Deserializes the data to a given T
@@ -31,7 +29,6 @@ namespace OpenMessage.Serialization
         /// <param name="data">The data to convert from</param>
         /// <param name="messageType">The original type of the message</param>
         /// <returns>An instance of T</returns>
-        [return: MaybeNull]
-        T From<T>(byte[] data, Type messageType);
+        T? From<T>(byte[] data, Type messageType) where T : class;
     }
 }

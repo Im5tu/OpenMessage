@@ -20,8 +20,7 @@ namespace OpenMessage.Serialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [return: MaybeNull]
-        public T From<T>(string data, string contentType, string type)
+        public T? From<T>(string data, string contentType, string type) where T : class
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
@@ -33,8 +32,7 @@ namespace OpenMessage.Serialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [return: MaybeNull]
-        public T From<T>(byte[] data, string contentType, string type)
+        public T? From<T>(byte[] data, string contentType, string type) where T : class
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
@@ -46,7 +44,7 @@ namespace OpenMessage.Serialization
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IDeserializer GetDeserializer(string contentType)
+        private IDeserializer GetDeserializer(string contentType) 
         {
             if (!_deserializers.TryGetValue(contentType, out var deserializer))
                 Throw.Exception($"No deserializer registered for content type: {contentType}. Registered types: {string.Join(", ", _deserializers.Keys)}");

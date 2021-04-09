@@ -67,7 +67,7 @@ namespace OpenMessage.AWS.SQS
                                             continue;
 
                                         var readMessage = channel.Reader.TryRead(out var msg);
-                                        if (readMessage)
+                                        if (readMessage && msg != null)
                                             messagesToSend.Add(msg);
 
                                         if (messagesToSend.Count == 10 || messagesToSend.Count > 0 && !readMessage)

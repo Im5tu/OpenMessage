@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace OpenMessage.AWS.SQS
 {
-    internal sealed class SqsConsumer<T> : ISqsConsumer<T>
+    internal sealed class SqsConsumer<T> : ISqsConsumer<T> where T : class
     {
         private static readonly string MisconfiguredConsumerMessage = "Consumer has not been initialized. Please call Initialize with the configured consumer id.";
         private readonly IDeserializationProvider _deserializationProvider;

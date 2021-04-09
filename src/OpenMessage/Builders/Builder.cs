@@ -36,21 +36,6 @@ namespace OpenMessage.Builders
         /// <param name="configurator">The options configuration action</param>
         /// <param name="defaultOptions">Determines whether or not to setup the default options. Default: false</param>
         /// <typeparam name="T">The type of options to configure</typeparam>
-        protected void ConfigureOptions<T>(Action<T> configurator, bool defaultOptions = false)
-            where T : class
-        {
-            if (configurator is null)
-                return;
-
-            HostBuilder.Services.Configure(ConsumerId, configurator);
-        }
-
-        /// <summary>
-        ///     Use the specified action to configure options for this consumer.
-        /// </summary>
-        /// <param name="configurator">The options configuration action</param>
-        /// <param name="defaultOptions">Determines whether or not to setup the default options. Default: false</param>
-        /// <typeparam name="T">The type of options to configure</typeparam>
         protected void ConfigureOptions<T>(Action<HostBuilderContext, T> configurator, bool defaultOptions = false)
             where T : class
         {

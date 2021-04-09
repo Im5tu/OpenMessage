@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Newtonsoft.Json;
 using OpenMessage.Serialization;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace OpenMessage.Serializer.JsonDotNet
             _settings = settings.Get(SerializationConstants.DeserializerSettings);
         }
 
-        public T From<T>(string data, Type messageType)
+        public T? From<T>(string data, Type messageType) where T : class
         {
             if (string.IsNullOrWhiteSpace(data))
                 Throw.ArgumentException(nameof(data), "Cannot be null, empty or whitespace");
@@ -26,10 +26,10 @@ namespace OpenMessage.Serializer.JsonDotNet
             if (response is null)
                 Throw.Exception("Deserialization returned a null response");
 
-            return (T)response;
+            return (T?)response;
         }
 
-        public T From<T>(byte[] data, Type messageType)
+        public T? From<T>(byte[] data, Type messageType) where T : class
         {
             if (data is null || data.Length == 0)
                 Throw.ArgumentException(nameof(data), "Cannot be null or empty");
@@ -38,7 +38,7 @@ namespace OpenMessage.Serializer.JsonDotNet
             if (response is null)
                 Throw.Exception("Deserialization returned a null response");
 
-            return (T)response;
+            return (T?)response;
         }
     }
 }

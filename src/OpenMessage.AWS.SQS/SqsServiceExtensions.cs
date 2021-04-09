@@ -14,7 +14,7 @@ namespace OpenMessage.AWS.SQS
         /// <param name="messagingBuilder">The host the consumer belongs to</param>
         /// <typeparam name="T">The type of message to consume</typeparam>
         /// <returns>An SQS consumer builder</returns>
-        public static ISqsConsumerBuilder<T> ConfigureSqsConsumer<T>(this IMessagingBuilder messagingBuilder) => new SqsConsumerBuilder<T>(messagingBuilder);
+        public static ISqsConsumerBuilder<T> ConfigureSqsConsumer<T>(this IMessagingBuilder messagingBuilder) where T : class => new SqsConsumerBuilder<T>(messagingBuilder);
 
         /// <summary>
         ///     Returns an SQS dispatcher builder

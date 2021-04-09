@@ -7,7 +7,7 @@ using System;
 
 namespace OpenMessage.AWS.SQS.Configuration
 {
-    internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T>
+    internal sealed class SqsConsumerBuilder<T> : Builder, ISqsConsumerBuilder<T> where T : class
     {
         private Action<HostBuilderContext, SQSConsumerOptions>? _configuration;
 

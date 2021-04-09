@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -8,7 +8,7 @@ using System;
 
 namespace OpenMessage.Apache.Kafka.Configuration
 {
-    internal sealed class KafkaConsumerBuilder<TKey, TValue> : Builder, IKafkaConsumerBuilder<TKey, TValue>
+    internal sealed class KafkaConsumerBuilder<TKey, TValue> : Builder, IKafkaConsumerBuilder<TKey, TValue> where TKey : class where TValue : class
     {
         private Action<HostBuilderContext, KafkaOptions>? _options;
 

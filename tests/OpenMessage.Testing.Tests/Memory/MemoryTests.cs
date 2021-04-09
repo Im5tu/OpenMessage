@@ -24,11 +24,10 @@ namespace OpenMessage.Testing.Tests.Memory
 
                                    builder.ConfigurePipeline<string>()
                                           .UseDefaultMiddleware()
-                                          .Run(message =>
+                                          .Run(async message =>
                                           {
+                                              await Task.Delay(1000);
                                               _finished = true;
-
-                                              return Task.CompletedTask;
                                           });
                                });
         }

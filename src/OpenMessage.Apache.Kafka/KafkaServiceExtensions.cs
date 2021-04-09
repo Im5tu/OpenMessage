@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OpenMessage;
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="messagingBuilder">The host builder</param>
         /// <typeparam name="T">The type to consume</typeparam>
         /// <returns>The modified builder</returns>
-        public static IKafkaConsumerBuilder<string, T> ConfigureKafkaConsumer<T>(this IMessagingBuilder messagingBuilder) => messagingBuilder.ConfigureKafkaConsumer<string, T>();
+        public static IKafkaConsumerBuilder<string, T> ConfigureKafkaConsumer<T>(this IMessagingBuilder messagingBuilder) where T : class => messagingBuilder.ConfigureKafkaConsumer<string, T>();
 
         /// <summary>
         ///     Adds a kafka consumer
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TKey">The type of the key</typeparam>
         /// <typeparam name="TValue">The type of the message</typeparam>
         /// <returns>The modified builder</returns>
-        public static IKafkaConsumerBuilder<TKey, TValue> ConfigureKafkaConsumer<TKey, TValue>(this IMessagingBuilder messagingBuilder) => new KafkaConsumerBuilder<TKey, TValue>(messagingBuilder);
+        public static IKafkaConsumerBuilder<TKey, TValue> ConfigureKafkaConsumer<TKey, TValue>(this IMessagingBuilder messagingBuilder) where TKey : class where TValue : class => new KafkaConsumerBuilder<TKey, TValue>(messagingBuilder);
 
         /// <summary>
         ///     Adds a kafka dispatcher
